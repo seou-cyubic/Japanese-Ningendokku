@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <title>管理画面 | 健康診断予約システム</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/tokens.css?v=20260811">
+  <link rel="stylesheet" href="../assets/css/admin.css?v=20260916x">
+  <link rel="stylesheet" href="../assets/css/admin-postal-bulk.css?v=20260910c">
+</head>
+
+<body class="admin">
+
+  <!-- ======================================================================
+       PC 전용 안내
+       ====================================================================== -->
+  <div class="only-desktop">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+      stroke-linejoin="round" width="44" height="44" aria-hidden="true">
+      <rect x="2.5" y="4" width="19" height="13" rx="2"></rect>
+      <path d="M8 20h8M12 17v3"></path>
+    </svg>
+    <p class="only-desktop__title">管理画面はPCでご利用ください</p>
+    <p class="only-desktop__desc">
+      予約一覧・定員カレンダー・一括操作を扱う画面のため、広い画面が必要です。横幅1024px以上のPCブラウザで開いてください。
+    </p>
+  </div>
+
+  <!-- ======================================================================
+       좌측 탭 + 우측 내용
+       ====================================================================== -->
+  <div class="admin-shell" id="shell" hidden>
+
+    <!-- --- 사이드바 ---------------------------------------------------- -->
+    <nav class="nav" aria-label="管理メニュー">
+
+      <div class="nav__brand">
+        <span class="nav__mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M12 4v7M12 15v5M4.5 12h6M15 12h4.5"></path>
+            <path d="M14.5 17.5l2 2 4-4.5"></path>
+          </svg>
+        </span>
+        <span class="nav__brand-text">
+          <span class="nav__org">医療法人 Sample Group</span>
+          <span class="nav__name">健康診断予約管理</span>
+        </span>
+      </div>
+
+      <!-- 메뉴는 권한(L1/L2/L3)에 따라 JS 가 구성한다 -->
+      <div id="nav-menu"></div>
+
+      <div class="nav__foot">
+        <div class="nav__foot-text">
+          <p class="nav__me" id="nav-me">—</p>
+          <p class="nav__role" id="nav-role">—</p>
+        </div>
+        <button type="button" class="nav__logout" id="logout-btn" title="ログアウト">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <path d="M15 17l5-5-5-5M20 12H9M12 20H6a2 2 0 01-2-2V6a2 2 0 012-2h6"></path>
+          </svg>
+          <span>ログアウト</span>
+        </button>
+      </div>
+
+    </nav>
+
+    <!-- --- 본문 --------------------------------------------------------- -->
+    <main class="main">
+      <header class="topbar">
+        <button type="button" class="topbar__toggle" id="sidebar-toggle" aria-label="メニューの開閉">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div class="topbar__meta">
+          <h1 class="topbar__title" id="view-title">ダッシュボード</h1>
+          <p class="topbar__desc" id="view-desc"></p>
+        </div>
+        <div class="topbar__search" id="global-search-container">
+          <div class="quick-search">
+            <svg class="quick-search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="M21 21l-4.35-4.35"></path>
+            </svg>
+            <input type="text" id="global-search-input" class="quick-search__input"
+              placeholder="氏名・予約番号・電話・生年月日・会場名" autocomplete="off">
+            <kbd class="quick-search__kbd">Ctrl K</kbd>
+            <div class="quick-search__dropdown" id="global-search-dropdown" hidden></div>
+          </div>
+        </div>
+
+        <div class="topbar__actions">
+          <div class="topbar__right" id="view-tools"></div>
+        </div>
+      </header>
+
+      <div class="view" id="view">
+        <div class="loading"><span class="spin"></span>読み込み中…</div>
+      </div>
+    </main>
+
+  </div>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+  <div id="modal-root"></div>
+  <div id="drawer-root"></div>
+  <p class="sr-only" id="live-status" role="status" aria-live="polite"></p>
+
+  <script src="../assets/js/admin/core.js?v=20260916x"></script>
+  <script src="../assets/js/admin/guide.js?v=20260916x"></script>
+  <script src="../assets/js/admin/datepicker.js?v=20260916"></script>
+  <!-- 엑셀식 표. 회장 정보·정원·우편 일괄 입력이 함께 쓴다. -->
+  <script src="../assets/js/admin/grid.js?v=20260907"></script>
+  <script src="../assets/js/admin/grid-io.js?v=20260915m"></script>
+  <script src="../assets/js/admin/preview.js?v=20260902"></script>
+  <script src="../assets/js/admin/views/dashboard.js?v=20260916x"></script>
+  <script src="../assets/js/admin/views/reservations.js?v=20260916x"></script>
+  <script src="../assets/js/admin/views/search.js?v=20260911c"></script>
+  <script src="../assets/js/admin/views/reservation-detail.js?v=20260916x"></script>
+  <script src="../assets/js/admin/views/postal.js?v=20260916x"></script>
+  <script src="../assets/js/admin/views/bulk-postal.js?v=20260916x"></script>
+  <script src="../assets/js/admin/views/master-import.js?v=20260901"></script>
+  <script src="../assets/js/admin/views/bulk-venues.js?v=20260916x"></script>
+  <script src="../assets/js/admin/views/bulk-capacity.js?v=20260916x"></script>
+  <script src="../assets/js/admin/views/capacity.js?v=20260916x"></script>
+  <script src="../assets/js/admin/views/bulk-exam-options.js?v=20260916x"></script>
+  <script src="../assets/js/admin/views/mail-templates.js?v=20260915k"></script>
+  <script src="../assets/js/admin/views/accounts.js?v=20260915k"></script>
+  <script src="../assets/js/admin/views/audit-logs.js?v=20260915r"></script>
+  <script src="../assets/js/admin/views/system-data.js?v=20260915k"></script>
+  <script src="../assets/js/admin/app.js?v=20260916x"></script>
+</body>
+
+</html>

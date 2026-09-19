@@ -1,0 +1,243 @@
+/* ==========================================================================
+   complete.css — 예약 5단계 : 예약 완료 (U-17)
+   --------------------------------------------------------------------------
+   이 화면의 목적은 하나다. **예약번호를 이용자 손에 남기는 것.**
+   「예약 내용을 잊어버렸다」가 가장 흔한 문의이며, 그 문의는
+   여기서 번호를 챙기지 못한 사람이 만든다. (plan.md 자체 피드백 P-4)
+
+   그래서 예약번호를 화면 폭 가득 띄우고, 인쇄와 복사를 그 자리에 둔다.
+   인쇄 시에는 헤더·푸터·버튼을 빼고 A4 한 장에 담기게 한다.
+   ========================================================================== */
+
+/* --- 완료 카드 ---------------------------------------------------------- */
+
+.done {
+  margin-top: var(--sp-3);
+  padding: var(--sp-4) var(--sp-3);
+  background: var(--c-surface);
+  border: 2px solid var(--c-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  text-align: center;
+}
+
+.done__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--c-primary);
+  color: #fff;
+}
+
+.done__icon svg {
+  width: 40px;
+  height: 40px;
+}
+
+.done__title {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-h1);
+  font-weight: var(--fw-bold);
+  color: var(--c-ink);
+  line-height: var(--lh-tight);
+}
+
+.done__lead {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-body);
+  color: var(--c-ink-sub);
+  line-height: var(--lh-base);
+}
+
+/* --- 예약번호 ----------------------------------------------------------- */
+
+.resno {
+  margin-top: var(--sp-3);
+  padding: var(--sp-3) var(--sp-2);
+  background: var(--c-primary-soft);
+  border: 2px dashed var(--c-primary);
+  border-radius: var(--radius);
+}
+
+.resno__label {
+  display: block;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
+  color: var(--c-primary-strong);
+}
+
+.resno__value {
+  display: block;
+  margin-top: var(--sp-1);
+  /* 예약번호는 영문 대소문자와 숫자가 섞인 무작위 12자다.
+     본문 서체는 글자 폭이 제각각이라 어디까지 읽었는지 놓치기 쉽다.
+     한 글자씩 또박또박 짚을 수 있도록 고정폭 서체로 띄운다. */
+  font-family: var(--font-mono);
+  /* 12자를 옮겨 적을 때 자릿수를 세기 쉽도록 자간을 벌린다. */
+  font-size: calc(2.25rem * var(--font-scale));
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+  color: var(--c-primary-strong);
+  word-break: break-all;
+}
+
+.resno__note {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-small);
+  color: var(--c-ink-sub);
+  line-height: var(--lh-base);
+}
+
+.resno__hint {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-small);
+  color: var(--c-ink-sub);
+  line-height: var(--lh-base);
+}
+
+/* --- 인쇄 · 복사 -------------------------------------------------------- */
+
+.done__tools {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+
+.done__tools .btn {
+  width: 100%;
+}
+
+.done__copied {
+  margin-top: var(--sp-1);
+  min-height: 1.6em;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  color: var(--c-primary-strong);
+}
+
+.done__home {
+  margin-top: var(--sp-4);
+}
+
+/* --- 준비물 목록 -------------------------------------------------------- */
+
+.bring {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.bring__item {
+  position: relative;
+  padding: 6px 0 6px 28px;
+  font-size: var(--fs-body);
+  color: var(--c-ink);
+  line-height: var(--lh-base);
+}
+
+.bring__item::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 0.95em;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c-primary);
+}
+
+.bring__item--note {
+  color: var(--c-warn);
+}
+
+.bring__item--note::before {
+  background: var(--c-warn);
+}
+
+/* --- 좁은 화면 ----------------------------------------------------------- */
+
+/* 예약번호 12자를 **한 줄에** 담기 위한 조정이다.
+   줄이 넘어가면 `break-all` 이 아무 데서나 끊고, 옮겨 적는 사람은
+   끊긴 자리에 하이픈이나 공백이 있는 줄 안다. 그러면 조회에서 틀린다.
+   좁은 화면 + 「아주 크게」(x1.3) 조합에서도 한 줄이 유지되도록 낮춘다. */
+@media (max-width: 480px) {
+  .resno__value {
+    font-size: calc(1.625rem * var(--font-scale));
+    letter-spacing: 0.04em;
+  }
+}
+
+/* --- 태블릿 이상 --------------------------------------------------------- */
+
+@media (min-width: 600px) {
+  .done__tools {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .done__tools .btn {
+    width: auto;
+    min-width: 240px;
+  }
+}
+
+/* ==========================================================================
+   인쇄
+   --------------------------------------------------------------------------
+   고령 이용자는 종이를 선호한다. 인쇄 버튼을 눌렀을 때 나오는 것이
+   「검진일에 들고 갈 종이」가 되어야 하므로, 화면 조작용 요소를 전부 뺀다.
+   ========================================================================== */
+
+@media print {
+  .site-header,
+  .site-footer,
+  .progress,
+  .skip-link,
+  .done__tools,
+  .done__copied,
+  .done__home,
+  .alert {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .page {
+    padding: 0;
+  }
+
+  .container {
+    max-width: none;
+    padding: 0;
+  }
+
+  .done,
+  .sumsec,
+  .notice,
+  .contact-box,
+  .mail-warn {
+    /* 항목이 페이지 경계에서 잘리면 무엇이 빠졌는지 알 수 없다 */
+    break-inside: avoid;
+    box-shadow: none;
+  }
+
+  .done {
+    padding: 12px;
+    border-width: 1px;
+  }
+
+  .done__icon {
+    display: none;
+  }
+
+  .resno__value {
+    font-size: 32pt;
+  }
+}

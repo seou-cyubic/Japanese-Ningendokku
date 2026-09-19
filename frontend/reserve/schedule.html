@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="健康診断予約 1/5 — 会場と受診日時をお選びいただきます。会場をお選びになると空き状況をカレンダーで確認でき、日付を押すと30分ごとの時間帯が表示されます。">
+  <meta name="theme-color" content="#0B6E5B">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <title>会場・日時の選択｜健康診断予約</title>
+
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/form.css">
+  <link rel="stylesheet" href="../assets/css/schedule.css">
+</head>
+<body>
+
+  <a class="skip-link" href="#main">本文へ移動</a>
+
+  <!-- ======================================================================
+       헤더
+       ====================================================================== -->
+  <header class="site-header">
+    <div class="container site-header__inner">
+
+      <div class="site-header__left">
+        <a href="javascript:history.back()" class="btn-back" aria-label="前のページへ戻る" title="戻る">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </a>
+        <a class="brand" href="../index.html">
+          <span class="brand__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 4v7M12 15v5M4.5 12h6M15 12h4.5"></path>
+              <path d="M14.5 17.5l2 2 4-4.5"></path>
+            </svg>
+          </span>
+          <span class="brand__text">
+            <span class="brand__org">医療法人　Sample Group</span>
+            <span class="brand__name">健康診断予約</span>
+          </span>
+        </a>
+      </div>
+
+
+      <div class="font-scale">
+        <span class="font-scale__label" id="font-scale-label">文字サイズ</span>
+        <div class="font-scale__group" role="group" aria-labelledby="font-scale-label">
+          <button type="button" class="font-scale__btn"
+                  data-scale="1" data-scale-label="標準" aria-pressed="true">標準</button>
+          <button type="button" class="font-scale__btn"
+                  data-scale="1.15" data-scale-label="大" aria-pressed="false">大</button>
+          <button type="button" class="font-scale__btn"
+                  data-scale="1.3" data-scale-label="特大" aria-pressed="false">特大</button>
+        </div>
+      </div>
+
+      <p id="font-scale-status" class="sr-only" role="status" aria-live="polite"></p>
+
+    </div>
+  </header>
+
+  <!-- ======================================================================
+       진행 표시 — 5단계 중 1단계
+       ====================================================================== -->
+  <!-- 단계 이름·번호는 assets/js/flow.js 가 한 곳에서 관리한다.
+       아래는 자바스크립트가 없을 때를 위한 초기값이다. -->
+       
+  <div class="progress" data-step="slot">
+    <div class="container">
+      <strong class="progress__count">5ステップ中 <span>1</span>ステップ目</strong>
+      <div class="progress__bar" role="progressbar"
+           aria-valuenow="1" aria-valuemin="1" aria-valuemax="5"
+           aria-label="ご予約の進行状況">
+        <div class="progress__fill" style="width: 20%"></div>
+      </div>
+      <ol class="progress__steps">
+        <li class="progress__step" aria-current="step">会場・日時の選択</li>
+        <li class="progress__step">本人確認</li>
+        <li class="progress__step">情報の入力</li>
+        <li class="progress__step">内容の確認</li>
+        <li class="progress__step">予約完了</li>
+      </ol>
+    </div>
+  </div>
+
+  <main id="main" class="page">
+    <div class="container">
+
+      <h1 class="page__title" id="page-title">会場と日時をお選びください</h1>
+      <p class="page__lead" id="page-lead">
+        下の一覧から、受診される会場をお選びください。
+      </p>
+
+      <!-- 예약의 첫 단계에서 남은 자리부터 보여 준다. 개인정보를 다 넣고 나서
+           「그 날은 자리가 없습니다」를 듣는 것이 가장 나쁜 순서이기 때문이다.
+           다만 시간을 고른 것만으로 예약이 끝났다고 오해하는 일이 잦으므로,
+           목록보다 먼저 「아직 예약이 아니다」를 말해 둔다.
+           ※ 이 안내는 아래 `peek-note` 한 곳에서만 한다. 예전에는 그 위에
+              태그 밖 텍스트로 같은 말이 한 번 더 있었는데, 글자 크기 조절이
+              적용되지 않았고 「予約確定になりません」이라는 비문이었다. -->
+      <p class="peek-note" id="peek-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M12 11v5M12 8h.01"></path>
+        </svg>
+        <span>
+          お時間を選んだだけでは<strong>ご予約は完了しません。</strong>このあとの本人確認と情報のご入力まで終えると、ご予約が完了します。
+        </span>
+      </p>
+
+      <!-- 통신 실패 등 전역 오류 -->
+      <p class="alert" id="global-alert" role="alert">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M12 7.5v5M12 16h.01"></path>
+        </svg>
+        <span id="global-alert-text"></span>
+      </p>
+
+      <!-- ==================================================================
+           ① 회장 선택
+           고른 뒤에는 한 줄 요약으로 접히고, 바로 아래 달력이 열린다.
+           ================================================================== -->
+      <section class="wiz" id="step-hospital" aria-labelledby="hospital-heading">
+
+        <h2 class="wiz__head" id="hospital-heading">
+          <span class="wiz__num">1</span>
+          <span class="wiz__label">受診される会場</span>
+        </h2>
+
+        <!-- 선택 전 : 목록 -->
+        <div class="wiz__body" id="hospital-picker">
+
+          <div class="filter">
+            <label class="filter__label" for="region-select">地域でしぼり込む</label>
+            <select class="input filter__select" id="region-select">
+              <option value="">すべて</option>
+            </select>
+          </div>
+
+          <p class="list-count" id="hospital-count" role="status" aria-live="polite"></p>
+
+          <ul class="hlist" id="hospital-list">
+            <li class="state-box" id="hospital-loading">会場の一覧を読み込んでいます…</li>
+          </ul>
+
+        </div>
+
+        <!-- 선택 후 : 한 줄 요약 -->
+        <div class="picked is-hidden" id="picked-hospital">
+          <span class="picked__ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 21V9l8-5 8 5v12"></path>
+              <path d="M9 21v-6h6v6"></path>
+              <path d="M12 7v4M10 9h4"></path>
+            </svg>
+          </span>
+          <span class="picked__body">
+            <strong class="picked__name" id="picked-name"></strong>
+            <span class="picked__meta" id="picked-meta"></span>
+          </span>
+          <button type="button" class="picked__change" id="change-hospital">
+            <span class="picked__change-long">会場を</span>変更
+          </button>
+        </div>
+
+        <!-- 선택한 회장의 위치. 좌표가 없으면 통째로 감춘다. -->
+        <div class="vmap is-hidden" id="venue-map">
+          <div class="vmap__frame">
+            <iframe class="vmap__iframe" id="venue-map-iframe"
+                    title="受診会場の地図" loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                    allowfullscreen></iframe>
+            <!-- 지도를 덮는 판. 모바일에서 페이지를 내리려다 지도가 확대되는 것을 막는다.
+                 「지도 움직이기」를 누른 뒤에만 지도에 손이 닿는다. -->
+                 
+            <button type="button" class="vmap__lock" id="venue-map-lock">
+              <span class="vmap__lock-label">地図を動かす</span>
+            </button>
+          </div>
+          <a class="vmap__link" id="venue-map-link" target="_blank" rel="noopener noreferrer">
+            Google マップでこの会場を見る
+          </a>
+        </div>
+
+      </section>
+
+      <!-- ==================================================================
+           ② 날짜 — 달력. 칸에는 남은 좌석 수만 적는다.
+           ================================================================== -->
+      <section class="wiz is-hidden" id="step-date" aria-labelledby="date-heading">
+
+        <h2 class="wiz__head" id="date-heading">
+          <span class="wiz__num">2</span>
+          <span class="wiz__label">受診日</span>
+        </h2>
+
+        <div class="wiz__body">
+
+          <!-- 이 회장이 여는 날 전부. 달력은 한 달만 보여 주므로, 회장이
+               9월·10월·11월에 열면 이용자는 9월만 보고 「이 날 하루뿐」이라
+               생각하고 넘어간다. 고를 수 있는 날은 몇 개뿐이므로 전부
+               늘어놓고 한 번에 건너뛰게 한다. 날이 하나뿐이면 숨긴다. -->
+               
+               
+               
+          <div class="datepick is-hidden" id="date-picks" role="group"
+               aria-label="この会場の開催日">
+            <p class="datepick__lead" id="date-picks-lead"></p>
+            <div class="datepick__list" id="date-picks-list"></div>
+          </div>
+
+          <div class="cal">
+
+            <div class="cal__head">
+              <button type="button" class="cal__nav" id="cal-prev" aria-label="前の月を見る">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M15 5l-7 7 7 7"></path>
+                </svg>
+              </button>
+              <strong class="cal__title" id="cal-title" role="status" aria-live="polite"></strong>
+              <button type="button" class="cal__nav" id="cal-next" aria-label="次の月を見る">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M9 5l7 7-7 7"></path>
+                </svg>
+              </button>
+            </div>
+
+            <div class="cal__wd" aria-hidden="true">
+              <span class="cal__wd-sun">日</span><span>月</span><span>火</span>
+              <span>水</span><span>木</span><span>金</span><span class="cal__wd-sat">土</span>
+            </div>
+
+            <div class="cal__grid" id="cal-grid"></div>
+
+            <p class="cal__legend">
+              マスの中の数字は、その日の<strong>空き人数</strong>です。数字のない日は受け付けておりません。
+              <span class="cal__legend-items">
+                <span class="cal__legend-item">
+                  <span class="cal__legend-swatch cal__legend-swatch--available"
+                        aria-hidden="true"></span>予約できます
+                </span>
+                <span class="cal__legend-item">
+                  <span class="cal__legend-swatch cal__legend-swatch--full"
+                        aria-hidden="true"></span><strong>満席</strong> — 空きがありません
+                </span>
+                <span class="cal__legend-item">
+                  <span class="cal__legend-swatch cal__legend-swatch--off"
+                        aria-hidden="true"></span><strong>実施なし</strong> — この日は開催しません
+                </span>
+              </span>
+            </p>
+
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==================================================================
+           ③ 시간 — 선택한 날짜의 30분 단위 목록
+           ================================================================== -->
+      <section class="wiz is-hidden" id="step-time" aria-labelledby="time-heading">
+
+        <h2 class="wiz__head" id="time-heading">
+          <span class="wiz__num">3</span>
+          <span class="wiz__label">受診時間</span>
+        </h2>
+
+        <div class="wiz__body">
+
+          <p class="tlist__date" id="time-date"></p>
+
+          <div class="tlist__legend">
+            <span class="tlist__legend-item">
+              <span class="mark mark--available" aria-hidden="true">○</span> 予約できます
+            </span>
+            <span class="tlist__legend-item">
+              <span class="mark mark--limited" aria-hidden="true">△</span> 残りわずか
+            </span>
+            <span class="tlist__legend-item">
+              <span class="mark mark--full" aria-hidden="true">×</span> 満席
+            </span>
+          </div>
+
+          <ul class="tlist" id="time-list"></ul>
+
+          <!-- 점심시간 안내. 회장마다 시간표가 달라 문구는 schedule.js 가 채운다. -->
+
+          <p class="tlist__note" id="time-note"></p>
+
+        </div>
+
+      </section>
+
+      <!-- ==================================================================
+           선택 확정 바
+           ================================================================== -->
+      <div class="sticky-bar is-hidden" id="sticky-bar">
+        <div class="sticky-bar__inner">
+          <p class="sticky-bar__pick" id="pick-summary"></p>
+          <button class="btn btn--primary" type="button" id="next-btn">
+            <span>この時間で予約する</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 5l7 7-7 7"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="btn-row btn-row--inline" style="margin-top: var(--sp-3);">
+        <a class="btn btn--ghost" href="verify.html" data-flow-prev>前の画面へ戻る</a>
+      </div>
+
+      <p class="sr-only" id="live-status" role="status" aria-live="polite"></p>
+
+    </div>
+  </main>
+
+  <!-- ======================================================================
+       예약 진행 확인 (빈자리 확인으로 들어온 경우에만)
+       --------------------------------------------------------------------
+       브라우저 기본 confirm() 을 쓰지 않는다. 글자가 작고 버튼 문구를
+       우리가 정할 수 없어, 「확인/취소」 중 어느 쪽이 예약인지 헷갈린다.
+       여기서는 무엇을 예약하는지 다시 보여 주고 버튼에 행동을 적는다.
+       ====================================================================== -->
+  <div class="modal is-hidden" id="confirm-modal">
+    <div class="modal__backdrop" id="confirm-backdrop"></div>
+
+    <div class="modal__panel" role="dialog" aria-modal="true"
+         aria-labelledby="confirm-title" aria-describedby="confirm-pick">
+
+      <h2 class="modal__title" id="confirm-title">この時間でご予約になりますか</h2>
+
+      <dl class="modal__pick" id="confirm-pick">
+        <div class="modal__row">
+          <dt>会場</dt>
+          <dd id="confirm-hospital"></dd>
+        </div>
+        <div class="modal__row">
+          <dt>受診日時</dt>
+          <dd id="confirm-when"></dd>
+        </div>
+      </dl>
+
+      <p class="modal__desc">
+        このまま進むと、<strong>本人確認</strong>から順にご案内します。お選びいただいた会場と日時は、そのまま引き継がれます。
+      </p>
+
+      <div class="modal__actions">
+        <button type="button" class="btn btn--primary" id="confirm-yes">
+          <span>はい、この時間で予約します</span>
+        </button>
+        <button type="button" class="btn btn--ghost" id="confirm-no">
+          ほかの時間を見る
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p class="site-footer__name">医療法人　Sample Group　健康診断予約センター</p>
+      <p class="site-footer__desc">
+        当サイトは満40歳～74歳の方を対象とした健康診断の予約専用サイトです。<br>
+        ご予約の変更・キャンセルは、受診日の3日前までお電話でのみ承っております。
+      </p>
+
+      <nav class="site-footer__links" aria-label="サイト情報">
+        <a href="../index.html#steps-heading">ご利用案内</a>
+        <a href="../faq.html">よくあるご質問</a>
+        <a href="../privacy.html">個人情報保護方針</a>
+        <a href="https://example.com/" target="_blank" rel="noopener noreferrer">運営法人について</a>
+      </nav>
+
+      <p class="site-footer__copy">© 2026 Sample Group Medical Corporation. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="../assets/js/font-scale.js"></script>
+  <script src="../assets/js/flow.js"></script>
+  <script src="../assets/js/schedule.js"></script>
+</body>
+</html>

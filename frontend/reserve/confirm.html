@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="健康診断予約 4/5 — 入力内容の確認。ご予約の前にすべての内容をご確認いただき、必要な項目を修正できます。">
+  <meta name="theme-color" content="#0B6E5B">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <title>入力内容の確認｜健康診断予約</title>
+
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/form.css">
+  <link rel="stylesheet" href="../assets/css/apply.css">
+</head>
+<body>
+
+  <a class="skip-link" href="#main">本文へ移動</a>
+
+  <!-- ======================================================================
+       헤더
+       ====================================================================== -->
+  <header class="site-header">
+    <div class="container site-header__inner">
+
+      <div class="site-header__left">
+        <a href="javascript:history.back()" class="btn-back" aria-label="前のページへ戻る" title="戻る">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </a>
+        <a class="brand" href="../index.html">
+          <span class="brand__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 4v7M12 15v5M4.5 12h6M15 12h4.5"></path>
+              <path d="M14.5 17.5l2 2 4-4.5"></path>
+            </svg>
+          </span>
+          <span class="brand__text">
+            <span class="brand__org">医療法人　Sample Group</span>
+            <span class="brand__name">健康診断予約</span>
+          </span>
+        </a>
+      </div>
+
+
+      <div class="font-scale">
+        <span class="font-scale__label" id="font-scale-label">文字サイズ</span>
+        <div class="font-scale__group" role="group" aria-labelledby="font-scale-label">
+          <button type="button" class="font-scale__btn"
+                  data-scale="1" data-scale-label="標準" aria-pressed="true">標準</button>
+          <button type="button" class="font-scale__btn"
+                  data-scale="1.15" data-scale-label="大" aria-pressed="false">大</button>
+          <button type="button" class="font-scale__btn"
+                  data-scale="1.3" data-scale-label="特大" aria-pressed="false">特大</button>
+        </div>
+      </div>
+
+      <p id="font-scale-status" class="sr-only" role="status" aria-live="polite"></p>
+
+    </div>
+  </header>
+
+  <!-- ======================================================================
+       진행 표시 — 5단계 중 4단계
+       ====================================================================== -->
+  <div class="progress" data-step="check">
+    <div class="container">
+      <strong class="progress__count">5ステップ中 <span>4</span>ステップ目</strong>
+      <div class="progress__bar" role="progressbar"
+           aria-valuenow="4" aria-valuemin="1" aria-valuemax="5"
+           aria-label="ご予約の進行状況">
+        <div class="progress__fill" style="width: 80%"></div>
+      </div>
+      <ol class="progress__steps">
+        <li class="progress__step is-done">会場・日時の選択</li>
+        <li class="progress__step is-done">本人確認</li>
+        <li class="progress__step is-done">情報の入力</li>
+        <li class="progress__step" aria-current="step">内容の確認</li>
+        <li class="progress__step">予約完了</li>
+      </ol>
+    </div>
+  </div>
+
+  <main id="main" class="page">
+    <div class="container">
+
+      <h1 class="page__title">ご入力の内容をご確認ください</h1>
+      <p class="page__lead">
+        誤りがある場合は、各項目の<strong>「修正」</strong>から直してください。ご確認が終わりましたら、いちばん下の<strong>「この内容で予約する」</strong>を押してください。
+      </p>
+
+      <!-- 앞 단계 미완료 · 통신 실패 등 -->
+      <p class="alert" id="global-alert" role="alert">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M12 7.5v5M12 16h.01"></path>
+        </svg>
+        <span id="global-alert-text"></span>
+      </p>
+
+      <!-- ==================================================================
+           ① 신청하시는 분  → U-11 본인 확인
+           ================================================================== -->
+      <section class="sumsec" aria-labelledby="sum-person-heading">
+        <div class="sumsec__head">
+          <span class="sumsec__ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8.5" r="3.8"></circle>
+              <path d="M4.5 20a7.5 7.5 0 0115 0"></path>
+            </svg>
+          </span>
+          <h2 class="sumsec__title" id="sum-person-heading">お申し込みの方</h2>
+          <a class="sumsec__edit" href="verify.html">修正</a>
+        </div>
+        <dl class="datalist datalist--tight" id="sum-person"></dl>
+      </section>
+
+      <!-- ==================================================================
+           ② 검진 회장 · 일시  → U-12
+           ================================================================== -->
+      <section class="sumsec" aria-labelledby="sum-slot-heading">
+        <div class="sumsec__head">
+          <span class="sumsec__ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 21V9l8-5 8 5v12"></path>
+              <path d="M9 21v-6h6v6"></path>
+              <path d="M12 7v4M10 9h4"></path>
+            </svg>
+          </span>
+          <h2 class="sumsec__title" id="sum-slot-heading">受診会場・日時</h2>
+          <a class="sumsec__edit" href="schedule.html">修正</a>
+        </div>
+        <dl class="datalist datalist--tight" id="sum-slot"></dl>
+      </section>
+
+      <!-- ==================================================================
+           ③ 주소  → U-14 의 주소 구획
+           ================================================================== -->
+      <section class="sumsec" aria-labelledby="sum-address-heading">
+        <div class="sumsec__head">
+          <span class="sumsec__ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 21s7-5.6 7-11a7 7 0 10-14 0c0 5.4 7 11 7 11z"></path>
+              <circle cx="12" cy="10" r="2.6"></circle>
+            </svg>
+          </span>
+          <h2 class="sumsec__title" id="sum-address-heading">ご住所</h2>
+          <a class="sumsec__edit" href="form.html#sec-address">修正</a>
+        </div>
+        <dl class="datalist datalist--tight" id="sum-address"></dl>
+      </section>
+
+      <!-- ==================================================================
+           ④ 연락처  → U-14 의 연락처 구획
+           ================================================================== -->
+      <section class="sumsec" aria-labelledby="sum-contact-heading">
+        <div class="sumsec__head">
+          <span class="sumsec__ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 4h4l2 5-2.5 1.5a12 12 0 005 5L15 13l5 2v4a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1z"></path>
+            </svg>
+          </span>
+          <h2 class="sumsec__title" id="sum-contact-heading">ご連絡先</h2>
+          <a class="sumsec__edit" href="form.html#sec-contact">修正</a>
+        </div>
+        <dl class="datalist datalist--tight" id="sum-contact"></dl>
+
+        <!-- 이메일 미입력의 결과는 확정 직전에 한 번 더 알린다 (BR-11) -->
+        <div class="mail-warn" id="mail-warn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 6.5h18v11H3z"></path>
+            <path d="M3 7l9 6 9-6"></path>
+          </svg>
+          <span class="mail-warn__text" id="mail-warn-text"></span>
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           ⑤ 옵션 검사  → U-14 의 옵션 구획
+           ================================================================== -->
+      <section class="sumsec" aria-labelledby="sum-option-heading">
+        <div class="sumsec__head">
+          <span class="sumsec__ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 6.5h14M5 12h14M5 17.5h9"></path>
+            </svg>
+          </span>
+          <h2 class="sumsec__title" id="sum-option-heading">オプション検査</h2>
+          <a class="sumsec__edit" href="form.html#sec-option">修正</a>
+        </div>
+        <div id="sum-option"></div>
+      </section>
+
+      <!-- ==================================================================
+           확정 전 안내 — 웹에서 스스로 바꿀 수 없다는 사실 (BR-10)
+           ================================================================== -->
+      <div class="notice notice--final">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M12 7.5v5M12 16h.01"></path>
+        </svg>
+        <p class="notice__text">
+          ご予約の確定後は、<strong>当サイトでの変更・キャンセルは承っておりません。</strong>変更・キャンセルが必要な場合は、受診日の<strong>3日前まで</strong>に予約センターへお電話ください。ここでもう一度ご確認いただければ、お電話の手間がなくなります。
+        </p>
+      </div>
+
+      <div class="btn-row btn-row--inline">
+        <button class="btn btn--primary" type="button" id="confirm-btn">
+          <span>この内容で予約する</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 6L9 17l-5-5"></path>
+          </svg>
+        </button>
+        <a class="btn btn--ghost" href="form.html" data-flow-prev>前の画面へ戻る</a>
+      </div>
+
+      <p class="sr-only" id="live-status" role="status" aria-live="polite"></p>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p class="site-footer__name">医療法人　Sample Group　健康診断予約センター</p>
+      <p class="site-footer__desc">
+        当サイトは満40歳～74歳の方を対象とした健康診断の予約専用サイトです。<br>
+        ご予約の変更・キャンセルは、受診日の3日前までお電話でのみ承っております。
+      </p>
+
+      <nav class="site-footer__links" aria-label="サイト情報">
+        <a href="../index.html#steps-heading">ご利用案内</a>
+        <a href="../faq.html">よくあるご質問</a>
+        <a href="../privacy.html">個人情報保護方針</a>
+        <a href="https://example.com/" target="_blank" rel="noopener noreferrer">運営法人について</a>
+      </nav>
+
+      <p class="site-footer__copy">© 2026 Sample Group Medical Corporation. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="../assets/js/font-scale.js"></script>
+  <script src="../assets/js/flow.js"></script>
+  <script src="../assets/js/confirm.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "kenshin-backend",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "uvicorn", "app.main:app", "--reload", "--app-dir", "backend"],
+      "port": 8000
+    },
+    {
+      "name": "kenshin-backend-8001",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "uvicorn", "app.main:app", "--reload", "--app-dir", "backend", "--host", "127.0.0.1", "--port", "8001"],
+      "port": 8001
+    }
+  ]
+}

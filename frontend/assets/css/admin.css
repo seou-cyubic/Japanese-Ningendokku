@@ -1,0 +1,5022 @@
+/* ==========================================================================
+   admin.css — 관리 화면 (A-00 ~ A-60)
+   --------------------------------------------------------------------------
+   이용자 화면과 **다른 기준**으로 만든다.
+
+     이용자 화면 : 1년에 한 번 오는 68세. 크게, 넓게, 한 화면에 한 가지.
+     관리 화면   : 매일 8시간 쓰는 스태프. 조밀하게, 한눈에, 손이 덜 가게.
+
+   그래서 tokens.css 의 색은 그대로 물려받되 타이포·간격은 이 파일에서
+   다시 정의한다. 88px 짜리 버튼과 18px 본문으로 예약 목록을 만들면
+   한 화면에 다섯 줄밖에 들어가지 않는다.
+
+   레이아웃 : 좌측 고정 탭(사이드바) + 우측 내용. PC 전용이다.
+   ========================================================================== */
+
+:root {
+  /* --- 관리 화면 전용 스케일 ------------------------------------------ */
+  --a-fs-xs: 12px;
+  --a-fs-sm: 13px;
+  --a-fs-base: 14px;
+  --a-fs-md: 15px;
+  --a-fs-lg: 18px;
+  --a-fs-xl: 22px;
+  --a-fs-2xl: 28px;
+
+  --a-sidebar: 248px;
+  --a-sidebar-min: 56px;
+  /* 접었을 때 — 아이콘만 */
+  --a-header: 60px;
+
+  --a-radius: 8px;
+  --a-radius-sm: 5px;
+
+  /* 사이드바 — 짙은 그린. 내용 영역과 확실히 갈라 놓는다 */
+  --a-nav-bg: #0A3A31;
+  --a-nav-bg-soft: #0F4B40;
+  --a-nav-line: #1B5C50;
+  --a-nav-ink: #D6E7E3;
+  --a-nav-ink-dim: #8FB3AC;
+
+  --a-bg: #F1F5F4;
+  --a-surface: #FFFFFF;
+  --a-line: #DDE6E4;
+  --a-line-2: #EDF2F1;
+
+  --a-ink: #16211F;
+  --a-ink-sub: #55625F;
+  --a-ink-weak: #7A8785;
+
+  --a-danger: #B42318;
+  --a-danger-soft: #FEF3F2;
+  --a-warn: #B54708;
+  --a-warn-soft: #FFFAEB;
+  --a-ok: #067647;
+  --a-ok-soft: #ECFDF3;
+  --a-info: #175CD3;
+  --a-info-soft: #EFF6FF;
+
+  --a-shadow: 0 1px 2px rgba(16, 24, 40, .06);
+  --a-shadow-lg: 0 8px 28px rgba(16, 24, 40, .16);
+}
+
+/* ==========================================================================
+   기본
+   ========================================================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body.admin {
+  background: var(--a-bg);
+  color: var(--a-ink);
+  font-family: var(--font-base);
+  font-size: var(--a-fs-base);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--a-info);
+}
+
+:focus-visible {
+  outline: 2px solid var(--a-info);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.is-hidden {
+  display: none !important;
+}
+
+/* ==========================================================================
+   PC 전용 안내
+   --------------------------------------------------------------------------
+   관리 화면은 PC 에서만 쓴다. 좁은 화면에서 억지로 쓰다가 잘못 누르는 것보다
+   「PC 로 열어 주세요」라고 분명히 말하는 편이 낫다.
+   ========================================================================== */
+
+.only-desktop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  padding: 32px;
+  background: var(--a-nav-bg);
+  color: #fff;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.only-desktop__title {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.only-desktop__desc {
+  font-size: 14px;
+  color: var(--a-nav-ink);
+  max-width: 420px;
+  line-height: 1.7;
+}
+
+@media (max-width: 600px) {
+  .only-desktop {
+    display: flex;
+  }
+
+  .admin-shell {
+    display: none !important;
+  }
+}
+
+/* ==========================================================================
+   레이아웃 — 좌측 탭 + 우측 내용
+   ========================================================================== */
+
+.admin-shell {
+  display: grid;
+  grid-template-columns: var(--a-sidebar) minmax(0, 1fr);
+  min-height: 100vh;
+  transition: grid-template-columns 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* `grid-template-columns` 에는 전환 효과를 걸지 않는다.
+   `var()` 로 지정한 트랙을 애니메이션하면 브라우저가 중간값에서 멈춰
+   **접기가 아예 동작하지 않는다.** (248px 그대로 남는 것을 확인했다)
+   폭이 바뀌는 것은 한눈에 보이므로 전환이 없어도 충분하다. */
+
+/* --- 사이드바 접기 -------------------------------------------------------
+   좁은 노트북(1366px)에서 목록 표가 가로로 넘친다. 표를 보는 동안에는
+   메뉴가 필요 없으므로 접어서 그 폭을 표에 넘겨 준다.
+   접은 상태는 기억한다 — 화면을 옮길 때마다 다시 접게 하면 그것이 더 번거롭다.
+   ------------------------------------------------------------------------ */
+
+body.is-nav-collapsed .admin-shell {
+  grid-template-columns: var(--a-sidebar-min) minmax(0, 1fr);
+}
+
+/* 접었을 때는 아이콘만 남긴다 */
+body.is-nav-collapsed .nav__brand-text,
+body.is-nav-collapsed .nav__group,
+body.is-nav-collapsed .nav__label,
+body.is-nav-collapsed .nav__foot-text,
+body.is-nav-collapsed .nav__logout span {
+  display: none;
+}
+
+body.is-nav-collapsed .nav__link {
+  position: relative;
+  justify-content: center;
+  padding-inline: 0;
+}
+
+body.is-nav-collapsed .nav__badge {
+  display: block !important;
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  min-width: 10px;
+  max-width: 10px;
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  background: #EF4444;
+  border: none;
+  font-size: 0;
+  line-height: 0;
+  box-shadow: none;
+  z-index: 10;
+}
+
+body.is-nav-collapsed .nav__badge.is-hidden {
+  display: none !important;
+}
+
+body.is-nav-collapsed .nav__brand {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+body.is-nav-collapsed .nav__foot {
+  padding-inline: 8px;
+}
+
+/* --- 사이드바 ----------------------------------------------------------- */
+
+.nav {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--a-nav-bg);
+  color: var(--a-nav-ink);
+  overflow-y: auto;
+}
+
+.nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 18px 16px;
+  border-bottom: 1px solid var(--a-nav-line);
+}
+
+.nav__mark {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, .12);
+  color: #fff;
+}
+
+.nav__mark svg {
+  width: 19px;
+  height: 19px;
+}
+
+.nav__org {
+  display: block;
+  font-size: var(--a-fs-xs);
+  color: var(--a-nav-ink-dim);
+}
+
+.nav__name {
+  display: block;
+  font-size: var(--a-fs-md);
+  font-weight: 700;
+  color: #fff;
+}
+
+.nav__group {
+  padding: 14px 12px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  color: var(--a-nav-ink-dim);
+  text-transform: uppercase;
+}
+
+.nav__list {
+  list-style: none;
+  margin: 0;
+  padding: 0 8px;
+}
+
+.nav__link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  margin-bottom: 2px;
+  border-radius: var(--a-radius-sm);
+  color: var(--a-nav-ink);
+  font-size: var(--a-fs-base);
+  text-decoration: none;
+  cursor: pointer;
+  border: 0;
+  width: 100%;
+  background: none;
+  text-align: left;
+  font-family: inherit;
+}
+
+.nav__link svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  opacity: .85;
+}
+
+.nav__link:hover {
+  background: var(--a-nav-bg-soft);
+  color: #fff;
+}
+
+.nav__link[aria-current="page"] {
+  background: #fff;
+  color: var(--a-nav-bg);
+  font-weight: 700;
+}
+
+.nav__link[aria-current="page"] svg {
+  opacity: 1;
+}
+
+.nav__badge {
+  margin-left: auto;
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--a-danger);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* 「해야 할 일이 N건」(빨강)과 「데이터가 없다」(노랑)를 색으로 가른다.
+   둘 다 빨강이면 급한 것과 고장 난 것이 구별되지 않는다. */
+.nav__badge--warn {
+  background: var(--a-warn);
+  color: #1b1b1b;
+}
+
+.nav__badge--pulse {
+  animation: nav-badge-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes nav-badge-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.3); box-shadow: 0 0 10px rgba(239, 68, 68, 0.6); }
+  100% { transform: scale(1); box-shadow: none; }
+}
+
+.nav__foot {
+  margin-top: auto;
+  padding: 14px;
+  border-top: 1px solid var(--a-nav-line);
+}
+
+.nav__me {
+  font-size: var(--a-fs-base);
+  font-weight: 700;
+  color: #fff;
+}
+
+.nav__role {
+  font-size: var(--a-fs-xs);
+  color: var(--a-nav-ink-dim);
+  margin-bottom: 10px;
+}
+
+.nav__collapse {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: calc(100% - 24px);
+  margin: 0 12px 12px;
+  padding: 6px 10px;
+  border: 1px solid var(--a-nav-line);
+  border-radius: var(--a-radius-sm);
+  background: var(--a-nav-bg-soft);
+  color: var(--a-nav-ink);
+  font-size: var(--a-fs-xs);
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav__collapse svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  transition: transform 0.2s ease;
+}
+
+.nav__collapse:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.nav__logout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--a-nav-line);
+  border-radius: var(--a-radius-sm);
+  background: none;
+  color: var(--a-nav-ink);
+  font-size: var(--a-fs-xs);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.nav__logout svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+.nav__logout:hover {
+  background: var(--a-nav-bg-soft);
+  color: #fff;
+}
+
+/* --- 사이드바 접기 (topbar__toggle, app.js 의 .is-collapsed 토글) -------- */
+
+.admin-shell.is-collapsed {
+  grid-template-columns: 68px minmax(0, 1fr);
+}
+
+.admin-shell.is-collapsed .nav__org,
+.admin-shell.is-collapsed .nav__name,
+.admin-shell.is-collapsed .nav__group,
+.admin-shell.is-collapsed .nav__link span.nav__label,
+.admin-shell.is-collapsed .nav__foot {
+  display: none;
+}
+
+.admin-shell.is-collapsed .nav__brand {
+  justify-content: center;
+  padding: 18px 0 16px;
+}
+
+.admin-shell.is-collapsed .nav__link {
+  position: relative;
+  justify-content: center;
+  padding: 9px 0;
+}
+
+.admin-shell.is-collapsed .nav__list {
+  padding: 0 12px;
+}
+
+.admin-shell.is-collapsed .nav__badge {
+  display: block !important;
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  min-width: 10px;
+  max-width: 10px;
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  background: #EF4444;
+  border: none;
+  font-size: 0;
+  line-height: 0;
+  box-shadow: none;
+  z-index: 10;
+}
+
+.admin-shell.is-collapsed .nav__badge.is-hidden {
+  display: none !important;
+}
+
+/* --- 본문 --------------------------------------------------------------- */
+
+.main {
+  min-width: 0;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: var(--a-header);
+  padding: 0 16px;
+  background: var(--a-surface);
+  border-bottom: 1px solid var(--a-line);
+}
+
+.topbar__toggle {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius-sm);
+  background: var(--a-surface);
+  color: var(--a-ink-weak);
+  cursor: pointer;
+}
+
+.topbar__toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.topbar__toggle:hover {
+  background: var(--a-line-2);
+  color: var(--a-ink);
+}
+
+/* 탭마다 제목·설명 길이가 달라서(특히 정원관리는 회장명이 그대로 들어가
+   길이가 고정되지 않는다) 이 블록의 폭을 고정한다. 그렇지 않으면 검색창이
+   탭마다 좌우로 밀려서 "위치가 안 맞는다"는 인상을 준다. */
+.topbar__meta {
+  flex: 0 0 300px;
+  min-width: 0;
+}
+
+.topbar__title {
+  font-size: var(--a-fs-lg);
+  font-weight: 700;
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.topbar__desc {
+  font-size: var(--a-fs-sm);
+  color: var(--a-ink-weak);
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.topbar>div:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+
+.topbar__actions {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 좌우 여백을 줄여 표에 폭을 넘긴다. 관리 화면은 정보 밀도가 값어치다. */
+.view {
+  padding: 16px 16px 48px;
+}
+
+/* ==========================================================================
+   공통 컴포넌트
+   ========================================================================== */
+
+/* --- 카드 --------------------------------------------------------------- */
+
+.card {
+  background: var(--a-surface);
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius);
+  box-shadow: var(--a-shadow);
+  margin-bottom: 16px;
+}
+
+.card__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--a-line-2);
+}
+
+.card__title {
+  margin: 0;
+  font-size: var(--a-fs-md);
+  font-weight: 700;
+}
+
+.card__desc {
+  margin: 0;
+  font-size: var(--a-fs-sm);
+  color: var(--a-ink-weak);
+}
+
+.card__tools {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.card__body {
+  padding: 16px;
+}
+
+.card__body--flush {
+  padding: 0;
+}
+
+/* --- 버튼 --------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius-sm);
+  background: var(--a-surface);
+  color: var(--a-ink);
+  font-family: inherit;
+  font-size: var(--a-fs-base);
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none !important;
+}
+
+a.btn,
+a.btn:hover,
+a.btn:focus,
+a.btn:visited {
+  text-decoration: none !important;
+}
+
+.btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--a-line-2);
+}
+
+.btn:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.btn--primary {
+  background: var(--c-primary, #0B6E5B);
+  border-color: var(--c-primary, #0B6E5B);
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: var(--c-primary-strong, #08533F);
+}
+
+.btn--danger {
+  background: var(--a-danger);
+  border-color: var(--a-danger);
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn--danger:hover:not(:disabled) {
+  background: #912018;
+}
+
+.btn--ghost {
+  background: none;
+}
+
+.btn--csv {
+  border: 1px solid var(--a-line) !important;
+  background: #ffffff !important;
+  color: var(--a-ink) !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+
+.btn--csv:hover:not(:disabled) {
+  border-color: var(--c-primary, #0B6E5B) !important;
+  color: var(--c-primary, #0B6E5B) !important;
+  background: #F0FDF4 !important;
+}
+
+.btn--sm {
+  min-height: 28px;
+  padding: 0 9px;
+  font-size: var(--a-fs-sm);
+}
+
+.btn--link {
+  border: 0;
+  background: none;
+  color: var(--a-info);
+  padding: 0;
+  min-height: 0;
+  text-decoration: underline;
+}
+
+/* --- 폼 ----------------------------------------------------------------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field__label {
+  font-size: var(--a-fs-sm);
+  font-weight: 600;
+  color: var(--a-ink-sub);
+}
+
+.field__label .req {
+  color: var(--a-danger);
+  margin-left: 3px;
+}
+
+.field__hint {
+  font-size: var(--a-fs-xs);
+  color: var(--a-ink-weak);
+}
+
+.field__error {
+  font-size: var(--a-fs-xs);
+  color: var(--a-danger);
+  font-weight: 600;
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  min-height: 34px;
+  padding: 6px 9px;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius-sm);
+  background: var(--a-surface);
+  color: var(--a-ink);
+  font-family: inherit;
+  font-size: var(--a-fs-base);
+}
+
+.textarea {
+  min-height: 88px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.textarea--code {
+  font-family: var(--font-mono);
+  font-size: var(--a-fs-sm);
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--c-primary, #0B6E5B);
+  outline: 2px solid rgba(11, 110, 91, .18);
+  outline-offset: 0;
+}
+
+.input[readonly],
+.input:disabled,
+.select:disabled,
+.textarea:disabled {
+  background: var(--a-line-2);
+  color: var(--a-ink-weak);
+}
+
+.input--invalid {
+  border-color: var(--a-danger);
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--a-fs-base);
+  cursor: pointer;
+}
+
+.check input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--c-primary, #0B6E5B);
+}
+
+/* 폼 격자 — 라벨 위, 입력 아래. 화면 폭에 따라 열 수만 바뀐다 */
+.grid {
+  display: grid;
+  gap: 12px 14px;
+}
+
+.grid--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.grid--4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.grid--6 {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.span-2 {
+  grid-column: span 2;
+}
+
+.span-3 {
+  grid-column: span 3;
+}
+
+.span-full {
+  grid-column: 1 / -1;
+}
+
+/* 좁은 화면에서 열 수를 줄일 때는 **span 도 함께 줄여야 한다.**
+   4열용 `span-2` 를 3열 그리드에 그대로 두면 남은 1칸이 비고 다음 항목이
+   줄바꿈되어, 결국 **항목마다 한 줄씩** 늘어선다. 상세 화면이 그렇게 되어
+   세로로 한없이 길어져 있었다. 2열로 떨어뜨리고 span 을 정리한다. */
+@media (max-width: 1360px) {
+  .grid--6 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .grid--4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .grid--4>.span-2 {
+    grid-column: auto;
+  }
+
+  .grid--4>.span-3 {
+    grid-column: 1 / -1;
+  }
+
+  .grid--6>.span-3 {
+    grid-column: 1 / -1;
+  }
+}
+
+/* --- 표 ----------------------------------------------------------------- */
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--a-fs-base);
+}
+
+.table th,
+.table td {
+  /* 위아래 여백을 좁게 잡는다. 관리 화면의 표는 읽는 글이 아니라
+     훑어서 찾는 목록이라, 한 화면에 몇 줄이 들어오는지가 더 중요하다.
+     좌우는 그대로 둔다 — 열끼리 붙으면 오히려 읽기 어려워진다. */
+  padding: 9px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--a-line-2);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--a-line-2);
+  font-size: var(--a-fs-xs);
+  font-weight: 700;
+  color: var(--a-ink-sub);
+  letter-spacing: .02em;
+  text-align: center;
+}
+
+.table td.center,
+.table th.center {
+  text-align: center;
+}
+
+.table tbody tr {
+  transition: background-color 0.18s ease;
+}
+
+.table tbody tr:hover {
+  background: #F7FAF9;
+}
+
+.table tbody tr.is-clickable {
+  cursor: pointer;
+}
+
+.table td a {
+  text-decoration: none;
+}
+
+.table td.wrap {
+  white-space: normal;
+  min-width: 220px;
+}
+
+/* 내용도 머리글과 같은 축에 둔다.
+
+   머리글은 가운데인데 내용만 왼쪽이면 눈이 두 축을 따라가게 된다.
+   다만 예외가 둘 있다.
+
+     .wrap  회장명·주소·사유처럼 긴 글. 가운데로 두면 줄마다 시작점이
+            달라져 읽기 어렵다. 왼쪽에 붙인다.
+     .num   자릿수를 비교해야 하는 값. 오른쪽에 붙이고 머리글도 함께
+            오른쪽으로 옮겨 두 축을 맞춘다. */
+.table td {
+  text-align: center;
+}
+
+.table td.wrap {
+  text-align: left;
+}
+
+.table td.num,
+.table th.num {
+  text-align: right;
+}
+
+.table td.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.table .mono {
+  font-family: var(--font-mono);
+  letter-spacing: .02em;
+}
+
+.table .dim {
+  color: var(--a-ink-weak);
+}
+
+/* 취소된 예약은 표에서 훑을 때 바로 걸러져야 한다. 회색 배지 하나로는
+   눈에 안 걸려서, 행 전체를 흐리게 하고 글자에 취소선을 넣는다.
+   배지와 버튼은 inline-flex 라 취소선이 번지지 않는다. */
+.table tbody tr.is-cancelled td,
+.table tbody tr.emr-row-cancelled td {
+  color: var(--a-ink-weak);
+  background: #FAFBFB;
+  text-decoration: line-through;
+  text-decoration-color: rgba(122, 135, 133, 0.75);
+  text-decoration-thickness: 1px;
+}
+
+.table tbody tr.is-cancelled:hover td,
+.table tbody tr.emr-row-cancelled:hover td {
+  background: #F3F6F5;
+}
+
+.table tbody tr.is-cancelled td a,
+.table tbody tr.emr-row-cancelled td a {
+  color: var(--a-ink-weak);
+}
+
+.table tbody tr.is-closed td {
+  background: #f4f5f7;
+  color: var(--a-ink-weak);
+}
+
+/* --- 마우스 호버 커스텀 툴팁 (Tooltip Popup) --------------------------- */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 125%;
+  left: 0;
+  transform: translateY(4px);
+  background: #1E293B;
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--a-font, sans-serif);
+  padding: 4px 8px;
+  border-radius: 5px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
+  z-index: 9999;
+}
+
+[data-tooltip]::before {
+  content: '';
+  position: absolute;
+  bottom: 110%;
+  left: 12px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #1E293B transparent transparent transparent;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, visibility 0.15s ease;
+  z-index: 9999;
+}
+
+[data-tooltip]:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+[data-tooltip]:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* --- 배지 --------------------------------------------------------------- */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: var(--a-fs-xs);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.badge--ok {
+  background: var(--a-ok-soft);
+  color: var(--a-ok);
+}
+
+.badge--warn {
+  background: var(--a-warn-soft);
+  color: var(--a-warn);
+}
+
+.badge--danger {
+  background: var(--a-danger-soft);
+  color: var(--a-danger);
+}
+
+.badge--info {
+  background: var(--a-info-soft);
+  color: var(--a-info);
+}
+
+.badge--muted {
+  background: var(--a-line-2);
+  color: var(--a-ink-sub);
+}
+
+/* --- 상태 표 (system-data) -----------------------------------------------
+   「항목 : 값」이 예닐곱 줄. 표(table)를 쓰기에는 머리글이 없고, 정의 목록을
+   쓰기에는 값 쪽에 뱃지·버튼이 들어간다. 그래서 두 칸짜리 그리드로 둔다. */
+
+.datastat {
+  display: grid;
+  grid-template-columns: 148px 1fr;
+  gap: 0;
+}
+
+.datastat__row {
+  display: contents;
+}
+
+.datastat__label,
+.datastat__value {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--a-line-2);
+  font-size: var(--a-fs-sm);
+  line-height: 1.5;
+}
+
+.datastat__label {
+  color: var(--a-ink-sub);
+  font-weight: 700;
+}
+
+.datastat__value {
+  color: var(--a-ink);
+  word-break: break-all;
+}
+
+.datastat__row:last-child .datastat__label,
+.datastat__row:last-child .datastat__value {
+  border-bottom: 0;
+}
+
+/* --- 빈 상태 / 로딩 ------------------------------------------------------ */
+
+.empty {
+  padding: 44px 20px;
+  text-align: center;
+  color: var(--a-ink-weak);
+  font-size: var(--a-fs-base);
+}
+
+.empty__title {
+  font-size: var(--a-fs-md);
+  font-weight: 700;
+  color: var(--a-ink-sub);
+  margin-bottom: 4px;
+}
+
+.loading {
+  padding: 44px 20px;
+  text-align: center;
+  color: var(--a-ink-weak);
+}
+
+.spin {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--a-line);
+  border-top-color: var(--c-primary, #0B6E5B);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  vertical-align: -3px;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin {
+    animation-duration: 2s;
+  }
+}
+
+/* --- 알림 줄 ------------------------------------------------------------ */
+
+.notice {
+  display: flex;
+  gap: 9px;
+  padding: 10px 13px;
+  border-radius: var(--a-radius-sm);
+  font-size: var(--a-fs-sm);
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+.notice svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  margin-top: 2px;
+}
+
+.notice--info {
+  background: var(--a-info-soft);
+  color: #103C86;
+}
+
+.notice--warn {
+  background: var(--a-warn-soft);
+  color: #7A3009;
+}
+
+.notice--danger {
+  background: var(--a-danger-soft);
+  color: #7A271A;
+}
+
+/* --- 토스트 ------------------------------------------------------------- */
+
+.toasts {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 8000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 460px;
+}
+
+.toast {
+  display: flex;
+  gap: 9px;
+  padding: 11px 14px;
+  border-radius: var(--a-radius);
+  background: #10241F;
+  color: #fff;
+  font-size: var(--a-fs-sm);
+  line-height: 1.6;
+  box-shadow: var(--a-shadow-lg);
+}
+
+.toast--ok {
+  background: #05603A;
+}
+
+.toast--danger {
+  background: #912018;
+}
+
+.toast--warn {
+  background: #93370D;
+}
+
+.toast__close {
+  margin-left: auto;
+  border: 0;
+  background: none;
+  color: inherit;
+  opacity: .7;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+/* --- 모달 --------------------------------------------------------------- */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 7000;
+  background: rgba(16, 24, 40, .55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  overflow-y: auto;
+}
+
+.modal {
+  width: 100%;
+  max-width: 680px;
+  background: var(--a-surface);
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, .2), 0 1px 3px rgba(0, 0, 0, .1);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 80px);
+}
+
+.modal--wide {
+  max-width: 980px;
+}
+
+.modal--slim {
+  max-width: 520px;
+}
+
+.modal__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 22px 28px;
+  border-bottom: 1px solid var(--a-line-2);
+  flex-shrink: 0;
+}
+
+.modal__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--a-ink);
+}
+
+.modal__close {
+  margin-left: auto;
+  border: 0;
+  background: none;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--a-ink-weak);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background .15s, color .15s;
+}
+
+.modal__close:hover {
+  background: var(--a-bg);
+  color: var(--a-ink);
+}
+
+.modal__body {
+  padding: 28px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 140px;
+}
+
+.modal__foot {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 18px 28px;
+  border-top: 1px solid var(--a-line-2);
+  background: #FAFCFB;
+  border-radius: 0 0 12px 12px;
+  flex-shrink: 0;
+}
+
+.modal__foot .btn {
+  padding: 9px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  min-height: 38px;
+}
+
+/* --- 페이지네이션 -------------------------------------------------------- */
+
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--a-line-2);
+  font-size: var(--a-fs-sm);
+  color: var(--a-ink-sub);
+}
+
+.pager__spacer {
+  margin-left: auto;
+}
+
+/* --- 정의 목록 ----------------------------------------------------------- */
+
+.dl {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 0;
+  margin: 0;
+  font-size: var(--a-fs-base);
+}
+
+.dl dt,
+.dl dd {
+  margin: 0;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--a-line-2);
+}
+
+.dl dt {
+  color: var(--a-ink-sub);
+  font-weight: 600;
+  font-size: var(--a-fs-sm);
+}
+
+.dl dd {
+  word-break: break-all;
+}
+
+.dl dd.empty-val {
+  color: var(--a-ink-weak);
+}
+
+/* ==========================================================================
+   A-00 로그인
+   ========================================================================== */
+
+/* body.admin 과 같은 요소에 걸리므로 선택자를 body 까지 붙여 우선순위를 맞춘다.
+   `.login-page` 만으로는 `body.admin` 의 배경색에 밀린다. */
+body.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(1100px 520px at 15% -10%, #14584A 0%, transparent 60%),
+    var(--a-nav-bg);
+}
+
+.login {
+  width: 100%;
+  max-width: 400px;
+  padding: 30px;
+  background: var(--a-surface);
+  border-radius: 14px;
+  box-shadow: var(--a-shadow-lg);
+}
+
+.login__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.login__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  background: var(--c-primary, #0B6E5B);
+  color: #fff;
+}
+
+.login__mark svg {
+  width: 22px;
+  height: 22px;
+}
+
+.login__org {
+  display: block;
+  font-size: var(--a-fs-xs);
+  color: var(--a-ink-weak);
+}
+
+.login__name {
+  display: block;
+  font-size: var(--a-fs-md);
+  font-weight: 700;
+}
+
+.login__title {
+  margin: 0 0 4px;
+  font-size: var(--a-fs-xl);
+  font-weight: 700;
+}
+
+.login__desc {
+  margin: 0 0 20px;
+  font-size: var(--a-fs-sm);
+  color: var(--a-ink-weak);
+}
+
+.login__form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.login__submit {
+  min-height: 40px;
+  font-size: var(--a-fs-md);
+}
+
+.login__error {
+  display: none;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--a-radius-sm);
+  background: var(--a-danger-soft);
+  color: #7A271A;
+  font-size: var(--a-fs-sm);
+  line-height: 1.6;
+}
+
+.login__error.is-visible {
+  display: flex;
+}
+
+.login__foot {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--a-line-2);
+  font-size: var(--a-fs-xs);
+  color: var(--a-ink-weak);
+  line-height: 1.7;
+}
+
+.login__foot code {
+  font-family: var(--font-mono);
+  background: var(--a-line-2);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* ==========================================================================
+   A-01 대시보드
+   ========================================================================== */
+
+.counters {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+/* 5장이 3+2 로 갈라지면 아래줄에 빈 칸이 크게 남는다.
+   칸 폭을 정해 두고 들어가는 만큼만 넣게 하면 어느 폭에서도 고르게 찬다. */
+@media (max-width: 1400px) {
+  .counters {
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  }
+}
+
+.counter {
+  display: block;
+  /* 위아래를 줄이고 숫자를 키운다. 이 카드는 읽는 글이 아니라
+     숫자를 확인하는 자리라, 여백보다 숫자가 커야 눈에 먼저 들어온다. */
+  padding: 10px 16px 11px;
+  background: var(--a-surface);
+  border: 1px solid var(--a-line);
+  border-left: 3px solid var(--a-line-2);
+  border-radius: var(--a-radius);
+  box-shadow: var(--a-shadow);
+  text-decoration: none;
+  color: inherit;
+}
+
+.counter[href]:hover {
+  border-color: var(--c-primary, #0B6E5B);
+}
+
+.counter--primary {
+  border-left-color: var(--c-primary, #0B6E5B);
+}
+
+.counter--warn {
+  border-left-color: var(--a-warn);
+}
+
+.counter--danger {
+  border-left-color: var(--a-danger);
+}
+
+.counter__label {
+  font-size: var(--a-fs-sm);
+  color: var(--a-ink-sub);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.counter__value {
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 1px 0 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.counter__unit {
+  font-size: var(--a-fs-base);
+  font-weight: 500;
+  color: var(--a-ink-sub);
+  margin-left: 3px;
+}
+
+.counter__hint {
+  font-size: var(--a-fs-xs);
+  color: var(--a-ink-weak);
+  line-height: 1.3;
+}
+
+.counter--danger .counter__value {
+  color: var(--a-danger);
+}
+
+.counter--warn .counter__value {
+  color: var(--a-warn);
+}
+
+.dash-cols {
+  display: grid;
+  /* 왼쪽에 열이 많은 표가 들어가므로 오른쪽보다 넉넉히 잡는다.
+     비율을 1:1 로 두면 「대응이 필요한 예약」의 상태 배지가 잘린다. */
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 1200px) {
+  .dash-cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* 정원 사용률 막대 */
+.usage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 150px;
+}
+
+.usage__bar {
+  flex: 1;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--a-line-2);
+  overflow: hidden;
+}
+
+.usage__fill {
+  height: 100%;
+  background: var(--c-primary, #0B6E5B);
+  border-radius: 999px;
+}
+
+.usage__fill--warn {
+  background: var(--a-warn);
+}
+
+.usage__fill--full {
+  background: var(--a-danger);
+}
+
+.usage__text {
+  font-size: var(--a-fs-xs);
+  color: var(--a-ink-sub);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   A-10 검색 바
+   ========================================================================== */
+
+.filters {
+  display: grid;
+  /* 키워드 칸을 넓게, 나머지 조건은 균등하게. 마지막 칸은 버튼 폭에 맞춘다. */
+  grid-template-columns: minmax(210px, 1.5fr) repeat(5, minmax(118px, 1fr)) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+/* 조건이 적은 화면(회장 관리 등)용. 검색칸을 넓게 두고 나머지는 붙인다. */
+.filters--compact {
+  grid-template-columns: minmax(240px, 1.5fr) repeat(3, minmax(140px, 1fr)) auto;
+}
+
+.filters--capacity {
+  grid-template-columns: minmax(240px, 1.5fr) minmax(140px, 1fr) minmax(260px, 2fr) auto;
+}
+
+@media (max-width: 1500px) {
+  .filters {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1200px) {
+  .filters {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* 条件が1つだけの検索カード(定員管理の「会場選択」など)。
+
+   `.filters` は条件が5〜6個ある画面のために 4〜7 列を敷くので、
+   項目が2つしかないと残りの列がそのまま空白になり、カードの右半分が
+   まるごと空く。ここでは中身の幅だけを使い、余りは列に配らない。
+   ※ 上の @media より後ろに置くこと。同じ詳細度なので順序で決まる。 */
+.filters--single {
+  grid-template-columns: minmax(340px, auto) auto;
+  justify-content: start;
+}
+
+.filters__actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* 검색조건 줄 오른쪽 끝에 놓는 CSV 내보내기/가져오기 등의 드롭다운 메뉴. */
+.menu {
+  position: relative;
+}
+
+.menu__list {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  min-width: 140px;
+  background: #fff;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius);
+  box-shadow: var(--a-shadow-lg);
+  z-index: 100;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu__list[hidden] {
+  display: none;
+}
+
+.menu__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border: none;
+  background: none;
+  border-radius: calc(var(--a-radius) - 2px);
+  font-size: var(--a-fs-sm);
+  color: var(--a-ink);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.menu__item:hover {
+  background: var(--a-line-2);
+}
+
+/* 빠른 상태 칩 줄. 위 입력 줄과 확실히 띄워 별개의 조작으로 읽히게 한다. */
+.filters__quick {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--a-line-2);
+}
+
+.filters__note {
+  margin-top: 8px;
+  font-size: var(--a-fs-xs);
+  color: var(--a-ink-weak);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 8px;
+  background: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.15s ease-in-out;
+}
+
+.chip:hover {
+  background: #F1F5F9;
+  border-color: #94A3B8;
+  color: #0F172A;
+}
+
+.chip[aria-pressed="true"] {
+  background: #0B6E5B;
+  border-color: #0B6E5B;
+  color: #FFFFFF;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(11, 110, 91, 0.3);
+}
+
+.chip[aria-pressed="true"]:hover {
+  background: #0A3A31;
+  border-color: #0A3A31;
+}
+
+/* ==========================================================================
+   A-11 예약 상세
+   ========================================================================== */
+
+.detail-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 1200px) {
+  .detail-cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.resno-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #F3F9F7;
+  border: 1px solid #CDE5DE;
+  border-radius: var(--a-radius);
+  margin-bottom: 14px;
+}
+
+.resno-box__no {
+  font-family: var(--font-mono);
+  font-size: var(--a-fs-xl);
+  font-weight: 700;
+  letter-spacing: .06em;
+  color: var(--c-primary-strong, #08533F);
+}
+
+.resno-box__meta {
+  font-size: var(--a-fs-sm);
+  color: var(--a-ink-sub);
+}
+
+.resno-box__right {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+/* 연락 이력 타임라인 */
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.timeline__item {
+  position: relative;
+  padding: 0 0 14px 20px;
+  border-left: 2px solid var(--a-line);
+}
+
+.timeline__item:last-child {
+  border-left-color: transparent;
+  padding-bottom: 0;
+}
+
+.timeline__item::before {
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: 5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--a-ink-weak);
+  border: 2px solid var(--a-surface);
+}
+
+.timeline__item--ok::before {
+  background: var(--a-ok);
+}
+
+.timeline__item--no::before {
+  background: var(--a-warn);
+}
+
+.timeline__head {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: var(--a-fs-sm);
+}
+
+.timeline__when {
+  color: var(--a-ink-weak);
+  font-size: var(--a-fs-xs);
+}
+
+.timeline__memo {
+  font-size: var(--a-fs-sm);
+  color: var(--a-ink-sub);
+  margin-top: 2px;
+  line-height: 1.6;
+}
+
+/* ==========================================================================
+   A-22 정원 관리 캘린더
+   ========================================================================== */
+
+/* 두 카드는 **각자 내용만큼만** 차지한다.
+   -------------------------------------------------------------------
+   예전에는 `align-items: stretch` 로 두 칸의 높이를 맞췄다. 달력은 여섯
+   주가 되면 길어지는데 시간표는 여덟 줄로 끝나므로, 오른쪽 카드 아래에
+   내용 없는 흰 면이 길게 남았다. 높이를 맞춰 얻는 것이 없었다. */
+.cap-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(430px, 490px);
+  gap: 16px;
+  align-items: start;
+}
+
+.cap-cols>.card {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* 달력이 길면 오른쪽 시간표가 화면 밖으로 밀린다. 스크롤해도 따라오게
+   붙여 둔다 — 날짜를 눌러 시간표를 보는 것이 이 화면의 주된 일이다. */
+@media (min-width: 1025px) {
+  .cap-cols>.card:last-child {
+    position: sticky;
+    top: 16px;
+  }
+}
+
+/* 위에서부터 쌓는다. 예전에는 `space-between` 이라 body 안의 덩어리를
+   위·가운데·아래로 벌렸다. 달력 쪽은 내용이 카드를 채워 티가 안 났지만,
+   시간표 쪽은 [버튼 / 시간대 목록 / 안내] 셋뿐이라 사이에 큰 빈칸이
+   생겼다. 달력 카드가 더 길어 오른쪽 카드가 그 높이만큼 늘어난 탓이다. */
+.cap-cols>.card>.card__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+@media (max-width: 1024px) {
+  .cap-cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.calbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.calbar__month {
+  font-size: var(--a-fs-md);
+  font-weight: 700;
+  min-width: 116px;
+  text-align: center;
+}
+
+.cal {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px 2px;
+}
+
+/* 주 사이 가로선. 세로선을 없앤 대신 날짜 줄이 흐트러지지 않게 잡아 준다.
+   `.cal` 은 요일 머리 7칸 + 날짜 칸이 한 덩어리 grid 라, 줄 단위로
+   선을 주려면 각 칸의 아래에 그어야 한다. */
+.cal > .day {
+  border-bottom: 1px solid var(--a-line-2);
+  padding-bottom: 9px;
+}
+
+.cal__dow {
+  padding: 5px 0;
+  text-align: center;
+  font-size: var(--a-fs-xs);
+  font-weight: 700;
+  color: var(--a-ink-weak);
+}
+
+.cal__dow--sun {
+  color: var(--a-danger);
+}
+
+.cal__dow--sat {
+  color: var(--a-info);
+}
+
+/* 칸에는 테두리를 두르지 않는다.
+   -------------------------------------------------------------------
+   한 달 31칸 가운데 무언가 있는 칸은 서넛뿐이다. 나머지에까지 선을 그으면
+   화면의 대부분이 「볼 것 없음」을 그리는 데 쓰인다. 일정이 있는 칸만
+   **배경색**으로 떠오르게 하고, 줄이 흐트러지지 않을 만큼만 주(週) 사이에
+   가로선을 둔다. */
+.day {
+  min-height: 92px;
+  padding: 8px 7px;
+  border: 0;
+  border-radius: var(--a-radius-sm);
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* 상태 점 — 글자 없이 색으로만 말한다 (capacity.js `dayState`). */
+.day__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--a-ink-weak);
+}
+
+.day__dot--open   { background: var(--c-primary, #0B6E5B); }
+.day__dot--over   { background: var(--a-ink-weak); }
+.day__dot--closed { background: var(--a-danger); }
+
+.day__chip {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  min-width: 0;
+}
+
+/* 점은 첫 줄에 맞춰 세운다. 이름이 두 줄이 되어도 가운데로 내려오지 않게. */
+.day__chip .day__dot {
+  margin-top: 4px;
+}
+
+/* 회장명은 **두 줄까지** 편다.
+   -------------------------------------------------------------------
+   칸을 누르면 오른쪽에 그 날 시간표가 뜨므로, 칸 안에서 알아야 할 것은
+   「누가 여는 날인가」다. 그런데 회장명은
+   「サンプル市民総合文化センター（サンプルホール）」처럼 길어, 한 줄로 자르면
+   앞 네댓 자만 남아 회장을 특정하지 못했다. 폭이 모자라면 칸을 키운다. */
+.day__chip-text {
+  font-size: var(--a-fs-xs);
+  line-height: 1.35;
+  color: var(--a-ink-sub);
+  min-width: 0;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  word-break: break-all;
+}
+
+/* 색만으로는 색각 이상이 있는 사람이 가르지 못한다. 배경으로 신호를 하나 더 둔다. */
+.day--st-open   { background: var(--a-surface); }
+.day--st-over   { background: var(--a-line-2); }
+.day--st-closed { background: var(--a-danger-soft); }
+
+.day--st-over .day__num,
+.day--st-over .day__chip-text { color: var(--a-ink-weak); }
+
+.day--own.day--st-open .day__chip-text {
+  color: var(--c-primary, #0B6E5B);
+  font-weight: 700;
+}
+
+/* 검진일 — 이 회장이 문을 여는 날.
+
+   달력 30칸 가운데 실제로 무언가 있는 칸은 한둘뿐이다. 나머지는 「접수
+   없음」인데 테두리가 같으면 눈이 그것들을 하나하나 읽는다. 검진일만
+   초록으로 둘러 훑을 때 바로 걸리게 한다.
+
+   .day--none(접수 없음) · .day--empty(달 밖의 빈칸) · .day--other(다른
+   회장)는 뺀다. 다른 회장은 아래에서 **점선 초록**으로 따로 그린다. */
+/* 테두리로 검진일을 말하던 규칙은 배경(.day--st-*)이 대신한다. */
+
+/* 날짜 + 가동률을 한 줄에. 체크 표시 자리를 비워 두려 오른쪽을 띄운다. */
+
+.day--empty {
+  border: 0;
+  background: none;
+  cursor: default;
+  min-height: 0;
+}
+
+/* 여는 회장이 없는 날 — 숫자만. 배경도 커서도 두지 않는다. */
+.day--none {
+  background: transparent;
+  color: var(--a-ink-weak);
+  cursor: default;
+}
+
+/* 다른 회장이 여는 날. 지금 보고 있는 회장의 칸과 한눈에 갈려야 한다 —
+   같은 초록이면 「내 회장이 이 날도 연다」로 읽힌다. 점선 테두리로 「여기가
+   아니다」를 말하고, 누르면 그 회장으로 넘어간다. */
+/* 다른 회장이 여는 날. 점선 테두리 대신 **이름을 적는 것**으로 가른다 —
+   이름이 보이면 남의 회장이다. 내 회장 칸에는 숫자(예약/정원)가 온다. */
+.day--other {
+  color: var(--a-ink-sub);
+}
+
+.day:hover:not(.day--none):not(.day--empty) {
+  box-shadow: inset 0 0 0 1px var(--a-line);
+}
+
+.day[aria-pressed="true"] {
+  box-shadow: inset 0 0 0 1.5px var(--c-primary, #0B6E5B);
+  background: #F0FDF4;
+}
+
+.day.is-marked {
+  box-shadow: inset 0 0 0 2px var(--a-info);
+  background: var(--a-info-soft);
+}
+
+/* 휴진 — 그 날 전 시간대가 닫혀 있다.
+
+   칸 아래 작은 「휴진」 글자만으로는 달력을 훑을 때 눈에 안 들어온다.
+   전 시간대를 한 번에 닫는 조작이라 되돌리기가 번거롭고, 「닫아 놓은 줄
+   몰랐다」가 가장 비싼 실수다. 테두리로 말한다.
+
+   **이 규칙은 반드시 위의 :hover · [aria-pressed] · .is-marked 뒤에 온다.**
+   휴진으로 만든 날은 대개 그대로 열려 있어 aria-pressed 가 붙는데, 그
+   규칙이 뒤에 있으면 테두리를 초록으로 덮어 빨강이 사라진다. 실제로
+   그랬다. 순서를 바꾸지 말 것.
+
+   다른 회장의 칸(.day--other)에도 같은 규칙이 걸린다. 회장을 바꿔도
+   휴진 표시가 유지되어야 하기 때문이다. 점선은 「다른 회장」, 빨강은
+   「휴진」 — 둘은 서로 다른 사실이라 겹쳐 보여도 된다. */
+.day.day--st-closed,
+.day.day--st-closed:hover,
+.day.day--st-closed[aria-pressed="true"] {
+  background: var(--a-danger-soft);
+  box-shadow: inset 0 0 0 1.5px var(--a-danger);
+}
+
+.day--st-closed .day__num,
+.day--st-closed .day__chip-text,
+.day__closed {
+  color: var(--a-danger);
+}
+
+.day__num {
+  font-size: var(--a-fs-sm);
+  font-weight: 700;
+}
+
+.day__num--sun {
+  color: var(--a-danger);
+}
+
+.day__num--sat {
+  color: var(--a-info);
+}
+
+.day__stat {
+  font-size: 11px;
+  color: var(--a-ink-sub);
+  font-variant-numeric: tabular-nums;
+}
+
+.day__closed {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--a-danger);
+}
+
+.day--full .day__stat {
+  color: var(--a-danger);
+  font-weight: 700;
+}
+
+/* 달력을 스크롤해도 시간표는 붙어 있게 한다. 두 표를 오가며 고치기 때문. */
+@media (min-width: 1025px) {
+  .cap-cols> :last-child {
+    position: sticky;
+    top: calc(var(--a-header) + 12px);
+    max-height: calc(100vh - var(--a-header) - 28px);
+    overflow-y: auto;
+  }
+}
+
+/* ==========================================================================
+   A-13 우편 접수
+   ========================================================================== */
+
+.wish {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius-sm);
+  margin-bottom: 7px;
+  font-size: var(--a-fs-sm);
+}
+
+.wish__rank {
+  flex: none;
+  min-width: 52px;
+  font-weight: 700;
+  color: var(--c-primary-strong, #08533F);
+  white-space: nowrap;
+}
+
+/* 제1희망은 확정에 필요하므로 입력 칸 라벨과 같은 * 표시를 붙인다. */
+.wish__rank .req {
+  color: var(--a-danger);
+  margin-left: 2px;
+}
+
+.wish__body {
+  flex: 1;
+}
+
+.wish__drop {
+  margin-left: auto;
+}
+
+.slot-pick {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.slot-pick__btn {
+  padding: 7px 6px;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius-sm);
+  background: var(--a-surface);
+  font-family: inherit;
+  font-size: var(--a-fs-sm);
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.35;
+}
+
+.slot-pick__btn:hover:not(:disabled) {
+  border-color: var(--c-primary, #0B6E5B);
+}
+
+.slot-pick__btn:disabled {
+  background: var(--a-line-2);
+  color: var(--a-ink-weak);
+  cursor: not-allowed;
+}
+
+.slot-pick__btn .rest {
+  display: block;
+  font-size: 11px;
+  color: var(--a-ink-weak);
+}
+
+.slot-pick__btn[aria-pressed="true"] {
+  background: var(--c-primary, #0B6E5B);
+  border-color: var(--c-primary, #0B6E5B);
+  color: #fff;
+}
+
+.slot-pick__btn[aria-pressed="true"] .rest {
+  color: rgba(255, 255, 255, .8);
+}
+
+/* ==========================================================================
+   A-40 메일 템플릿
+   ========================================================================== */
+
+.mail-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 1300px) {
+  .mail-cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.varlist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.varlist__item {
+  padding: 7px 0;
+  border-bottom: 1px solid var(--a-line-2);
+  font-size: var(--a-fs-xs);
+}
+
+.varlist__name {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--a-fs-sm);
+  font-weight: 700;
+  color: var(--c-primary-strong, #08533F);
+  cursor: pointer;
+}
+
+.varlist__desc {
+  color: var(--a-ink-weak);
+}
+
+.preview {
+  background: #FAFCFB;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius-sm);
+  padding: 14px;
+}
+
+.preview__subject {
+  font-size: var(--a-fs-md);
+  font-weight: 700;
+  padding-bottom: 9px;
+  margin-bottom: 9px;
+  border-bottom: 1px solid var(--a-line-2);
+}
+
+.preview__body {
+  white-space: pre-wrap;
+  font-family: var(--font-mono);
+  font-size: var(--a-fs-sm);
+  line-height: 1.75;
+  color: var(--a-ink-sub);
+}
+
+/* ==========================================================================
+   A-60 조작 로그
+   ========================================================================== */
+
+.diff {
+  margin: 0;
+  padding: 10px 12px;
+  background: #0E1B18;
+  color: #C9E4DC;
+  border-radius: var(--a-radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--a-fs-xs);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 320px;
+  overflow: auto;
+}
+
+.log-detail-row td {
+  background: #FAFCFB;
+  padding: 16px 20px;
+  white-space: normal;
+}
+
+/* --- 조작 로그 미리보기 (한 줄 요약) --- */
+.log-preview {
+  font-size: 12px;
+  color: var(--a-ink-sub);
+  margin-top: 4px;
+  letter-spacing: -0.2px;
+  line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 560px;
+}
+
+/* --- 조작 로그 상세 영역 --- */
+/* 이 영역은 `.table` 의 셀 안에서 펼쳐진다. 그런데 `.table td` 가
+   가운데 정렬이라(줄 위쪽 참조) 그 값이 여기까지 상속되어, 표의 머리글은
+   왼쪽인데 값만 가운데에 뜨는 어긋남이 생겼다. 상세 영역은 읽는 글이므로
+   왼쪽으로 되돌리고, 안쪽 표들도 머리글과 값의 축을 맞춘다. */
+.log-detail,
+.log-detail-row td {
+  text-align: left;
+}
+
+.log-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.log-detail__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--a-ink);
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid var(--c-primary);
+  display: inline-block;
+}
+
+/* --- 3열 비교 테이블 (변경 전 → 후) --- */
+.log-compare {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius);
+  overflow: hidden;
+}
+
+.log-compare thead th {
+  background: #E8F0EE;
+  color: var(--a-ink);
+  font-weight: 700;
+  font-size: 12px;
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--a-line);
+}
+
+.log-compare tbody td {
+  text-align: left;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--a-line-2);
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.log-compare tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.log-compare__label {
+  font-weight: 600;
+  color: var(--a-ink);
+  background: #F8FAF9;
+  white-space: nowrap;
+}
+
+.log-compare__before {
+  color: #9CA3AF;
+  text-decoration: line-through;
+  text-decoration-color: rgba(156, 163, 175, 0.4);
+  white-space: pre-wrap;
+}
+
+.log-compare__after {
+  color: var(--c-primary);
+  font-weight: 600;
+  white-space: pre-wrap;
+}
+
+/* --- 2열 정보 테이블 (항목 : 값) --- */
+.log-info {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius);
+  overflow: hidden;
+}
+
+.log-info tbody td {
+  text-align: left;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--a-line-2);
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.log-info tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.log-info__label {
+  font-weight: 600;
+  color: var(--a-ink);
+  background: #F8FAF9;
+  white-space: nowrap;
+  width: 140px;
+}
+
+.log-info__value {
+  color: var(--a-ink);
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+/* ==========================================================================
+   신규 UI/UX 편의 기능 컴포넌트
+   ========================================================================== */
+
+/* --- 1. 스마트 빠른 검색 (Quick Search Bar) ------------------------------- */
+.topbar__search {
+  flex: 0 1 440px;
+  margin: 0 16px;
+  position: relative;
+}
+
+.quick-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.quick-search__icon {
+  position: absolute;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  color: var(--a-ink-weak);
+  pointer-events: none;
+}
+
+.quick-search__input {
+  width: 100%;
+  padding: 8px 65px 8px 36px;
+  border: 1px solid var(--a-line);
+  border-radius: 20px;
+  background: var(--a-line-2);
+  font-size: var(--a-fs-sm);
+  color: var(--a-ink);
+  transition: all .15s ease;
+}
+
+.quick-search__input:focus {
+  outline: none;
+  background: #fff;
+  border-color: var(--a-info);
+  box-shadow: 0 0 0 3px rgba(23, 92, 211, 0.12);
+}
+
+.quick-search__kbd {
+  position: absolute;
+  right: 10px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--a-ink-weak);
+  background: #fff;
+  border: 1px solid var(--a-line);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.quick-search__dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 6px;
+  background: #fff;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius);
+  box-shadow: var(--a-shadow-lg);
+  z-index: 100;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.quick-search__group-title {
+  padding: 8px 14px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--a-ink-weak);
+  text-transform: uppercase;
+}
+
+.quick-search__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--a-line-2);
+  cursor: pointer;
+  transition: background .1s ease;
+}
+
+.quick-search__item:hover {
+  background: var(--a-line-2);
+}
+
+.quick-search__item-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.quick-search__item-title {
+  font-size: var(--a-fs-sm);
+  font-weight: 700;
+  color: var(--a-ink);
+}
+
+.quick-search__item-sub {
+  font-size: var(--a-fs-xs);
+  color: var(--a-ink-weak);
+}
+
+/* --- 2. 스위치 토글 (Toggle Switch) --------------------------------------- */
+.switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.switch__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch__slider {
+  position: relative;
+  display: inline-block;
+  width: 38px;
+  height: 22px;
+  background-color: #CBD5E1;
+  border-radius: 22px;
+  transition: background-color .2s ease;
+}
+
+.switch__slider::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 18px;
+  height: 18px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  transition: transform .2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.switch__input:checked+.switch__slider {
+  background-color: #067647;
+}
+
+.switch__input:checked+.switch__slider::before {
+  transform: translateX(16px);
+}
+
+.switch__label {
+  font-size: var(--a-fs-xs);
+  font-weight: 600;
+  color: var(--a-ink);
+}
+
+/* --- 3. 정원 잔여율 시각화 바 (Capacity Progress Bar) --------------------- */
+.cap-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.cap-bar__track {
+  height: 8px;
+  width: 100%;
+  background: var(--a-line-2);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.cap-bar__fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width .3s ease;
+}
+
+.cap-bar__fill--ok {
+  background: #067647;
+}
+
+.cap-bar__fill--warn {
+  background: #B54708;
+}
+
+.cap-bar__fill--danger {
+  background: #B42318;
+}
+
+.cap-bar__info {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--a-fs-xs);
+  color: var(--a-ink-sub);
+}
+
+/* --- 4. 지역/거점 필터 탭 (Region Tabs) ----------------------------------- */
+.region-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  background: #E2ECE9;
+  border-radius: var(--a-radius);
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+
+.region-tab {
+  padding: 6px 14px;
+  border: 0;
+  background: transparent;
+  border-radius: var(--a-radius-sm);
+  font-size: var(--a-fs-sm);
+  font-weight: 600;
+  color: var(--a-ink-sub);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .15s ease;
+}
+
+.region-tab:hover {
+  color: var(--a-ink);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.region-tab--active {
+  background: #fff;
+  color: var(--a-nav-bg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* --- 5. 회장 카드 그리드 (Hospital Card Grid) ----------------------------- */
+.hospital-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.hospital-card {
+  background: #fff;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius);
+  box-shadow: var(--a-shadow);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.hospital-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--a-shadow-lg);
+}
+
+.hospital-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.hospital-card__code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--a-ink-weak);
+  background: var(--a-line-2);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.hospital-card__name {
+  font-size: var(--a-fs-md);
+  font-weight: 700;
+  color: var(--a-ink);
+  margin: 4px 0 2px;
+}
+
+.hospital-card__region {
+  font-size: var(--a-fs-xs);
+  color: var(--a-info);
+  font-weight: 600;
+}
+
+.hospital-card__body {
+  font-size: var(--a-fs-xs);
+  color: var(--a-ink-sub);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.hospital-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid var(--a-line-2);
+}
+
+/* --- 6. 스텝 마법사 모달 (Wizard Modal) ----------------------------------- */
+.wizard-steps {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--a-line-2);
+  border-radius: var(--a-radius);
+  margin-bottom: 20px;
+}
+
+.wizard-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--a-fs-xs);
+  color: var(--a-ink-weak);
+  font-weight: 600;
+}
+
+.wizard-step__num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #CBD5E1;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+.wizard-step--active {
+  color: var(--a-nav-bg);
+}
+
+.wizard-step--active .wizard-step__num {
+  background: var(--a-nav-bg);
+}
+
+.wizard-step--done .wizard-step__num {
+  background: #067647;
+}
+
+/* --- 7. 대시보드 거점 카드 (Hub Summary Card) ---------------------------- */
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.hub-card {
+  background: #fff;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius);
+  padding: 16px;
+  box-shadow: var(--a-shadow);
+}
+
+.hub-card__title {
+  font-size: var(--a-fs-sm);
+  font-weight: 700;
+  color: var(--a-ink-sub);
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.hub-card__val {
+  font-size: var(--a-fs-xl);
+  font-weight: 800;
+  color: var(--a-ink);
+}
+
+.hub-card__sub {
+  font-size: var(--a-fs-xs);
+  color: var(--a-ink-weak);
+  margin-top: 4px;
+}
+
+/* ==========================================================================
+   신규 UI 개편 — 테마, 칸반 보드, 슬라이드 드로어, 뷰 토글
+   ========================================================================== */
+
+/* --- 1. 관리 화면 기본 스타일 -------------------------------------- */
+body.admin {
+  font-family: var(--font-base);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* --- 2. 뷰 전환 토글 바 (View Toggle Bar) ---------------------------------- */
+.view-toggle-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--a-bg);
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid var(--a-line);
+}
+
+.view-toggle-label {
+  font-size: 12px;
+  color: var(--a-ink-sub);
+  margin-left: 6px;
+}
+
+.view-toggle-btn {
+  background: transparent;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--a-ink-sub);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.view-toggle-btn.active {
+  background: var(--a-surface);
+  color: var(--a-primary, #0B6E5B);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* --- 3. 칸반 보드 (Kanban Board) ----------------------------------------- */
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 12px;
+  align-items: start;
+}
+
+@media (max-width: 1200px) {
+  .kanban-board {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kanban-col {
+  background: var(--a-bg);
+  border: 1px solid var(--a-line);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  min-height: 500px;
+}
+
+.kanban-col__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--a-line);
+}
+
+.kanban-col--pending .kanban-col__header {
+  border-bottom-color: #F59E0B;
+}
+
+.kanban-col--confirmed .kanban-col__header {
+  border-bottom-color: #10B981;
+}
+
+.kanban-col--cancelled .kanban-col__header {
+  border-bottom-color: #9CA3AF;
+}
+
+.kanban-col__title {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--a-ink);
+}
+
+.kanban-col__count {
+  background: var(--a-surface);
+  color: var(--a-ink);
+  font-weight: 700;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid var(--a-line);
+}
+
+.kanban-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kanban-empty {
+  text-align: center;
+  padding: 30px 10px;
+  color: var(--a-ink-weak);
+  font-size: 13px;
+}
+
+.kanban-card {
+  background: var(--a-surface);
+  border: 1px solid var(--a-line);
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.kanban-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  border-color: var(--a-primary, #0B6E5B);
+}
+
+.kanban-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.kanban-card__no {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--a-ink);
+}
+
+.kanban-card__name-main {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--a-ink);
+}
+
+.kanban-card__name-sub {
+  font-size: 12px;
+  color: var(--a-ink-sub);
+  margin-bottom: 8px;
+}
+
+.kanban-card__info {
+  font-size: 12.5px;
+  color: var(--a-ink-sub);
+  background: var(--a-bg);
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 8px;
+}
+
+.kanban-card__info-row {
+  display: flex;
+  gap: 6px;
+  line-height: 1.4;
+}
+
+.kanban-card__label {
+  color: var(--a-ink-weak);
+  font-weight: 500;
+  width: 54px;
+  flex-shrink: 0;
+}
+
+.kanban-card__badges {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.kanban-card__actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  border-top: 1px dashed var(--a-line);
+  padding-top: 8px;
+  margin-top: 6px;
+}
+
+/* --- 4. 슬라이드 드로어 (Drawer Panel) ---------------------------------- */
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 900;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.24s ease;
+}
+
+.drawer-backdrop.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.drawer-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 480px;
+  max-width: 90vw;
+  height: 100vh;
+  background: var(--a-surface);
+  border-left: 1px solid var(--a-line);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.15);
+  z-index: 950;
+  transform: translateX(100%);
+  transition: transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer-panel.is-visible {
+  transform: translateX(0);
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--a-line);
+  background: var(--a-bg);
+}
+
+.drawer-header__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--a-ink);
+}
+
+.drawer-close {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--a-ink-sub);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.drawer-close:hover {
+  background: var(--a-line);
+}
+
+.drawer-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.res-drawer__section {
+  margin-bottom: 16px;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.res-drawer__section strong {
+  display: block;
+  font-size: 14px;
+  color: var(--a-ink);
+  margin-bottom: 6px;
+}
+
+/* ==========================================================================
+   의료 레코드형 관리자 예약 상세 레이아웃
+   ========================================================================== */
+
+.record-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Breadcrumb & Navigation Path */
+.record-breadcrumb {
+  font-size: var(--a-fs-xs);
+  color: var(--a-ink-sub);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.record-breadcrumb a {
+  color: var(--a-ink-sub);
+  text-decoration: none;
+}
+
+.record-breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+/* Top Action Header Bar (2-Row Layout: Title on top, Buttons below) */
+.record-top-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--a-surface);
+  padding: 18px 22px;
+  border-radius: var(--a-radius);
+  border: 1px solid var(--a-line);
+  box-shadow: var(--a-shadow);
+}
+
+.record-top-bar__title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.record-top-bar__h1 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--a-ink);
+  margin: 0;
+}
+
+.record-top-bar__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  flex-wrap: wrap;
+  padding-top: 12px;
+  border-top: 1px solid #E8ECEB;
+}
+
+/* 1. 중요 기능 강조 버튼 (Deep Emerald Primary Accent) */
+.record-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #0B6E5B;
+  color: #FFFFFF !important;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(11, 110, 91, 0.25);
+  transition: all 0.15s ease;
+  text-decoration: none;
+}
+
+.record-btn-primary:hover {
+  background: #08533F;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(11, 110, 91, 0.35);
+}
+
+/* 2. 통일된 은은한 일반 액션 버튼들 (Single Unified Neutral Style) */
+.record-btn-neutral {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #F4F7F6;
+  border: 1px solid #D0DED9;
+  color: #2A3B37 !important;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+}
+
+.record-btn-neutral:hover {
+  background: #E6EFEF;
+  border-color: #0B6E5B;
+  color: #0B6E5B !important;
+  transform: translateY(-1px);
+}
+
+/* 확정·취소는 오른쪽 끝에 붙여 나란히 둔다. 둘 사이는 gap 만큼만 벌어진다. */
+.record-top-bar__decide {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* 3. 취소 버튼 (Subtle Red Danger Style) */
+.record-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #991B1B !important;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+}
+
+.record-btn-danger:hover {
+  background: #FEE2E2;
+  border-color: #FCA5A5;
+  color: #7F1D1D !important;
+}
+
+/* 2-Column Grid Layout */
+.record-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+
+@media (max-width: 1024px) {
+  .record-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Medical Card Container */
+.record-card {
+  background: var(--a-surface);
+  border-radius: var(--a-radius);
+  border: 1px solid var(--a-line);
+  box-shadow: var(--a-shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.record-card__header {
+  padding: 12px 16px;
+  background: #F8FAF9;
+  border-bottom: 1px solid var(--a-line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.record-card__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1A2E2B;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Record Table Grid (Labels + Values) */
+.record-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  line-height: 1.4;
+  height: 100%;
+  flex: 1;
+}
+
+.record-table th,
+.record-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #E8ECEB;
+  vertical-align: middle;
+}
+
+/* Equalize 6-row reservation info card height with 8-row patient info card height */
+.record-table--res-info th,
+.record-table--res-info td {
+  padding: 15.8px 14px;
+}
+
+.record-table tr:last-child th,
+.record-table tr:last-child td {
+  border-bottom: none;
+}
+
+.record-table th {
+  width: 32%;
+  background-color: #F3F7F6;
+  color: #485654;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+  border-right: 1px solid #E8ECEB;
+}
+
+.record-table td {
+  background-color: #FFFFFF;
+  color: #1A2624;
+  font-weight: 400;
+}
+
+.record-table tr:nth-child(even) td {
+  background-color: #FAFCFC;
+}
+
+.record-table__highlight {
+  font-weight: 700;
+  color: #0B6E5B;
+}
+
+.record-table__mono {
+  font-family: var(--font-mono);
+}
+
+/* ==========================================================================
+   우편 접수(Postal Entry DX) 전용 워크스페이스 스타일
+   ========================================================================== */
+
+.postal-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.9fr);
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .postal-workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 단축키 바 */
+.postal-shortcut-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: #EAF2F0;
+  border: 1px solid #C8DCD7;
+  padding: 10px 16px;
+  border-radius: var(--a-radius);
+  font-size: 13px;
+  color: #1A3E37;
+  margin-bottom: 16px;
+}
+
+.postal-shortcut-bar kbd {
+  background: #FFFFFF;
+  border: 1px solid #A8C4BD;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: #0B6E5B;
+}
+
+/* 옵션 검사 칩 스타일 */
+.postal-option-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.postal-chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #F4F7F6;
+  border: 1px solid #D0DED9;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2F3E3B;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.postal-chip-btn:hover {
+  background: #E4EFEF;
+  border-color: #0B6E5B;
+  color: #0B6E5B;
+}
+
+.postal-chip-btn.is-selected {
+  background: #0B6E5B;
+  border-color: #08533F;
+  color: #FFFFFF;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(11, 110, 91, 0.25);
+}
+
+/* 실시간 종이 서식 라이브 미리보기 카운터 */
+.postal-preview-card {
+  background: #FFFFFF;
+  border: 2px dashed #B8CBC6;
+  border-radius: var(--a-radius);
+  padding: 20px;
+  box-shadow: var(--a-shadow);
+  position: sticky;
+  top: 20px;
+}
+
+.postal-preview-header {
+  border-bottom: 2px solid #0B6E5B;
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.postal-preview-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0B6E5B;
+}
+
+.postal-preview-badge {
+  font-size: 11px;
+  background: #E6F2EF;
+  color: #0B6E5B;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.postal-preview-dl {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 8px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.postal-preview-dl dt {
+  color: #55625F;
+  font-weight: 600;
+}
+
+.postal-preview-dl dd {
+  margin: 0;
+  color: #16211F;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.postal-preview-dl dd.is-empty {
+  color: #99A8A5;
+  font-style: italic;
+}
+
+/* 세션 등록 성공 이력 리스트 */
+.postal-history-list {
+  margin-top: 20px;
+  border-top: 1px solid var(--a-line);
+  padding-top: 14px;
+}
+
+.postal-history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: #F8FAF9;
+  border: 1px solid #E2ECE8;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+/* ==========================================================================
+   대시보드(A-01) 3열 비주얼 시각화 모니터링 스타일
+   ========================================================================== */
+
+/* 대시보드 상단 배너 */
+.dash-header-banner {
+  background: var(--a-surface);
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--a-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dash-header-banner__title-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dash-header-banner__icon {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.dash-header-banner__title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--a-ink);
+  margin: 0;
+}
+
+/* 퀵 실행 숏컷 칩 행 */
+.dash-shortcut-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dash-shortcut-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #F3F7F6;
+  border: 1px solid #D2E0DD;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #263633;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.dash-shortcut-btn:hover {
+  background: #0B6E5B;
+  border-color: #08533F;
+  color: #FFFFFF;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(11, 110, 91, 0.2);
+}
+
+.dash-shortcut-btn__tag {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* 3열 비주얼 차트 그리드 */
+.dash-visual-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 1400px) {
+  .dash-visual-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .dash-visual-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dash-visual-card {
+  background: var(--a-surface);
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius);
+  padding: 18px 20px;
+  box-shadow: var(--a-shadow);
+  display: flex;
+  flex-direction: column;
+}
+
+.dash-visual-card__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1A2624;
+  margin: 0 0 16px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 대시보드 상단 회장 조회 선택기 — 예약 현황별 비율 카드 최상단 */
+.dash-hospital-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--a-ok-soft);
+  border: 1px solid var(--a-ok);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin: -2px -2px 16px -2px;
+}
+
+.dash-hospital-picker__label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--a-ok);
+  white-space: nowrap;
+}
+
+.dash-hospital-picker__select {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1px solid var(--a-ok);
+  background: var(--a-surface);
+  color: var(--a-ink);
+}
+
+/* 1. 도넛 차트 Container */
+.dash-donut-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 0;
+  position: relative;
+}
+
+.dash-donut-chart {
+  width: 160px;
+  height: 160px;
+  position: relative;
+}
+
+.dash-donut-chart svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.dash-donut-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.dash-donut-center__val {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--a-ink);
+  line-height: 1;
+}
+
+.dash-donut-center__lbl {
+  font-size: 11px;
+  color: var(--a-ink-sub);
+  margin-top: 4px;
+}
+
+.dash-legend-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 14px;
+  font-size: 12px;
+}
+
+.dash-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.dash-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+/* 2. 수평 바 차트 Container */
+.dash-hbar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dash-hbar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dash-hbar-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.dash-hbar-title {
+  font-weight: 600;
+  color: var(--a-ink);
+}
+
+.dash-hbar-count {
+  font-weight: 700;
+  color: var(--a-ink-sub);
+}
+
+.dash-hbar-track {
+  width: 100%;
+  height: 10px;
+  background: #EDF2F1;
+  border-radius: 5px;
+  overflow: hidden;
+  display: flex;
+}
+
+.dash-hbar-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+/* 차트 호버 툴팁 (dashboard.js bindTooltips) */
+.dash-tip {
+  position: fixed;
+  z-index: 200;
+  pointer-events: none;
+  max-width: 260px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #1A2624;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .18);
+}
+
+.dash-tip[hidden] {
+  display: none;
+}
+
+/* 호버 가능한 차트 조각 */
+.dash-arc,
+.dash-legend-item[data-tip],
+.dash-hbar-item[data-tip],
+.dash-age-row[data-tip],
+.dash-gender-summary__item[data-tip] {
+  cursor: help;
+}
+
+.dash-arc:hover {
+  opacity: .82;
+}
+
+/* 3. 성별 · 연령대 분포 */
+.dash-gender-summary {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.dash-gender-summary__item {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: var(--a-radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dash-gender-summary__item--m {
+  background: #EFF6FF;
+  color: #164B85;
+}
+
+.dash-gender-summary__item--f {
+  background: #FFF0F6;
+  color: #A61E63;
+}
+
+.dash-gender-summary__lbl {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: .85;
+}
+
+.dash-gender-summary__val {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.dash-gender-ratio-bar {
+  display: flex;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--a-line-2);
+  margin-bottom: 14px;
+}
+
+.dash-gender-ratio-bar__m {
+  background: #2777C4;
+}
+
+.dash-gender-ratio-bar__f {
+  background: #E0559B;
+}
+
+.dash-age-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dash-age-row {
+  display: grid;
+  grid-template-columns: 48px 1fr 44px;
+  align-items: center;
+  gap: 8px;
+}
+
+.dash-age-row__lbl {
+  font-size: 12px;
+  color: var(--a-ink-sub);
+}
+
+.dash-age-row__track {
+  display: flex;
+  height: 10px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--a-line-2);
+}
+
+.dash-age-row__m {
+  background: #2777C4;
+}
+
+.dash-age-row__f {
+  background: #E0559B;
+}
+
+.dash-age-row__count {
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+  color: var(--a-ink);
+}
+
+/* ==========================================================================
+   대시보드 20개 회장 필터 & 남녀 비율 시각화
+   ========================================================================== */
+
+.dash-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #FFFFFF;
+  border: 1px solid #D0DED9;
+  border-radius: 10px;
+  padding: 12px 18px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.dash-hospital-select {
+  padding: 8px 14px;
+  border: 1.5px solid #0B6E5B;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0B6E5B;
+  background: #F0FDF4;
+  cursor: pointer;
+  outline: none;
+}
+
+.dash-visual-grid-2x2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 900px) {
+  .dash-visual-grid-2x2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dash-gender-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 10px 0;
+}
+
+.dash-gender-progress {
+  display: flex;
+  height: 24px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.dash-gender-male {
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.3s ease;
+}
+
+.dash-gender-female {
+  background: linear-gradient(135deg, #F43F5E 0%, #E11D48 100%);
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.3s ease;
+}
+
+.dash-gender-legend {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dash-gender-legend__male {
+  color: #2563EB;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dash-gender-legend__female {
+  color: #E11D48;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* --- 메뉴 접기 버튼 ------------------------------------------------------ */
+
+.nav__collapse {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: calc(100% - 16px);
+  margin: 8px;
+  padding: 7px 10px;
+  border: 1px solid var(--a-nav-line);
+  border-radius: var(--a-radius-sm);
+  background: none;
+  color: var(--a-nav-ink);
+  font: inherit;
+  font-size: var(--a-fs-sm);
+  cursor: pointer;
+}
+
+.nav__collapse:hover {
+  background: var(--a-nav-bg-soft);
+  color: #fff;
+}
+
+.nav__collapse svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+
+/* 접힌 상태에서는 화살표를 뒤집어 「펴기」로 읽히게 한다 */
+body.is-nav-collapsed .nav__collapse {
+  justify-content: center;
+  width: calc(100% - 12px);
+  margin-inline: 6px;
+  padding-inline: 0;
+}
+
+body.is-nav-collapsed .nav__collapse svg {
+  transform: rotate(180deg);
+}
+
+/* 로그아웃 버튼도 접힌 상태에서는 아이콘만 */
+.nav__logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.nav__logout svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+
+/* --- 표 셀 안의 2줄 구성 -------------------------------------------------
+   컬럼을 늘리는 대신 같은 것끼리 두 줄로 합친다. 컬럼이 많아 가로로 넘치면
+   잘려 나간 정보는 아예 못 보게 되지만, 두 줄이면 전부 보인다.
+   ------------------------------------------------------------------------ */
+
+.cell-stack {
+  display: flex;
+  flex-direction: column;
+  /* 세로 정렬이므로 자식이 기본으로 가로 폭 전체로 늘어난다.
+     그대로 두면 상태 배지가 칸 끝까지 늘어나 배지로 보이지 않는다. */
+  align-items: flex-start;
+  gap: 1px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.cell-stack strong {
+  font-weight: 600;
+}
+
+.cell-sub {
+  font-size: var(--a-fs-xs);
+  color: var(--a-ink-weak);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 전화번호 — 이 화면의 목적이 전화 걸기다. 누를 수 있게 보이도록 한다. */
+.cell-tel {
+  font-family: var(--font-mono);
+  font-size: var(--a-fs-sm);
+  color: var(--a-info);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.cell-tel:hover {
+  text-decoration: underline;
+}
+
+.cell-marks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+/* --- 접을 수 있는 카드 ---------------------------------------------------
+   검색 조건 카드가 세로 320px 을 차지해 결과 첫 줄을 보려면 스크롤해야 했다.
+   조건을 한 번 정하고 나면 그 뒤로는 결과만 보므로, 접으면 그 공간이 결과로 간다.
+   ------------------------------------------------------------------------ */
+
+.card__fold {
+  padding: 4px 10px;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius-sm);
+  background: var(--a-surface);
+  color: var(--a-ink-sub);
+  font: inherit;
+  font-size: var(--a-fs-xs);
+  cursor: pointer;
+}
+
+.card__fold:hover {
+  background: var(--a-bg);
+  color: var(--a-ink);
+}
+
+.card.is-folded .card__body {
+  display: none;
+}
+
+.card.is-folded .card__head {
+  border-bottom: 0;
+}
+
+/* --- 검색 조건 줄 다듬기 ------------------------------------------------- */
+
+/* 자주 쓰는 거르개를 조작 줄 옆에 붙인다. 줄이 하나 줄면 결과가 그만큼 올라온다. */
+.chips {
+  margin-top: 10px;
+}
+
+/* --- 전화번호 입력 + 걸기 -------------------------------------------------
+   상세 화면에서 스태프가 하는 일은 결국 이 번호로 전화를 거는 것이다.
+   번호를 눈으로 읽어 다이얼을 누르게 하면 그 자리에서 오타가 난다.
+   ------------------------------------------------------------------------ */
+
+.tel-row {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.tel-row .input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.tel-row__call {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 10px;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius-sm);
+  background: var(--a-surface);
+  color: var(--a-info);
+  font-size: var(--a-fs-xs);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.tel-row__call:hover {
+  background: var(--a-info-soft);
+}
+
+.tel-row__call svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* --- 붙박이 저장 줄 -------------------------------------------------------
+   저장 버튼을 머리말에만 두었더니, 메모·옵션까지 내려간 뒤에는 화면 밖으로
+   사라졌다. 고쳐 놓고 저장하지 않은 채 나가는 것이 이 화면에서 가장 잦은 사고다.
+   ① 항상 보이게 하고 ② 고친 것이 있으면 그렇다고 말해 준다.
+   ------------------------------------------------------------------------ */
+
+.form-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 14px -16px -14px;
+  padding: 10px 16px;
+  background: var(--a-surface);
+  border-top: 1px solid var(--a-line);
+  border-radius: 0 0 var(--a-radius) var(--a-radius);
+}
+
+.form-bar__right {
+  margin-left: auto;
+}
+
+.form-bar__dirty {
+  font-size: var(--a-fs-sm);
+  font-weight: 600;
+  color: var(--a-warn);
+}
+
+/* --- 일괄 조작 선택 수 ---------------------------------------------------
+   휴진 설정은 그 날 전 시간대를 한 번에 닫는 조작이라 되돌리기 번거롭다.
+   「몇 일을 고쳤는지」가 작은 회색 글씨면 확인하지 않고 누르게 된다.
+   ------------------------------------------------------------------------ */
+
+.bulk-count {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--a-line-2);
+  color: var(--a-ink-weak);
+  font-size: var(--a-fs-xs);
+  font-weight: 700;
+}
+
+.bulk-count.is-on {
+  background: var(--a-info-soft);
+  color: var(--a-info);
+}
+
+/* --- 주소 찾기 (관리 화면) -----------------------------------------------
+   스태프가 종이 신청서의 한자 주소를 손으로 치는 것이 가장 오래 걸리고
+   가장 자주 틀리는 일이다. 이용자 화면과 같은 데이터에서 찾아 채운다.
+
+   다만 이용자 화면과 달리 **손으로 고치는 것도 허용한다.** 종이에 적힌 주소가
+   데이터에 없을 수 있고, 그때 스태프는 본인에게 전화해 확인할 수 있다.
+   ------------------------------------------------------------------------ */
+
+.addr-find__row {
+  display: flex;
+  gap: 6px;
+}
+
+.addr-find__row .input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.addr-find__row .btn {
+  flex: 0 0 auto;
+}
+
+.addr-hits {
+  margin-top: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius-sm);
+  background: var(--a-surface);
+}
+
+.addr-hits.is-hidden {
+  display: none;
+}
+
+.addr-hit {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  border-bottom: 1px solid var(--a-line-2);
+  background: none;
+  font: inherit;
+  font-size: var(--a-fs-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.addr-hits .addr-hit:last-child {
+  border-bottom: 0;
+}
+
+.addr-hit:hover {
+  background: var(--a-info-soft);
+}
+
+.addr-hit__zip {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: var(--a-fs-xs);
+  color: var(--a-info);
+}
+/* ==========================================================================
+   개최 회차 (A-20 / A-21)
+   --------------------------------------------------------------------------
+   회장 1곳이 여러 날 연다. 목록 칸에는 앞으로의 회차를 세 줄까지 접어서
+   보이고, 편집 모달에서는 줄을 늘리고 줄여 회차 전부를 정한다.
+
+   목록 칸이 세 줄로 끝나는 이유는 행 높이 때문이다. 회차가 여덟 개인
+   회장이 하나라도 있으면 표 전체가 그 회장 높이에 끌려간다.
+   ========================================================================== */
+
+.sched-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sched-cell__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.sched-cell__date {
+  font-family: var(--font-mono);
+  font-size: var(--a-fs-xs);
+}
+
+.sched-cell__more {
+  font-size: var(--a-fs-xs);
+  color: var(--a-ink-weak);
+  cursor: help;
+}
+
+/* --- 편집기 ------------------------------------------------------------ */
+
+.sched-edit__head {
+  margin: 20px 0 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--a-line);
+}
+
+.sched-edit__head h3 {
+  margin: 0 0 4px;
+  font-size: var(--a-fs-md);
+  font-weight: 600;
+}
+
+.sched-edit__head .field__hint {
+  margin: 0;
+}
+
+.sched-edit__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.sched-edit__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius-sm, 8px);
+  background: var(--a-surface);
+}
+
+.sched-edit__row.is-alt {
+  background: var(--a-bg);
+}
+
+.sched-edit__cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 0 0 auto;
+}
+
+.sched-edit__cell--wide {
+  flex: 1 1 180px;
+  min-width: 140px;
+}
+
+/* 「표시」체크와 삭제 버튼. 오른쪽 끝에 붙여, 어느 줄을 지우는지가
+   줄 끝에서 일관되게 읽히도록 한다. */
+.sched-edit__cell--tail {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.sched-edit__label {
+  font-size: var(--a-fs-xs);
+  color: var(--a-ink-weak);
+}
+
+.sched-edit__cell .input {
+  min-width: 132px;
+}
+
+.sched-edit__cell--wide .input {
+  min-width: 0;
+  width: 100%;
+}
+
+/* 슬롯·정원·예약 수. 지울 수 있는 회차인지 판단하는 근거이므로 줄마다 둔다. */
+.sched-edit__foot {
+  flex: 1 0 100%;
+  font-size: var(--a-fs-xs);
+  color: var(--a-ink-weak);
+}
+
+.sched-edit__empty {
+  margin: 0 0 10px;
+}
+
+/* --- 정원 관리 : 회차 바로가기 ------------------------------------------
+   달력만 두면 다음 회차에 닿기까지 「이전 달」을 다섯 번 눌러야 한다.
+   열리는 날은 몇 개뿐이므로 전부 늘어놓는다. */
+
+.cap-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cap-chip {
+  padding: 6px 12px;
+  border: 1.5px solid var(--a-line);
+  border-radius: 999px;
+  background: var(--a-surface);
+  color: var(--a-ink);
+  font-size: var(--a-fs-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cap-chip:hover {
+  border-color: var(--a-primary, #0B6E5B);
+}
+
+.cap-chip.is-current {
+  border-color: var(--a-primary, #0B6E5B);
+  background: var(--a-primary, #0B6E5B);
+  color: #fff;
+}
+
+/* 지난 회차도 감추지 않는다. 끝난 회차의 실적을 보는 것이 관리 화면의
+   일이기 때문이다. 대신 앞으로의 회차보다 약하게 둔다. */
+.cap-chip.is-past {
+  opacity: 0.55;
+  font-weight: 500;
+}
+
+/* --- 정원 달력 : 표로 가는 길 -------------------------------------------
+   정원을 고치러 온 사람이 스테퍼가 사라진 자리에서 멈추지 않게 한다.
+   「보기 전용」이라고만 적어 두면 다음에 어디로 가야 하는지 알 수 없다. */
+
+/* 마감된 시간대는 줄 전체를 약하게 둔다. 배지 하나로만 구분하면
+   스무 줄 가운데 어느 줄이 닫혀 있는지 훑어서는 알 수 없다. */
+
+/* ==========================================================================
+   저장 전 미리보기 (preview.js)
+   --------------------------------------------------------------------------
+   「신규 10곳 · 덮어쓰기 11곳 · 변경 없음 0곳」과 「이 표에 없는 89곳은
+   손대지 않습니다」를 숫자로 보여 주는 대화상자.
+
+   덮어쓰기 칸만 색을 준다. 셋 다 칠하면 어느 것이 되돌릴 수 없는 쪽인지
+   구별되지 않는다.
+   ========================================================================== */
+
+.preview-counts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 0 0 20px;
+}
+
+.preview-count {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  border: 1px solid var(--a-line-2);
+  border-radius: 10px;
+  background: var(--a-bg);
+}
+
+.preview-count__label {
+  font-size: 13px;
+  color: var(--a-ink-sub);
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+
+.preview-count__value {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--a-ink);
+  line-height: 1.2;
+}
+
+.preview-count--ok {
+  border-color: var(--a-ok);
+  background: var(--a-ok-soft);
+}
+
+.preview-count--ok .preview-count__value { color: var(--a-ok); }
+
+/* 되돌릴 수 없는 쪽. 여기만 눈에 띄어야 한다. */
+.preview-count--warn {
+  border-color: var(--a-warn);
+  background: var(--a-warn-soft);
+}
+
+.preview-count--warn .preview-count__value { color: var(--a-warn); }
+
+.preview-untouched {
+  margin: 0 0 16px;
+  padding: 12px 18px;
+  border-left: 4px solid var(--a-info);
+  background: var(--a-info-soft);
+  border-radius: 0 8px 8px 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--a-ink);
+}
+
+.preview-warn {
+  margin: 0 0 18px;
+  padding: 14px 18px;
+  border: 1px solid var(--a-warn);
+  border-radius: 10px;
+  background: var(--a-warn-soft);
+}
+
+.preview-warn__title {
+  margin: 0 0 6px;
+  font-size: var(--a-fs-sm);
+  font-weight: 700;
+  color: var(--a-warn);
+}
+
+.preview-warn__list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--a-ink);
+}
+
+.preview-warn__list li {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* --- 무엇이 바뀌는지 자세히 --------------------------------------------- */
+
+.preview-detail {
+  margin: 0 0 10px;
+}
+
+.preview-detail > summary {
+  cursor: pointer;
+  padding: 8px 0;
+  font-size: var(--a-fs-sm);
+  font-weight: 700;
+  color: var(--a-ink-sub);
+}
+
+.preview-detail > summary:hover { color: var(--a-ink); }
+
+/* 200행 × 15칸이면 표가 길다. 대화상자 안에서만 구르게 한다. */
+.preview-table-wrap {
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid var(--a-line-2);
+  border-radius: 6px;
+}
+
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--a-fs-xs);
+}
+
+.preview-table th,
+.preview-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--a-line-2);
+  text-align: left;
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.preview-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--a-bg);
+  font-weight: 700;
+  color: var(--a-ink-sub);
+  white-space: nowrap;
+}
+
+.preview-table td:first-child,
+.preview-table td:nth-child(2) {
+  white-space: nowrap;
+}
+
+.preview-detail-hint {
+  margin: 18px 0 0;
+  padding: 14px 18px;
+  background: #F4F8F7;
+  border: 1px solid #D8E5E2;
+  border-radius: 8px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: #2D4D46;
+}
+
+.preview-table__name {
+  display: block;
+  color: var(--a-ink-sub);
+}
+
+/* 지금 값은 물러나고, 바뀔 값이 앞으로 나온다. 어느 쪽이 결과인지
+   글자만 보고도 알 수 있어야 한다. */
+.preview-table__before {
+  color: var(--a-ink-weak);
+  text-decoration: line-through;
+  word-break: break-all;
+}
+
+.preview-table__after {
+  color: var(--a-ink);
+  font-weight: 700;
+  word-break: break-all;
+}
+
+.preview-table__new {
+  color: var(--a-ok);
+  font-weight: 700;
+}
+
+/* --- 하루 시간표 (정원 달력 오른쪽) ---------------------------------------
+   보기 전용 목록이다. 예전에는 네 열짜리 표였는데, 「남은 좌석」은 뺄셈이고
+   「접수」는 정원이 남았는지로 정해져 실질은 두 열이었다. 한 줄에 담되
+   「접수 중 / 마감」 글자는 남긴다 — 점 색만으로는 확신이 서지 않는다. */
+.slot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.slot-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--a-bg-sub);
+}
+
+.slot-line__time {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--a-fs-md);
+  color: var(--a-ink);
+  white-space: nowrap;
+}
+
+.slot-line__num {
+  font-size: var(--a-fs-sm);
+  color: var(--a-ink-sub);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* 「접수 종료」가 네 글자라 54px 에서 두 줄로 접혔다. 넉넉히 잡고
+   줄바꿈을 막는다. */
+.slot-line__state {
+  width: 64px;
+  flex: none;
+  text-align: right;
+  white-space: nowrap;
+  font-size: var(--a-fs-sm);
+  font-weight: 700;
+  color: var(--c-primary, #0B6E5B);
+}
+
+/* 마감된 시간대는 배경을 빼서 뒤로 물린다. 대부분이 `0 / 22` 인 날에는
+   접수 중인 줄만 살아 있는 편이 읽기 쉽다. */
+.slot-line.is-closed {
+  background: transparent;
+}
+
+.slot-line.is-closed .slot-line__time,
+.slot-line.is-closed .slot-line__num {
+  color: var(--a-ink-weak);
+}
+
+/* 닫힌 줄은 **회색**이다. 빨강은 「휴진(그 날 전체가 닫힘)」에만 쓴다 —
+   접수 마감일이 지난 것은 사고가 아니라 예정된 일이므로 경고색이 아니다. */
+.slot-line.is-closed .slot-line__state {
+  color: var(--a-ink-weak);
+  font-weight: 400;
+}
+
+
+/* ==========================================================================
+   使い方 — 화면별 사용법 (guide.js)
+   --------------------------------------------------------------------------
+   예전에는 화면 위에 파란 띠로 늘 깔려 있었다. 늘 보이니 늘 62px 을 먹었다.
+   아이콘 뒤로 옮겨 닫혀 있을 때 자리를 0 으로 만든다.
+
+   옆으로 미는 패널이 아니라 **떠 있는 팝업**이다. 패널은 본문 1017px 중
+   400px 을 덮는데, 이 표들은 이미 가로로 넘쳐 스크롤한다. 가이드를 보려고
+   연 사람이 정작 표의 오른쪽을 못 보게 된다.
+   ========================================================================== */
+
+.guide-btn { gap: 5px; }                       /* 크기·모양은 .btn.btn--sm 이 정한다 */
+.guide-btn svg { flex: 0 0 auto; }
+.guide-btn.is-open,
+.guide-btn.is-open:hover:not(:disabled) {
+  background: var(--c-primary, #0B6E5B);
+  border-color: var(--c-primary, #0B6E5B);
+  color: #fff;
+}
+/* 열린 채 마우스를 올리면 한 단계 짙게 — 글자는 흰색 그대로 */
+.guide-btn.is-open:hover:not(:disabled) {
+  background: var(--c-primary-strong, #08533F);
+  border-color: var(--c-primary-strong, #08533F);
+}
+
+.guide-pop {
+  position: fixed;
+  z-index: 950;
+  width: 420px;
+  max-height: 70vh;
+  overflow: auto;
+  background: var(--a-surface);
+  border: 1px solid var(--a-line);
+  border-radius: 12px;
+  box-shadow: 0 18px 44px -16px rgba(0, 0, 0, 0.32);
+}
+.guide-pop__head {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--a-line);
+  background: var(--a-surface);
+}
+.guide-pop__title { font-size: 14px; font-weight: 700; color: var(--a-ink); }
+.guide-pop__x {
+  border: none;
+  background: none;
+  padding: 0 2px;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--a-ink-weak);
+  cursor: pointer;
+}
+.guide-pop__x:hover { color: var(--a-ink); }
+
+.guide-pop__body { padding: 15px 16px 4px; }
+.guide-pop__body h4 {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-primary, #0B6E5B);
+  letter-spacing: 0.02em;
+}
+.guide-pop__body p {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.85;
+  color: var(--a-ink);
+}
+/* 잘못 다루면 되돌릴 수 없는 이야기는 눈에 띄게 둔다 */
+.guide-pop__warn {
+  padding: 9px 11px;
+  border-left: 3px solid var(--a-warn);
+  background: var(--a-warn-soft, #FFF7E6);
+  border-radius: 0 6px 6px 0;
+}
+
+/* ==========================================================================
+   검색 결과 (#/search) — 프로토타입(guide-search-proto)과 같은 모양
+   ========================================================================== */
+.srch-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+.srch-head__q { font-size: 15px; font-weight: 700; color: var(--a-ink); }
+.srch-head__q mark, .srch-row mark { background: #FFF1A8; color: inherit; padding: 0 3px; border-radius: 3px; }
+.srch-head__n { font-size: 13px; color: var(--a-ink-sub); font-variant-numeric: tabular-nums; }
+
+.srch-kinds { display: flex; gap: 7px; margin-bottom: 14px; flex-wrap: wrap; }
+.srch-kind {
+  display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px;
+  border: 1px solid var(--a-line); border-radius: 999px; background: var(--a-surface);
+  font: inherit; font-size: 12.5px; color: var(--a-ink-sub); cursor: pointer;
+}
+.srch-kind b { font-weight: 700; color: var(--a-ink); font-variant-numeric: tabular-nums; }
+.srch-kind:hover { border-color: var(--c-primary, #0B6E5B); }
+.srch-kind.is-on { background: var(--c-primary, #0B6E5B); border-color: var(--c-primary, #0B6E5B); color: #fff; }
+.srch-kind.is-on b { color: #fff; }
+.srch-kind.is-zero { opacity: .45; cursor: default; }
+
+.srch-group { margin-bottom: 16px; }
+.srch-group__head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 7px; }
+.srch-group__title { font-size: 13px; font-weight: 700; color: var(--c-primary, #0B6E5B); }
+.srch-group__n { font-size: 12px; color: var(--a-ink-weak); }
+.srch-group__more {
+  margin-left: auto; border: none; background: none; padding: 0;
+  font: inherit; font-size: 12.5px; font-weight: 600; color: var(--c-primary, #0B6E5B); cursor: pointer;
+}
+.srch-group__more:hover { text-decoration: underline; }
+
+.srch-card { border: 1px solid var(--a-line); border-radius: 10px; background: var(--a-surface); overflow: hidden; }
+.srch-row {
+  display: flex; align-items: center; gap: 12px; padding: 10px 13px;
+  border-bottom: 1px solid var(--a-line-2); cursor: pointer;
+}
+.srch-row:last-child { border-bottom: none; }
+.srch-row:hover { background: var(--c-primary-soft, #E6F2EF); }
+.srch-row__no {
+  font-family: var(--font-mono); font-size: 12px; color: var(--a-ink-sub);
+  flex: 0 0 110px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.srch-row__main { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; }
+.srch-row__t { font-size: 13.5px; font-weight: 600; color: var(--a-ink); }
+.srch-row__s {
+  font-size: 12px; color: var(--a-ink-weak); margin-top: 1px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.srch-row__why {
+  flex: 0 0 auto; font-size: 11.5px; color: var(--a-ink-weak);
+  border: 1px dashed var(--a-line); border-radius: 5px; padding: 1px 7px; white-space: nowrap;
+}
+.srch-row__go { display: flex; gap: 6px; flex: 0 0 auto; align-items: center; }
+.srch-mini {
+  padding: 4px 10px; border: 1px solid var(--a-line); border-radius: 7px;
+  font: inherit; font-size: 12px; font-weight: 600; color: var(--a-ink-sub);
+  background: var(--a-surface); cursor: pointer; white-space: nowrap;
+}
+.srch-mini:hover { border-color: var(--c-primary, #0B6E5B); color: var(--c-primary, #0B6E5B); }
+
+.srch-empty {
+  border: 1px dashed var(--a-line); border-radius: 10px; padding: 26px 18px;
+  text-align: center; color: var(--a-ink-sub); font-size: 13px; background: var(--a-surface);
+}
+.srch-empty b { display: block; font-size: 14px; color: var(--a-ink); margin-bottom: 5px; }
+.srch-empty ul { margin: 10px 0 0; padding: 0; list-style: none; font-size: 12.5px; color: var(--a-ink-weak); }
+.srch-empty li { margin-top: 3px; }
+
+.quick-search__item--all { border-top: 1px solid var(--a-line); }
+.quick-search__item--all .quick-search__item-title { color: var(--c-primary, #0B6E5B); font-weight: 700; }
+
+/* ==========================================================================
+   フォーム部品のフォント
+   --------------------------------------------------------------------------
+   button・input・select・textarea は UA 既定フォント(Arial 等)を使い、
+   親から font-family を継承しない。管理画面は base.css を読まないため、
+   ここで明示しないと入力欄だけ Meiryo にならない。
+   ========================================================================== */
+body.admin button,
+body.admin input,
+body.admin select,
+body.admin textarea,
+body.admin kbd,
+body.admin code,
+body.admin pre,
+body.admin samp,
+body.admin tt {
+  font-family: var(--font-base);
+}
+
+/* 一括入力の保存ルール — 画面いちばん上の一行。
+   使い方全体は「使い方」ボタンに移したが、この一行だけは
+   表を触る前に必ず目に入るところへ置く。 */
+.bulk-rule {
+  margin: 0 0 12px;
+  padding: 9px 13px;
+  border-radius: var(--a-radius-sm);
+  background: var(--a-warn-soft);
+  color: var(--a-warn);
+  font-size: var(--a-fs-sm);
+  line-height: 1.5;
+}
+
+
+/* ---------------------------------------------------------------------------
+   健診統計 (ダッシュボード)
+   숫자만으로 충분한 것은 숫자로, 흐름·비교가 필요한 것만 그래프로 둔다.
+   이웃한 카드끼리 높이를 맞추고, 차트가 남는 높이를 채워 빈 공간을 남기지 않는다.
+   --------------------------------------------------------------------------- */
+.stats-h { margin: 0; font-size: 15px; font-weight: 700; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.stats-h small { font-size: 12px; font-weight: 400; color: var(--a-ink-weak); }
+.stats-sw { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; }
+
+.stats-overview { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); margin-bottom: 12px; }
+.stats-overview__left { padding: 14px 18px 8px; border-right: 1px solid var(--a-line-2); min-width: 0; }
+.stats-overview__right { padding: 4px 18px; display: flex; flex-direction: column; min-width: 0; }
+.stats-big { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+.stats-big b { font-size: 34px; line-height: 1.1; color: #0A3A31; font-variant-numeric: tabular-nums; }
+.stats-big .u { font-size: 15px; font-weight: 700; color: #0A3A31; }
+.stats-big .h { font-size: 12px; color: var(--a-ink-weak); }
+.stats-empty { margin-top: 8px; padding: 6px 10px; border-radius: 6px; background: var(--a-line-2); color: var(--a-ink-sub); font-size: 12.5px; }
+.stats-curve-head { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11.5px; color: var(--a-ink-weak); }
+.stats-curve { display: block; width: 100%; height: auto; }
+.stats-curve text, .stats-cols-box text { font-family: var(--font-base); }
+
+.stats-kv { flex: 1; display: grid; grid-template-columns: 7.5em minmax(0, 1fr); align-content: center; align-items: baseline; gap: 4px 12px; padding: 12px 0; border-bottom: 1px solid var(--a-line-2); }
+.stats-kv:last-child { border-bottom: 0; }
+.stats-kv__k { font-size: 12.5px; font-weight: 600; color: var(--a-ink-sub); }
+.stats-kv__v { display: flex; flex-wrap: wrap; gap: 4px 20px; }
+.stats-kv__v > span { white-space: nowrap; font-size: 13px; color: var(--a-ink-sub); }
+.stats-kv__v b { margin-left: 4px; font-size: 20px; color: var(--a-ink); font-variant-numeric: tabular-nums; }
+.stats-kv__v b.is-zero { color: var(--a-ink-weak); }
+
+.stats-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-bottom: 12px; }
+.stats-row > .card { display: flex; flex-direction: column; margin-bottom: 0; padding: 14px 18px; min-width: 0; }
+.stats-legend { margin-left: auto; display: inline-flex; gap: 12px; font-size: 12px; font-weight: 400; color: var(--a-ink-sub); }
+.stats-cols-box { position: relative; flex: 1; min-height: 210px; margin-top: 6px; }
+.stats-cols-box svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+
+.stats-opts { display: grid; grid-template-columns: max-content minmax(40px, 1fr) 3.4em; column-gap: 12px; margin-top: 8px; font-size: 12.5px; align-items: center; }
+.stats-opts > * { padding: 4.5px 0; border-bottom: 1px solid var(--a-line-2); }
+.stats-opts__name { white-space: nowrap; }
+.stats-opts__bar { align-self: stretch; display: flex; align-items: center; }
+.stats-opts__bar > span { position: relative; width: 100%; height: 6px; border-radius: 3px; background: var(--a-line-2); }
+.stats-opts__bar i { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 3px; background: #0F4B40; }
+.stats-opts__n { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stats-opts__n.is-zero { font-weight: 400; color: var(--a-ink-weak); }
+.stats-opts__foot { display: flex; justify-content: space-between; padding-top: 3px; border-bottom: 0; font-size: 10.5px; color: var(--a-ink-weak); }
+.stats-opts__blank { border-bottom: 0; }
+
+.stats-sys-card { margin-bottom: 12px; }
+.stats-sys-card > .stats-h { padding: 12px 18px 0; }
+.stats-sys { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.stats-sys > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; align-items: center; padding: 10px 18px 12px; }
+.stats-sys > div + div { border-left: 1px solid var(--a-line-2); }
+.stats-sys__k { font-size: 12.5px; font-weight: 600; color: var(--a-ink-sub); }
+.stats-sys__v { font-size: 13px; color: var(--a-ink-sub); }
+.stats-sys__v b { margin: 0 2px 0 4px; font-size: 19px; color: var(--a-ink); font-variant-numeric: tabular-nums; }
+.stats-sys__h { grid-column: 1 / -1; font-size: 12px; color: var(--a-ink-weak); }
+.stats-pill { grid-row: span 2; justify-self: end; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; text-decoration: none; }
+.stats-pill.is-ok { background: var(--a-ok-soft); color: var(--a-ok); }
+.stats-pill.is-muted { background: var(--a-line-2); color: var(--a-ink-sub); }
+.stats-pill.is-warn { background: var(--a-warn-soft); color: var(--a-warn); }
+.stats-pill.is-danger { background: var(--a-danger-soft); color: var(--a-danger); }
+a.stats-pill.is-danger:hover { text-decoration: underline; }
+
+@media (max-width: 1100px) {
+  .stats-overview, .stats-row, .stats-sys { grid-template-columns: minmax(0, 1fr); }
+  .stats-overview__left { border-right: 0; border-bottom: 1px solid var(--a-line-2); }
+  .stats-sys > div + div { border-left: 0; border-top: 1px solid var(--a-line-2); }
+}
+@media (max-width: 520px) {
+  .stats-opts { grid-template-columns: minmax(0, 1fr) 3.4em; }
+  .stats-opts__name { white-space: normal; }
+  .stats-opts__bar, .stats-opts__foot, .stats-opts__blank { display: none; }
+  .stats-kv { grid-template-columns: minmax(0, 1fr); }
+}

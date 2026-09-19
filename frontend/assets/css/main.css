@@ -1,0 +1,1013 @@
+/* ==========================================================================
+   main.css — U-00 메인 페이지 전용 스타일
+   plan.md §7.3 / §12 준수
+   ========================================================================== */
+
+/* ==========================================================================
+   1. 헤더
+   ========================================================================== */
+
+/* 화면 위에 붙어 있는 것(헤더 + 진행 표시)만큼 스크롤 도착점을 내린다.
+
+   「다음 단계로」처럼 특정 자리로 스크롤할 때, 그 자리는 화면 맨 위로 온다.
+   그런데 맨 위는 헤더와 진행 표시가 덮고 있어서 정작 봐야 할 제목이
+   가려진 채로 멈춘다. 고령 이용자에게는 「눌렀는데 아무 일도 안 일어났다」로
+   보인다. 두 높이는 글자 크기에 따라 달라지므로 flow.js 가 재서 넘긴다.
+   진행 표시가 없는 화면에서는 --progress-h 가 비어 0 이 된다. */
+html {
+  scroll-padding-top: calc(var(--header-h, 0px) + var(--progress-h, 0px) + 12px);
+}
+
+.site-header {
+  background: var(--c-surface);
+  border-bottom: 1px solid var(--c-line);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.site-header__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding-block: var(--sp-2);
+}
+
+.site-header__left {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.btn-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-m);
+  color: var(--c-ink);
+  background: transparent;
+  text-decoration: none;
+  transition: background-color var(--t-fast);
+}
+
+.btn-back:hover {
+  background-color: var(--c-surface-alt);
+}
+
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--c-ink);
+}
+
+.brand__mark {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  background: var(--c-primary);
+  border-radius: 12px;
+  color: #fff;
+}
+
+.brand__mark svg {
+  width: 26px;
+  height: 26px;
+}
+
+.brand__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.brand__org {
+  font-size: var(--fs-caption);
+  color: var(--c-ink-sub);
+}
+
+.brand__name {
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.02em;
+}
+
+/* --------------------------------------------------------------------------
+   글자 크기 조절 (접근성) — plan.md §12.4 / 자체 피드백 P-2
+   -------------------------------------------------------------------------- */
+
+.font-scale {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.font-scale__label {
+  font-size: var(--fs-caption);
+  color: var(--c-ink-sub);
+  white-space: nowrap;
+}
+
+.font-scale__group {
+  display: flex;
+  border: 1px solid var(--c-line-strong);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--c-surface);
+}
+
+.font-scale__btn {
+  min-height: var(--tap-sub);
+  padding: 0 14px;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  color: var(--c-ink-sub);
+  background: var(--c-surface);
+  border-right: 1px solid var(--c-line-strong);
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.font-scale__btn:last-child {
+  border-right: none;
+}
+
+.font-scale__btn:hover {
+  background: var(--c-primary-soft);
+  color: var(--c-primary-strong);
+}
+
+.font-scale__btn[aria-pressed="true"] {
+  background: var(--c-primary);
+  color: #fff;
+  font-weight: var(--fw-bold);
+}
+
+/* 각 버튼의 글자 크기로 결과를 미리 보여준다 */
+.font-scale__btn[data-scale="1"] {
+  font-size: calc(var(--fs-caption) * 0.95);
+}
+
+.font-scale__btn[data-scale="1.15"] {
+  font-size: calc(var(--fs-caption) * 1.1);
+}
+
+.font-scale__btn[data-scale="1.3"] {
+  font-size: calc(var(--fs-caption) * 1.25);
+}
+
+/* ==========================================================================
+   2. 히어로
+   ========================================================================== */
+
+.hero {
+  position: relative;
+  padding-block: var(--sp-5) var(--sp-4);
+  background:
+    radial-gradient(120% 100% at 50% 0%, #FFFFFF 0%, var(--c-bg) 62%);
+  text-align: center;
+  overflow: hidden;
+}
+
+.hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  margin-bottom: var(--sp-3);
+  background: var(--c-primary-soft);
+  color: var(--c-primary-strong);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  border-radius: 999px;
+}
+
+.hero__badge svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+.hero__title {
+  font-size: var(--fs-display);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-tight);
+  letter-spacing: -0.03em;
+  color: var(--c-ink);
+}
+
+.hero__title em {
+  font-style: normal;
+  color: var(--c-primary);
+}
+
+.hero__lead {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-lead);
+  color: var(--c-ink-sub);
+  line-height: var(--lh-base);
+  text-wrap: balance;
+}
+
+/* 대상 조건 — 잘못 온 사람이 끝까지 입력하지 않도록 최상단에서 알린다 (P-8) */
+.hero__target {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: var(--sp-3);
+  padding: 12px 20px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 999px;
+  font-size: var(--fs-small);
+  color: var(--c-ink-sub);
+}
+
+.hero__target strong {
+  color: var(--c-ink);
+  font-weight: var(--fw-bold);
+}
+
+.hero__target svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  color: var(--c-accent);
+}
+
+/* ==========================================================================
+   3. 액션 버튼 3개 — 이 페이지의 핵심
+   plan.md §7.3 : 액션 버튼은 정확히 3개. 그 외 CTA 추가 금지.
+   ========================================================================== */
+
+.actions {
+  padding-block: var(--sp-2) var(--sp-5);
+}
+
+.actions__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  /* 16px 이상 — 오탭 방지 */
+}
+
+/* --- 2개 배치 ----------------------------------------------------------
+   버튼이 둘뿐이므로 좁은 화면에서는 위아래로, 넓은 화면에서는 좌우로 둔다.
+   좌우로 둘 때는 가로줄(아이콘 | 글자 | 화살표)을 세로로 다시 쌓는다.
+   폭이 절반이 되는데 가로줄을 유지하면 글자가 눌려 두세 줄로 접힌다.
+   ---------------------------------------------------------------------- */
+
+@media (min-width: 760px) {
+  .actions__list--duo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-3);
+  }
+
+  .actions__list--duo .action {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--sp-2);
+    /* 두 칸의 높이를 맞춘다. 한쪽만 낮으면 덜 중요한 것처럼 보인다. */
+    height: 100%;
+    min-height: 260px;
+    padding: var(--sp-4) var(--sp-3);
+    text-align: center;
+  }
+
+  /* 아이콘을 키운다. 이 화면에서 가장 먼저 눈에 들어오는 것이 되어야 한다. */
+  .actions__list--duo .action__icon {
+    width: 88px;
+    height: 88px;
+    border-radius: 24px;
+  }
+
+  .actions__list--duo .action__icon svg {
+    width: 46px;
+    height: 46px;
+  }
+
+  .actions__list--duo .action__body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .actions__list--duo .action__label {
+    font-size: var(--fs-h1);
+    /* 32px */
+  }
+
+  .actions__list--duo .action__desc {
+    margin-top: var(--sp-1);
+    font-size: var(--fs-body);
+  }
+
+  /* 세로로 쌓았으므로 화살표도 아래를 향하게 한다.
+     오른쪽을 가리키면 옆 칸을 가리키는 것처럼 보인다. */
+  .actions__list--duo .action__arrow {
+    transform: rotate(90deg);
+  }
+
+  .actions__list--duo .action:hover .action__arrow {
+    transform: rotate(90deg) translateX(4px);
+  }
+}
+
+.action {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: var(--tap-min);
+  /* 88px */
+  padding: var(--sp-3) var(--sp-3);
+  background: var(--c-surface);
+  border: 2px solid var(--c-line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  text-decoration: none;
+  color: var(--c-ink);
+  transition:
+    transform var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    background-color var(--dur) var(--ease);
+}
+
+.action:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+  border-color: var(--c-primary);
+  color: var(--c-ink);
+}
+
+.action:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-card);
+}
+
+/* --- 아이콘 ------------------------------------------------------------ */
+
+.action__icon {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  background: var(--c-primary-soft);
+  color: var(--c-primary);
+}
+
+.action__icon svg {
+  width: 34px;
+  height: 34px;
+}
+
+/* --- 텍스트 ------------------------------------------------------------ */
+
+.action__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.action__label {
+  display: block;
+  font-size: var(--fs-btn);
+  /* 22px */
+  font-weight: var(--fw-bold);
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+}
+
+.action__desc {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--fs-small);
+  color: var(--c-ink-sub);
+  line-height: 1.5;
+}
+
+/* --- 화살표 ------------------------------------------------------------ */
+
+.action__arrow {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  color: var(--c-ink-weak);
+  transition: transform var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.action:hover .action__arrow {
+  transform: translateX(4px);
+  color: var(--c-primary);
+}
+
+/* --------------------------------------------------------------------------
+   ① 예약 하기 — Primary
+   -------------------------------------------------------------------------- */
+
+.action--primary {
+  background: var(--c-primary);
+  border-color: var(--c-primary);
+  color: #fff;
+}
+
+.action--primary:hover {
+  background: var(--c-primary-strong);
+  border-color: var(--c-primary-strong);
+  color: #fff;
+}
+
+.action--primary .action__icon {
+  background: rgba(255, 255, 255, .16);
+  color: #fff;
+}
+
+.action--primary .action__desc {
+  color: rgba(255, 255, 255, .88);
+}
+
+.action--primary .action__arrow {
+  color: rgba(255, 255, 255, .8);
+}
+
+.action--primary:hover .action__arrow {
+  color: #fff;
+}
+
+/* --------------------------------------------------------------------------
+   ②③ 조회 계열 — Secondary (블루 계열로 「예약」과 성격을 구분)
+   -------------------------------------------------------------------------- */
+
+.action--secondary .action__icon {
+  background: var(--c-accent-soft);
+  color: var(--c-accent);
+}
+
+.action--secondary:hover {
+  border-color: var(--c-accent);
+}
+
+.action--secondary:hover .action__arrow {
+  color: var(--c-accent);
+}
+
+/* ==========================================================================
+   4. 이용 안내 3스텝
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   ③ 검진 대상 확인하기 — Outline (보조 흐름)
+   -------------------------------------------------------------------------- */
+
+.action--outline {
+  background: transparent;
+  border: 2px dashed var(--c-line-strong);
+  box-shadow: none;
+}
+
+.action--outline .action__icon {
+  background: var(--c-surface-alt);
+  color: var(--c-ink-sub);
+}
+
+.action--outline:hover {
+  background: var(--c-surface-alt);
+  border-style: solid;
+  border-color: var(--c-line-strong);
+}
+
+.action--outline:active {
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.section {
+  padding-block: var(--sp-5);
+}
+
+.section--surface {
+  background: var(--c-surface);
+  border-block: 1px solid var(--c-line);
+}
+
+.section__title {
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+
+.section__sub {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-small);
+  color: var(--c-ink-sub);
+  text-align: center;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  background: var(--c-bg);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius);
+}
+
+.step__num {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  background: var(--c-primary);
+  color: #fff;
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-bold);
+  border-radius: 50%;
+  line-height: 1;
+}
+
+.step__body {
+  display: block;
+  min-width: 0;
+}
+
+.step__title {
+  display: block;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
+  line-height: 1.4;
+}
+
+.step__desc {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--fs-small);
+  color: var(--c-ink-sub);
+  line-height: 1.6;
+}
+
+/* 준비물 안내 */
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--c-warn-soft);
+  border: 1px solid #F0D9C6;
+  border-left: 4px solid var(--c-warn);
+  border-radius: var(--radius-sm);
+}
+
+.notice svg {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin-top: 3px;
+  color: var(--c-warn);
+}
+
+.notice__text {
+  font-size: var(--fs-small);
+  color: var(--c-ink);
+  line-height: 1.6;
+}
+
+.notice__text strong {
+  font-weight: var(--fw-bold);
+}
+
+/* ==========================================================================
+   5. 문의 안내 — 챗봇 없음. 전화 · 메일만 (plan.md §4.2)
+   ========================================================================== */
+
+.contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+}
+
+.contact {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius);
+}
+
+.contact__icon {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  background: var(--c-accent-soft);
+  color: var(--c-accent);
+  border-radius: 14px;
+}
+
+.contact__icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.contact__body {
+  display: block;
+  min-width: 0;
+}
+
+.contact__label {
+  display: block;
+  font-size: var(--fs-caption);
+  color: var(--c-ink-sub);
+}
+
+.contact__value {
+  display: block;
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.01em;
+  color: var(--c-ink);
+
+  /* メール・電話番号は途中で改行しない。
+     以前は break-all で、幅が足りないと「kenshin@example.j / p」のように
+     最後の1文字だけが下に落ち、住所として読めなかった。
+     途中では切らず、狭いときは文字の方を少し小さくする。 */
+  word-break: keep-all;
+  overflow-wrap: normal;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 狭い画面では一段小さく — 切れるより小さい方がよい。文字サイズ調整にも追従する。 */
+@media (max-width: 420px) {
+  .contact__value { font-size: var(--fs-body); }
+}
+
+/* 320px 같은 좁은 화면에서는 작게 줄여도 메일 주소가 들어가지 않는다.
+   문의처가 「…」로 잘려 보이지 않는 것보다, 줄이 바뀌더라도 다 보이는 편이 낫다. */
+@media (max-width: 360px) {
+  .contact__value {
+    white-space: normal;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+  }
+}
+
+.contact__hours {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--fs-caption);
+  color: var(--c-ink-weak);
+}
+
+/* ==========================================================================
+   6. 푸터
+   ========================================================================== */
+
+.site-footer {
+  padding-block: var(--sp-4) var(--sp-5);
+  background: #0E2723;
+  color: #C9D8D4;
+}
+
+.site-footer__name {
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
+  color: #fff;
+}
+
+.site-footer__desc {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-caption);
+  line-height: 1.7;
+  color: #9FB4AF;
+}
+
+.site-footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-3);
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid rgba(255, 255, 255, .14);
+}
+
+.site-footer__links a {
+  color: #C9D8D4;
+  font-size: var(--fs-caption);
+}
+
+.site-footer__links a:hover {
+  color: #fff;
+}
+
+.site-footer__copy {
+  margin-top: var(--sp-3);
+  font-size: var(--fs-caption);
+  color: #7E9390;
+}
+
+/* ==========================================================================
+   7. 반응형 — plan.md §12.5
+   PC 에서도 액션 버튼은 세로 1열을 유지한다.
+   기기가 바뀌어도 같은 순서·같은 모양으로 보이는 것이 고령 이용자에게 더 중요하다.
+   ========================================================================== */
+
+/* --- 소형 스마트폰 (~ 400px) ------------------------------------------- */
+@media (max-width: 400px) {
+  :root {
+    --gutter: 16px;
+  }
+
+  .action {
+    gap: 14px;
+    padding: var(--sp-2) 18px;
+  }
+
+  .action__icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 15px;
+  }
+
+  .action__icon svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .action__arrow {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+/* --- 헤더 세로 배치 (~ 560px) ------------------------------------------ */
+@media (max-width: 768px) {
+  .site-header__inner {
+    flex-wrap: nowrap;
+    gap: var(--sp-1);
+    padding-block: var(--sp-1);
+  }
+
+  .site-header__left {
+    gap: var(--sp-1);
+  }
+
+  .btn-back {
+    /* 36px 은 터치 타깃으로 작다. 아이콘만 있는 버튼이라 더 그렇다. */
+    width: 40px;
+    height: 40px;
+  }
+
+  .btn-back svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .brand {
+    gap: 8px;
+  }
+
+  .brand__mark {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+
+  .brand__mark svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .brand__org {
+    display: none;
+  }
+
+  .brand__name {
+    font-size: var(--fs-body);
+  }
+
+  .font-scale {
+    gap: 4px;
+  }
+
+  .font-scale__label {
+    display: none;
+  }
+
+  .font-scale__btn {
+    padding: 0 12px;
+    font-size: 12px;
+    /* 32px 은 손가락으로 누르기에 작다. 이 사이트의 이용자는 40~74세이고,
+       글자 크기 버튼은 그중에서도 눈이 불편한 분이 먼저 누르는 버튼이다. */
+    min-height: 40px;
+  }
+}
+
+@media (max-width: 560px) {
+  .site-header__inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .font-scale {
+    justify-content: space-between;
+  }
+
+  .hero {
+    padding-block: var(--sp-4) var(--sp-3);
+  }
+
+  .hero__title {
+    font-size: calc(2rem * var(--font-scale));
+    /* 40px → 32px */
+  }
+}
+
+/* --- 태블릿 이상 (600px ~) --------------------------------------------- */
+@media (min-width: 600px) {
+  .hero {
+    padding-block: var(--sp-6) var(--sp-5);
+  }
+
+  .action {
+    padding: var(--sp-3) var(--sp-4);
+  }
+}
+
+/* --- PC (900px ~) ------------------------------------------------------ */
+@media (min-width: 900px) {
+  .steps {
+    flex-direction: row;
+  }
+
+  .step {
+    flex: 1 1 0;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .contact-list {
+    flex-direction: row;
+  }
+
+  .contact {
+    flex: 1 1 0;
+  }
+}
+
+/* ==========================================================================
+   7-b. 확인 모달
+   --------------------------------------------------------------------------
+   브라우저 기본 confirm() 을 쓰지 않는다. 글자가 작고 버튼 문구를 우리가
+   정할 수 없어, 「확인」이 무엇을 확인하는 것인지 헷갈린다. 되돌릴 수 없는
+   문 앞에서는 무엇이 일어나는지 다시 보여 주고, 버튼에는 행동을 그대로 적는다.
+
+   원래 schedule.css 에 있었다. 예약 흐름의 세 화면(회장·일시 / 정보 입력 /
+   정보 확인)이 모두 「메인 화면으로」 확인창을 쓰게 되면서, 한 화면 전용
+   스타일시트에 둘 수 없게 되어 이리로 옮겼다. 세 화면 모두 main.css 를 읽는다.
+   ========================================================================== */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-3);
+}
+
+.modal.is-hidden { display: none; }
+
+/* 모달이 열린 동안 뒤 화면이 같이 스크롤되면 어디를 보고 있었는지 잃는다. */
+body.is-modal-open { overflow: hidden; }
+
+.modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(21, 34, 32, .55);
+}
+
+.modal__panel {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  max-height: 100%;
+  overflow-y: auto;
+  padding: var(--sp-4) var(--sp-3);
+  background: #FFFFFF;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lift);
+}
+
+.modal__title {
+  margin: 0;
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-bold);
+  line-height: 1.35;
+  color: var(--c-ink);
+  text-align: center;
+}
+
+.modal__pick {
+  margin: var(--sp-3) 0 0;
+  padding: var(--sp-3);
+  background: var(--c-primary-soft);
+  border-radius: var(--radius);
+}
+
+.modal__row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.modal__row + .modal__row { margin-top: var(--sp-2); }
+
+.modal__row dt {
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  color: var(--c-primary-strong);
+}
+
+.modal__row dd {
+  margin: 0;
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-bold);
+  line-height: 1.4;
+  color: var(--c-ink);
+}
+
+.modal__desc {
+  margin: var(--sp-3) 0 0;
+  font-size: var(--fs-small);
+  line-height: var(--lh-base);
+  color: var(--c-ink-sub);
+}
+
+.modal__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+
+.modal__actions .btn { width: 100%; }
+
+/* 좁은 화면에서도 두 버튼을 세로로 둔다. 나란히 두면 급히 누를 때
+   되돌릴 수 없는 쪽을 잘못 누른다. */
+@media (min-width: 700px) {
+  .modal__panel { padding: var(--sp-4); }
+}
+
+/* ==========================================================================
+   8. 인쇄 — 고령 이용자는 종이를 선호한다 (자체 피드백 P-4)
+   ========================================================================== */
+
+@media print {
+
+  .font-scale,
+  .theme-switch,
+  .skip-link,
+  .site-footer {
+    display: none;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .action {
+    box-shadow: none;
+    border-color: #999;
+  }
+}

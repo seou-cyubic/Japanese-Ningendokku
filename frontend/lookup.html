@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="予約番号で健康診断のご予約内容を確認できます。ご予約の変更・キャンセルはお電話でのみ承ります。">
+  <meta name="theme-color" content="#0B6E5B">
+  <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg">
+  <title>ご予約の確認｜健康診断予約</title>
+
+  <link rel="stylesheet" href="assets/css/tokens.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/form.css">
+  <link rel="stylesheet" href="assets/css/apply.css">
+  <link rel="stylesheet" href="assets/css/lookup.css">
+</head>
+<body>
+
+  <a class="skip-link" href="#main">本文へ移動</a>
+
+  <!-- ======================================================================
+       헤더
+       ====================================================================== -->
+  <header class="site-header">
+    <div class="container site-header__inner">
+
+      <div class="site-header__left">
+        <a href="javascript:history.back()" class="btn-back" aria-label="前のページへ戻る" title="戻る">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </a>
+        <a class="brand" href="./index.html">
+          <span class="brand__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 4v7M12 15v5M4.5 12h6M15 12h4.5"></path>
+              <path d="M14.5 17.5l2 2 4-4.5"></path>
+            </svg>
+          </span>
+          <span class="brand__text">
+            <span class="brand__org">医療法人　Sample Group</span>
+            <span class="brand__name">健康診断予約</span>
+          </span>
+        </a>
+      </div>
+
+      <div class="font-scale">
+        <span class="font-scale__label" id="font-scale-label">文字サイズ</span>
+        <div class="font-scale__group" role="group" aria-labelledby="font-scale-label">
+          <button type="button" class="font-scale__btn"
+                  data-scale="1" data-scale-label="標準" aria-pressed="true">標準</button>
+          <button type="button" class="font-scale__btn"
+                  data-scale="1.15" data-scale-label="大" aria-pressed="false">大</button>
+          <button type="button" class="font-scale__btn"
+                  data-scale="1.3" data-scale-label="特大" aria-pressed="false">特大</button>
+        </div>
+      </div>
+
+      <p id="font-scale-status" class="sr-only" role="status" aria-live="polite"></p>
+
+    </div>
+  </header>
+
+  <main id="main" class="page">
+    <div class="container container--narrow">
+
+      <!-- ==================================================================
+           A. 예약번호 입력
+           --------------------------------------------------------------
+           받는 것은 **예약번호 하나뿐**이다. 생년월일이나 성함을 함께 묻지
+           않는다. 예약번호는 무작위 12자·대소문자 구별이라 그 자체가 열쇠이며,
+           성함·생년월일은 가족이라면 아는 값이라 열쇠가 되지 못한다.
+           묻는 항목을 늘리면 고령 이용자의 실패만 늘어난다.
+           ================================================================== -->
+      <section id="step-input" aria-labelledby="page-title">
+
+        <h1 class="page__title" id="page-title">ご予約の確認</h1>
+        <p class="page__lead">
+          ご予約の際にお知らせした<strong>予約番号</strong>をご入力ください。<br>
+          ご予約の内容を表示します。
+        </p>
+
+        <div class="card">
+
+          <p class="hint">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 6.5h18v11H3z"></path>
+              <path d="M3 7l9 6 9-6"></path>
+            </svg>
+            <span>
+              予約番号は<strong>予約完了画面</strong>と<strong>確認メール</strong>に記載しています。英字と数字を組み合わせた12桁です。
+            </span>
+          </p>
+
+          <!-- 통신 실패 등 전역 오류 -->
+          <p class="alert" id="global-alert" role="alert">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M12 7.5v5M12 16h.01"></path>
+            </svg>
+            <span id="global-alert-text"></span>
+          </p>
+
+          <form id="lookup-form" novalidate>
+
+            <div class="field field--first">
+              <label class="field__label" for="res-no">
+                予約番号 <span class="field__required">必須</span>
+              </label>
+              <p class="field__help">
+                英字の<strong>大文字と小文字を区別</strong>します。お受け取りになったとおりにご入力ください。
+              </p>
+              <input class="input input--resno" id="res-no" name="reservation_no"
+                     type="text" inputmode="text" maxlength="12"
+                     autocomplete="off" autocapitalize="off"
+                     autocorrect="off" spellcheck="false"
+                     enterkeyhint="search" aria-invalid="false"
+                     placeholder="aK9mQ2xR7bTz">
+              <p class="field__error" id="err-res-no">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M12 7.5v5M12 16h.01"></path>
+                </svg>
+                <span></span>
+              </p>
+              <p class="resno-count" id="resno-count" aria-live="polite"></p>
+            </div>
+
+            <div class="btn-row">
+              <button class="btn btn--primary btn--lg" type="submit" id="submit-btn">
+                <span class="btn__label">予約内容を確認する</span>
+              </button>
+            </div>
+
+          </form>
+
+        </div>
+
+        <!-- 번호를 모르는 사람을 막다른 길에 두지 않는다 -->
+        <div class="contact-box contact-box--plain">
+          <p class="contact-box__title">予約番号をお忘れの方へ</p>
+          <p class="contact-box__desc">
+            お名前と生年月日をお伺いし、担当者がお調べします。<br>
+            ご予約の<strong>変更・キャンセル</strong>も、お電話でのみ承っております。
+          </p>
+          <div class="contact-box__items">
+            <div class="contact-box__item">
+              <span class="contact-box__ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4.5 5.5c0-1 .8-1.8 1.8-1.8h2c.8 0 1.5.5 1.7 1.3l.8 2.6c.2.7 0 1.4-.6 1.8l-1.3 1a12.5 12.5 0 0 0 5 5l1-1.3c.4-.6 1.1-.8 1.8-.6l2.6.8c.8.2 1.3.9 1.3 1.7v2c0 1-.8 1.8-1.8 1.8A15.5 15.5 0 0 1 4.5 5.5z"></path>
+                </svg>
+              </span>
+              <span>
+                <span class="contact-box__k">お電話でのお問い合わせ</span>
+                <strong class="contact-box__v" id="in-tel">03-1234-5678</strong>
+                <span class="contact-box__hours" id="in-hours">平日 9:00～17:00</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==================================================================
+           B. 조회 결과 — 읽기 전용
+           --------------------------------------------------------------
+           고칠 수 있는 것은 하나도 없다. 입력 칸도 「수정」 링크도 두지 않는다.
+           있지도 않은 기능을 찾게 만드는 것이 문의의 근원이다. (P-9)
+           ================================================================== -->
+      <section id="step-result" class="is-hidden" aria-labelledby="rs-title" tabindex="-1">
+
+        <h1 class="page__title" id="rs-title">ご予約の内容</h1>
+        <p class="page__lead" id="rs-lead"></p>
+
+        <!-- 예약번호 + 상태 -->
+        <div class="rs-head">
+          <div class="rs-head__no">
+            <span class="rs-head__label">予約番号</span>
+            <strong class="rs-head__value" id="rs-no"></strong>
+          </div>
+          <span class="rs-status" id="rs-status"></span>
+        </div>
+
+        <!-- 휴진 안내. 검진일이 통째로 닫힌 예약에만 보인다.
+             예약번호 바로 아래에 두는 이유는, 이 화면에서 가장 먼저
+             알아야 할 것이 「그 날 오시면 안 된다」이기 때문이다. -->
+             
+             
+        <div class="holiday-alarm is-hidden" id="rs-holiday" role="alert">
+          <p class="holiday-alarm__title">
+            <span class="holiday-alarm__mark" aria-hidden="true">!</span>
+            この日は健診を実施しないことになりました
+          </p>
+          <p class="holiday-alarm__desc">
+            担当者からお電話でご連絡し、新しい日程をご相談します。ご予約がなくなったわけではありませんので、ご安心ください。
+          </p>
+          <p class="holiday-alarm__tel">
+            まだご連絡が届いていない場合は
+            <a id="rs-holiday-tel" href="#"></a>
+            <span id="rs-holiday-hours"></span>
+          </p>
+        </div>
+
+        <!-- 검진 일시 · 장소 -->
+        <section class="sumsec" aria-labelledby="rs-slot-heading">
+          <div class="sumsec__head">
+            <span class="sumsec__ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 21V9l8-5 8 5v12"></path>
+                <path d="M9 21v-6h6v6"></path>
+                <path d="M12 7v4M10 9h4"></path>
+              </svg>
+            </span>
+            <h2 class="sumsec__title" id="rs-slot-heading">受診日時・会場</h2>
+          </div>
+          <dl class="datalist datalist--tight" id="rs-slot"></dl>
+        </section>
+
+        <!-- 신청 내용 -->
+        <section class="sumsec" aria-labelledby="rs-person-heading">
+          <div class="sumsec__head">
+            <span class="sumsec__ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8" r="4"></circle>
+                <path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"></path>
+              </svg>
+            </span>
+            <h2 class="sumsec__title" id="rs-person-heading">お申し込み内容</h2>
+          </div>
+          <dl class="datalist datalist--tight" id="rs-person"></dl>
+        </section>
+
+        <!-- 옵션 검사 -->
+        <section class="sumsec" aria-labelledby="rs-option-heading">
+          <div class="sumsec__head">
+            <span class="sumsec__ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 4h6l1 3h3v13H5V7h3z"></path>
+                <path d="M9 12h6M9 16h4"></path>
+              </svg>
+            </span>
+            <h2 class="sumsec__title" id="rs-option-heading">オプション検査</h2>
+          </div>
+          <div id="rs-option"></div>
+        </section>
+
+        <!-- ==============================================================
+             변경 · 취소 안내
+             「이 사이트에서는 못 한다」로 끝내지 않는다. 없는 기능을 찾게
+             만드는 것 자체가 문의의 근원이다. 어디로 전화하면 되는지를
+             번호와 함께 크게 보여 준다. (BR-10 / P-9)
+             ============================================================== -->
+        <div class="change-box">
+          <p class="change-box__title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M12 11v5M12 8h.01"></path>
+            </svg>
+            <span>ご予約の変更・キャンセルをご希望の方へ</span>
+          </p>
+          <p class="change-box__desc" id="rs-change-notice"></p>
+
+          <div class="change-box__tels">
+            <div class="change-box__tel" id="rs-hospital-box">
+              <span class="change-box__k">受診会場</span>
+              <strong class="change-box__name" id="rs-hospital-name"></strong>
+              <div class="change-box__addr" id="rs-hospital-address"></div>
+              <a class="change-box__v" id="rs-hospital-tel" href="#"></a>
+            </div>
+            <div class="change-box__tel">
+              <span class="change-box__k">予約センター</span>
+              <strong class="change-box__name">健康診断予約センター</strong>
+              <a class="change-box__v" id="rs-contact-tel" href="#"></a>
+              <span class="change-box__hours" id="rs-contact-hours"></span>
+            </div>
+          </div>
+        </div>
+
+        <p class="rs-note" id="rs-viewable"></p>
+
+        <div class="btn-row btn-row--inline">
+          <button class="btn btn--primary" type="button" id="print-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M7 9V4h10v5"></path>
+              <path d="M5 9h14a2 2 0 012 2v5h-4v4H7v-4H3v-5a2 2 0 012-2z"></path>
+            </svg>
+            <span>この画面を印刷する</span>
+          </button>
+          <button class="btn btn--primary" type="button" id="email-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <span><span class="nobr">メールで確認リンクを</span><span class="nobr">受け取る</span></span>
+          </button>
+        </div>
+
+        <div id="email-error-msg" style="text-align: center; color: var(--color-danger); font-size: 14px; margin-top: 8px; display: none;">メールアドレスが登録されていない予約です。</div>
+
+        <div class="btn-row btn-row--inline">
+          <button class="btn btn--ghost" type="button" id="again-btn">
+            別の予約番号で確認する
+          </button>
+          <a class="btn btn--ghost" href="./index.html">最初の画面へ</a>
+        </div>
+
+      </section>
+
+      <p class="sr-only" id="live-status" role="status" aria-live="polite"></p>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p class="site-footer__name">医療法人　Sample Group　健康診断予約センター</p>
+      <p class="site-footer__desc">
+        当サイトは満40歳～74歳の方を対象とした健康診断の予約専用サイトです。<br>
+        ご予約の変更・キャンセルは、受診日の3日前までお電話でのみ承っております。
+      </p>
+
+      <nav class="site-footer__links" aria-label="サイト情報">
+        <a href="index.html#steps-heading">ご利用案内</a>
+        <a href="faq.html">よくあるご質問</a>
+        <a href="privacy.html">個人情報保護方針</a>
+        <a href="https://example.com/" target="_blank" rel="noopener noreferrer">運営法人について</a>
+      </nav>
+
+      <p class="site-footer__copy">© 2026 Sample Group Medical Corporation. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/font-scale.js"></script>
+  <script src="assets/js/lookup.js"></script>
+</body>
+</html>

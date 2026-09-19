@@ -1,0 +1,402 @@
+/* ==========================================================================
+   lookup.css — 예약 확인 (U-20)
+   --------------------------------------------------------------------------
+   이 화면은 **읽기 전용**이다. 입력 칸은 예약번호 하나뿐이고,
+   결과에는 고칠 수 있는 것이 하나도 없다.
+
+   그래서 화면의 무게 중심을 둘에 둔다.
+     ① 예약번호를 정확히 넣게 하는 것 (12자 · 대소문자 구별)
+     ② 바꾸고 싶은 사람에게 **전화번호를 크게** 보여 주는 것
+   ========================================================================== */
+
+/* 읽기 위한 화면이므로 폭을 좁혀 한 줄을 짧게 한다.
+   긴 줄은 고령 이용자가 다음 줄 첫머리를 찾기 어렵다. */
+.container--narrow {
+  max-width: 760px;
+}
+
+/* ==========================================================================
+   1. 예약번호 입력
+   ========================================================================== */
+
+/* 12자를 옮겨 적는 칸이다. 고정폭 서체로 자리를 세기 쉽게 한다.
+   대소문자가 섞여 있어 본문 서체로는 `l`·`I`·`1` 을 구별하기 어렵다. */
+.input--resno {
+  font-family: var(--font-mono);
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.12em;
+  text-align: center;
+}
+
+/* 남은 글자 수. 세는 일을 이용자에게 시키지 않는다. */
+.resno-count {
+  margin-top: 8px;
+  font-size: var(--fs-small);
+  color: var(--c-ink-sub);
+  text-align: center;
+}
+
+.resno-count:empty { margin-top: 0; }
+
+.resno-count.is-ok {
+  color: var(--c-primary-strong);
+  font-weight: var(--fw-bold);
+}
+
+.btn--lg {
+  min-height: 68px;
+  font-size: var(--fs-btn);
+}
+
+/* 오류 안내 안의 해결 방법 목록.
+   「못 찾았습니다」로 끝내면 그대로 전화가 된다. 무엇을 확인하면 되는지 붙인다. */
+.alert__hints {
+  margin-top: 8px;
+  padding-left: 18px;
+  list-style: disc;
+}
+
+.alert__hints li { margin-top: 4px; }
+
+/* 입력 화면 아래의 문의 안내는 오류가 아니므로 테두리를 옅게 둔다 */
+.contact-box--plain {
+  background: var(--c-surface);
+}
+
+/* ==========================================================================
+   2. 결과 머리 — 예약번호 + 상태
+   ========================================================================== */
+
+.rs-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+  padding: var(--sp-3);
+  background: var(--c-primary-soft);
+  border: 2px solid var(--c-primary);
+  border-radius: var(--radius-lg);
+}
+
+.rs-head__no {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rs-head__label {
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  color: var(--c-primary-strong);
+}
+
+.rs-head__value {
+  font-family: var(--font-mono);
+  font-size: var(--fs-h1);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  color: var(--c-primary-strong);
+  word-break: break-all;
+}
+
+/* 상태 배지. 색만으로 구별하지 않도록 글자를 반드시 함께 쓴다. */
+.rs-status {
+  flex: none;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
+  white-space: nowrap;
+}
+
+.rs-status--confirmed {
+  background: var(--c-primary);
+  color: #FFFFFF;
+}
+
+.rs-status--pending {
+  background: var(--c-warn-soft);
+  border: 2px solid var(--c-warn);
+  color: var(--c-warn);
+}
+
+.rs-status--cancelled {
+  background: #FDF2F0;
+  border: 2px solid #C0341A;
+  color: #C0341A;
+}
+
+/* 휴진 — 취소와 같은 빨강을 쓴다. 새 색을 들이면 이용자가 「이건 또
+   무슨 상태인가」를 한 번 더 생각해야 한다. 뜻은 배지 글자로 가른다. */
+.rs-status--holiday {
+  background: #FDF2F0;
+  border: 2px solid #C0341A;
+  color: #C0341A;
+}
+
+/* ==========================================================================
+   2-1. 휴진 안내
+   ========================================================================== */
+
+.holiday-alarm {
+  margin-top: var(--sp-2);
+  padding: var(--sp-3);
+  background: #FDF2F0;
+  border: 2px solid #C0341A;
+  border-radius: var(--radius);
+}
+
+.holiday-alarm__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 var(--sp-1);
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-bold);
+  color: #C0341A;
+}
+
+/* 글자만으로도 읽히지만, 훑어보는 눈에 걸리도록 표시를 하나 둔다. */
+.holiday-alarm__mark {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: #C0341A;
+  color: #FFFFFF;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
+}
+
+.holiday-alarm__desc {
+  margin: 0;
+  font-size: var(--fs-body);
+  color: var(--c-ink);
+}
+
+.holiday-alarm__tel {
+  margin: var(--sp-2) 0 0;
+  padding-top: var(--sp-2);
+  border-top: 1px solid #F0CFC9;
+  font-size: var(--fs-small);
+  color: var(--c-ink-sub);
+}
+
+.holiday-alarm__tel a {
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-bold);
+  color: var(--c-accent-strong);
+  margin: 0 8px;
+}
+
+/* 표 안에서 지나간 날짜. 지우지 않고 그어 둔다. */
+.datalist s {
+  color: #8A4034;
+  font-weight: var(--fw-normal);
+}
+
+.holiday-tag {
+  font-style: normal;
+  font-weight: var(--fw-bold);
+  color: #C0341A;
+  margin-left: 8px;
+}
+
+/* ==========================================================================
+   3. 변경 · 취소 안내
+   --------------------------------------------------------------------------
+   이 화면에서 가장 중요한 부분이다. 이용자가 조회 화면에 온 이유의 절반은
+   「바꾸고 싶어서」이며, 그 길이 전화뿐이기 때문이다.
+   「할 수 없습니다」로 끝내면 그 문장이 그대로 문의 전화가 된다. (P-9)
+   ========================================================================== */
+
+.change-box {
+  margin-top: var(--sp-4);
+  padding: var(--sp-3);
+  background: var(--c-warn-soft);
+  border: 2px solid var(--c-warn);
+  border-radius: var(--radius-lg);
+}
+
+.change-box__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-bold);
+  color: var(--c-ink);
+}
+
+.change-box__title svg {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  color: var(--c-warn);
+}
+
+.change-box__desc {
+  margin-top: 10px;
+  font-size: var(--fs-body);
+  line-height: var(--lh-base);
+  color: var(--c-ink);
+}
+
+.change-box__tels {
+  display: grid;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+
+@media (min-width: 620px) {
+  .change-box__tels { grid-template-columns: 1fr 1fr; }
+}
+
+.change-box__tel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--c-surface);
+  border-radius: var(--radius);
+}
+
+.change-box__k {
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-bold);
+  color: var(--c-ink-sub);
+}
+
+.change-box__name {
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  line-height: 1.35;
+}
+
+/* 전화번호는 눌러서 걸 수 있다. 이 화면의 목적지가 전화이므로 가장 크게 둔다. */
+.change-box__v {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-bold);
+  color: var(--c-primary-strong);
+  letter-spacing: 0.02em;
+  text-decoration: none;
+}
+
+a.change-box__v:hover { text-decoration: underline; }
+
+/* 会場の住所。
+
+   この欄で利用者が探すのは **どこへ行けばよいか** である。右の予約センター
+   では電話番号がその答えなので大きく置いた。左の会場では住所がそれにあたる
+   ので、同じ大きさ・太さ・色で置く。左右で答えの見え方をそろえる。
+
+   ※ 以前は `#rs-hospital-addr` という書き方だったが、HTML 側の id は
+     `rs-hospital-address` で **一度も当たっていなかった**。実際の見た目は
+     HTML の style 属性（14px・灰色）が決めていた。id を実物に合わせ、
+     style 属性は外す。 */
+.change-box__addr {
+  margin-top: 4px;
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-bold);
+  color: var(--c-primary-strong);
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+}
+
+.change-box__hours {
+  font-size: var(--fs-caption);
+  color: var(--c-ink-sub);
+}
+
+/* 조회 가능 기한 안내 */
+.rs-note {
+  margin-top: var(--sp-3);
+  font-size: var(--fs-small);
+  line-height: var(--lh-base);
+  color: var(--c-ink-sub);
+}
+
+.rs-note:empty { margin-top: 0; }
+
+/* ==========================================================================
+   4. 인쇄
+   --------------------------------------------------------------------------
+   고령 이용자는 종이를 선호한다. 인쇄한 것이 「검진일에 들고 갈 종이」가
+   되도록 조작용 요소를 뺀다. 변경·취소 안내는 **남긴다** — 종이만 보고
+   전화를 걸 수 있어야 한다.
+   ========================================================================== */
+
+@media print {
+  .site-header,
+  .site-footer,
+  .skip-link,
+  .btn-row,
+  #step-input {
+    display: none !important;
+  }
+
+  .page { padding: 0; }
+
+  .rs-head,
+  .change-box,
+  .sumsec {
+    border-color: #000;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .rs-status {
+    border: 1.5px solid #000;
+    background: transparent;
+    color: #000;
+  }
+
+  .change-box__v { color: #000; }
+}
+
+
+/* ==========================================================================
+   6. 結果画面のボタン列
+   ==========================================================================
+   ここに並ぶのは「印刷する」「メールで受け取る」「別の番号で確認する」
+   —— どれも**主役ではない**。主役は上に表示し終えた予約内容そのものだ。
+
+   `.btn` は申し込みの「予約する」に合わせた寸法(22px・最低72px)で、
+   予約を先へ進める一手のために大きく置いてある。同じ重さをこの列に
+   与えると、読み終えた画面の下で四つの塊が主張してしまう。
+
+   指で押せる大きさ(56px)は保ったまま、文字と余白だけ落とす。
+   高齢の利用者を想定した文字サイズ変更(標準/大/特大)は
+   `--fs-*` を通しているので、ここでもそのまま効く。
+   ========================================================================== */
+
+#step-result .btn-row .btn {
+  min-height: 56px;
+  padding: 12px 20px;
+  font-size: var(--fs-body);
+  border-radius: 12px;
+}
+
+#step-result .btn-row .btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* 二段のボタン列は**ひとつのまとまり**である。上段が「この予約をどうするか」、
+   下段が「この画面から出る」で、役割は違うが同じ場面の選択肢だ。
+   段のあいだを本文と同じ 32px 空けると二つの塊に見え、
+   下段が別の話題のように読める。列の中の 16px に近づけて締める。 */
+#step-result .btn-row + .btn-row,
+#step-result #email-error-msg + .btn-row {
+  margin-top: 12px;
+}

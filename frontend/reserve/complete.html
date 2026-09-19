@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="健康診断のご予約が完了しました。予約番号をご確認のうえ、受診日まで大切に保管してください。">
+  <meta name="theme-color" content="#0B6E5B">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <title>予約完了｜健康診断のご予約</title>
+
+  <link rel="stylesheet" href="../assets/css/tokens.css?v=20260904">
+  <link rel="stylesheet" href="../assets/css/base.css?v=20260904">
+  <link rel="stylesheet" href="../assets/css/main.css?v=20260916">
+  <link rel="stylesheet" href="../assets/css/form.css?v=20260904">
+  <link rel="stylesheet" href="../assets/css/apply.css?v=20260904">
+  <link rel="stylesheet" href="../assets/css/complete.css?v=20260904">
+</head>
+
+<body>
+
+  <a class="skip-link" href="#main">本文へ移動</a>
+
+  <!-- ======================================================================
+       ヘッダー
+       ====================================================================== -->
+  <header class="site-header">
+    <div class="container site-header__inner">
+
+      <a class="brand" href="../index.html">
+        <span class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M12 4v7M12 15v5M4.5 12h6M15 12h4.5"></path>
+            <path d="M14.5 17.5l2 2 4-4.5"></path>
+          </svg>
+        </span>
+        <span class="brand__text">
+          <span class="brand__org">医療法人　Sample Group</span>
+          <span class="brand__name">健康診断のご予約</span>
+        </span>
+      </a>
+
+      <div class="font-scale">
+        <span class="font-scale__label" id="font-scale-label">文字サイズ</span>
+        <div class="font-scale__group" role="group" aria-labelledby="font-scale-label">
+          <button type="button" class="font-scale__btn" data-scale="1" data-scale-label="標準"
+            aria-pressed="true">標準</button>
+          <button type="button" class="font-scale__btn" data-scale="1.15" data-scale-label="大"
+            aria-pressed="false">大</button>
+          <button type="button" class="font-scale__btn" data-scale="1.3" data-scale-label="特大"
+            aria-pressed="false">特大</button>
+        </div>
+      </div>
+
+      <p id="font-scale-status" class="sr-only" role="status" aria-live="polite"></p>
+
+    </div>
+  </header>
+
+  <!-- ======================================================================
+       進行状況表示 — ステップ 5 / 5（完了）
+       ====================================================================== -->
+  <div class="progress" data-step="done">
+    <div class="container">
+      <strong class="progress__count">5ステップ中 <span>5</span>ステップ目</strong>
+      <div class="progress__bar" role="progressbar" aria-valuenow="5" aria-valuemin="1" aria-valuemax="5"
+        aria-label="ご予約の進行状況">
+        <div class="progress__fill" style="width: 100%"></div>
+      </div>
+      <ol class="progress__steps">
+        <li class="progress__step is-done">会場・日時の選択</li>
+        <li class="progress__step is-done">本人確認</li>
+        <li class="progress__step is-done">情報の入力</li>
+        <li class="progress__step is-done">内容の確認</li>
+        <li class="progress__step" aria-current="step">予約完了</li>
+      </ol>
+    </div>
+  </div>
+
+  <main id="main" class="page">
+    <div class="container">
+
+      <!-- 予約未確定状態でのアクセス時の通知 -->
+      <p class="alert" id="global-alert" role="alert">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M12 7.5v5M12 16h.01"></path>
+        </svg>
+        <span id="global-alert-text"></span>
+      </p>
+
+      <div id="done-body" class="is-hidden">
+
+        <!-- ==============================================================
+             ① 予約完了通知・予約番号表示（コピー・印刷機能）
+             ============================================================== -->
+        <section class="done" aria-labelledby="done-title">
+          <span class="done__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M20 6L9 17l-5-5"></path>
+            </svg>
+          </span>
+          <h1 class="done__title" id="done-title">ご予約が完了しました</h1>
+          <p class="done__lead" id="done-lead"></p>
+
+          <div class="resno">
+            <span class="resno__label">予約番号</span>
+            <strong class="resno__value" id="res-no">—</strong>
+            <p class="resno__note">
+              ご予約の内容を確認する際に必要です。
+              <strong>この番号を必ずお控えいただくか、この画面を印刷してください。</strong>
+            </p>
+            <!-- 予約番号の英数字・大文字小文字区別に関する注記 -->
+            <p class="resno__hint">
+              英字の<strong>大文字と小文字を区別</strong>します。上に表示されているとおりにお書き写しください。
+            </p>
+          </div>
+
+          <div class="done__tools">
+            <button type="button" class="btn btn--primary" id="print-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true">
+                <path d="M7 9V4h10v5"></path>
+                <path d="M5 9h14a2 2 0 012 2v5h-4v4H7v-4H3v-5a2 2 0 012-2z"></path>
+              </svg>
+              <span>この画面を印刷する</span>
+            </button>
+            <button type="button" class="btn btn--ghost" id="copy-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true">
+                <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+                <path d="M5 15V5a2 2 0 012-2h8"></path>
+              </svg>
+              <span>予約番号をコピー</span>
+            </button>
+          </div>
+          <p class="done__copied" id="copy-result" role="status" aria-live="polite"></p>
+        </section>
+
+        <!-- ==============================================================
+             ② 確認メール送信用のご案内（BR-11準拠）
+             ============================================================== -->
+        <div class="mail-warn" id="mail-warn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 6.5h18v11H3z"></path>
+            <path d="M3 7l9 6 9-6"></path>
+          </svg>
+          <span class="mail-warn__text" id="mail-warn-text"></span>
+        </div>
+
+        <!-- ==============================================================
+             ③ 健診日時・受診会場
+             ============================================================== -->
+        <section class="sumsec" aria-labelledby="sum-slot-heading">
+          <div class="sumsec__head">
+            <span class="sumsec__ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M4 21V9l8-5 8 5v12"></path>
+                <path d="M9 21v-6h6v6"></path>
+                <path d="M12 7v4M10 9h4"></path>
+              </svg>
+            </span>
+            <h2 class="sumsec__title" id="sum-slot-heading">受診日時・会場</h2>
+          </div>
+          <dl class="datalist datalist--tight" id="sum-slot"></dl>
+        </section>
+
+        <!-- ==============================================================
+             ④ お申し込み内容
+             ============================================================== -->
+        <section class="sumsec" aria-labelledby="sum-person-heading">
+          <div class="sumsec__head">
+            <span class="sumsec__ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.8"></circle>
+                <path d="M4.5 20a7.5 7.5 0 0115 0"></path>
+              </svg>
+            </span>
+            <h2 class="sumsec__title" id="sum-person-heading">お申し込み内容</h2>
+          </div>
+          <dl class="datalist datalist--tight" id="sum-person"></dl>
+        </section>
+
+        <!-- ==============================================================
+             ⑤ オプション検査
+             ============================================================== -->
+        <section class="sumsec" aria-labelledby="sum-option-heading">
+          <div class="sumsec__head">
+            <span class="sumsec__ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M5 6.5h14M5 12h14M5 17.5h9"></path>
+              </svg>
+            </span>
+            <h2 class="sumsec__title" id="sum-option-heading">オプション検査</h2>
+          </div>
+          <div id="sum-option"></div>
+        </section>
+
+        <!-- ==============================================================
+             ⑥ 当日の持ち物・受診前のご注意事項
+             ============================================================== -->
+        <section class="sumsec" aria-labelledby="bring-heading">
+          <div class="sumsec__head">
+            <span class="sumsec__ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <rect x="3" y="7" width="18" height="13" rx="2"></rect>
+                <path d="M9 7V5h6v2"></path>
+              </svg>
+            </span>
+            <h2 class="sumsec__title" id="bring-heading">受診当日の持ち物</h2>
+          </div>
+          <ul class="bring" id="bring-list">
+            <li class="bring__item">健康保険証</li>
+            <li class="bring__item">予約番号がわかるもの(この画面の印刷またはお控え)</li>
+          </ul>
+        </section>
+
+        <!-- ==============================================================
+             ⑦ ご予約の変更・キャンセルについて（お電話受付・BR-10準拠）
+             ============================================================== -->
+        <div class="notice notice--final">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M12 7.5v5M12 16h.01"></path>
+          </svg>
+          <p class="notice__text" id="cancel-note"></p>
+        </div>
+
+        <!-- ==============================================================
+             ⑧ お問い合わせ窓口
+             ============================================================== -->
+        <div class="contact-box">
+          <p class="contact-box__title">お問い合わせ先</p>
+          <div class="contact-box__items">
+            <p class="contact-box__item">
+              <span class="contact-box__k">電話</span>
+              <span class="contact-box__v" id="contact-tel">—</span>
+            </p>
+            <p class="contact-box__item">
+              <span class="contact-box__k">メール</span>
+              <span class="contact-box__v" id="contact-email">—</span>
+            </p>
+            <p class="contact-box__item">
+              <span class="contact-box__k">受付時間</span>
+              <span class="contact-box__v" id="contact-hours">—</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="btn-row btn-row--inline done__home">
+          <a class="btn btn--ghost" href="../index.html">最初の画面へ</a>
+        </div>
+
+      </div>
+
+      <p class="sr-only" id="live-status" role="status" aria-live="polite"></p>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p class="site-footer__name">医療法人　Sample Group　健診予約センター</p>
+      <p class="site-footer__desc">
+        当サイトは満40歳～74歳の方を対象とした健康診断の予約専用サイトです。<br>
+        ご予約の変更・キャンセルは、受診日の3日前までお電話でのみ承っております。
+      </p>
+
+      <p class="site-footer__copy">© 2026 Sample Group Medical Corporation. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="../assets/js/font-scale.js?v=20260904"></script>
+  <script src="../assets/js/flow.js?v=20260904"></script>
+  <script src="../assets/js/complete.js?v=20260904"></script>
+</body>
+
+</html>

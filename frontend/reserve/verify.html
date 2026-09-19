@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="健康診断予約 2/5 — 本人確認。お名前・生年月日・健康保険証の情報から、受診の対象かどうかを確認します。">
+  <meta name="theme-color" content="#0B6E5B">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <title>本人確認｜健康診断予約</title>
+
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/form.css">
+</head>
+<body>
+
+  <a class="skip-link" href="#main">本文へ移動</a>
+
+  <!-- ======================================================================
+       헤더
+       ====================================================================== -->
+  <header class="site-header">
+    <div class="container site-header__inner">
+
+      <div class="site-header__left">
+        <a href="javascript:history.back()" class="btn-back" aria-label="前のページへ戻る" title="戻る">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </a>
+        <a class="brand" href="../index.html">
+          <span class="brand__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 4v7M12 15v5M4.5 12h6M15 12h4.5"></path>
+              <path d="M14.5 17.5l2 2 4-4.5"></path>
+            </svg>
+          </span>
+          <span class="brand__text">
+            <span class="brand__org">医療法人　Sample Group</span>
+            <span class="brand__name">健康診断予約</span>
+          </span>
+        </a>
+      </div>
+
+
+      <div class="font-scale">
+        <span class="font-scale__label" id="font-scale-label">文字サイズ</span>
+        <div class="font-scale__group" role="group" aria-labelledby="font-scale-label">
+          <button type="button" class="font-scale__btn"
+                  data-scale="1" data-scale-label="標準" aria-pressed="true">標準</button>
+          <button type="button" class="font-scale__btn"
+                  data-scale="1.15" data-scale-label="大" aria-pressed="false">大</button>
+          <button type="button" class="font-scale__btn"
+                  data-scale="1.3" data-scale-label="特大" aria-pressed="false">特大</button>
+        </div>
+      </div>
+
+      <p id="font-scale-status" class="sr-only" role="status" aria-live="polite"></p>
+
+    </div>
+  </header>
+
+  <!-- ======================================================================
+       진행 표시 — 5단계 중 2단계
+       회장·일시 선택 → 본인 확인 → 정보 입력 → 정보 확인 → 예약 완료
+       (회장 선택과 일시 선택은 한 화면에서 처리한다)
+       ====================================================================== -->
+  <!-- 단계 이름·번호는 assets/js/flow.js 가 한 곳에서 관리한다. -->
+  <div class="progress" id="progress" data-step="verify">
+    <div class="container">
+      <strong class="progress__count">5ステップ中 <span>2</span>ステップ目</strong>
+      <div class="progress__bar" role="progressbar"
+           aria-valuenow="2" aria-valuemin="1" aria-valuemax="5"
+           aria-label="ご予約の進行状況">
+        <div class="progress__fill" style="width: 40%"></div>
+      </div>
+      <ol class="progress__steps">
+        <li class="progress__step is-done">会場・日時の選択</li>
+        <li class="progress__step" aria-current="step">本人確認</li>
+        <li class="progress__step">情報の入力</li>
+        <li class="progress__step">内容の確認</li>
+        <li class="progress__step">予約完了</li>
+      </ol>
+    </div>
+  </div>
+
+  <main id="main" class="page">
+    <div class="container">
+
+      <!-- ==================================================================
+           A. 입력 화면
+           ================================================================== -->
+      <section id="step-form" aria-labelledby="page-title">
+
+        <h1 class="page__title" id="page-title">本人確認</h1>
+        <p class="page__lead">
+          はじめに、今年の健康診断の対象となる方かどうかを確認します。<br>
+          健康保険証に記載のとおりにご入力ください。
+        </p>
+
+        <!-- 빈자리 확인에서 넘어온 경우에만 보인다 (verify.js).
+             앞 화면에서 고른 일시를 여기서 다시 보여 주지 않으면,
+             본인 확인을 하는 동안 「내가 고른 시간이 살아 있나」를 알 수 없다. -->
+             
+             
+        <div class="held is-hidden" id="held-slot">
+          <span class="held__ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M12 7.5V12l3 2"></path>
+            </svg>
+          </span>
+          <span class="held__body">
+            <span class="held__label">お選びいただいた受診日時</span>
+            <strong class="held__hospital" id="held-hospital"></strong>
+            <strong class="held__when" id="held-when"></strong>
+            <span class="held__note">
+              本人確認が終わりましたら、この日時でご予約に進みます。
+            </span>
+          </span>
+          <a class="held__change" href="schedule.html">変更</a>
+        </div>
+
+        <div class="card">
+
+          <p class="hint">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2.5" y="5" width="19" height="14" rx="3"></rect>
+              <path d="M2.5 9.5h19"></path>
+              <path d="M6.5 14h5M15 14h2.5"></path>
+            </svg>
+            <span>
+              <strong>健康保険証</strong>をお手元にご用意のうえ、ご入力ください。保険者番号・記号・番号は、カードのおもて面に記載されています。
+            </span>
+          </p>
+
+          <!-- 통신 실패 등 전역 오류 -->
+          <p class="alert" id="global-alert" role="alert">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M12 7.5v5M12 16h.01"></path>
+            </svg>
+            <span id="global-alert-text"></span>
+          </p>
+
+          <form id="verify-form" novalidate>
+
+            <!-- 성명 (한자) ----------------------------------------------- -->
+            <fieldset class="field" style="border:0; padding:0; margin-inline:0;">
+              <legend class="field__label" style="padding:0;">
+                お名前（漢字）
+                <span class="field__required">必須</span>
+              </legend>
+              <p class="field__help" id="name-help">
+                健康保険証に記載のとおり、<strong>姓と名を分けて</strong>ご入力ください。
+              </p>
+
+              <div class="name-grid" aria-describedby="name-help">
+                <span class="name-grid__cell">
+                  <label class="name-grid__label" for="last-name">姓</label>
+                  <input class="input" type="text" id="last-name"
+                         autocomplete="family-name" enterkeyhint="next"
+                         aria-invalid="false" placeholder="田中">
+                </span>
+                <span class="name-grid__cell">
+                  <label class="name-grid__label" for="first-name">名</label>
+                  <input class="input" type="text" id="first-name"
+                         autocomplete="given-name" enterkeyhint="next"
+                         aria-invalid="false" placeholder="太郎">
+                </span>
+              </div>
+
+              <p class="field__error" id="name-error">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M12 7.5v5M12 16h.01"></path>
+                </svg>
+                <span></span>
+              </p>
+            </fieldset>
+
+            <!-- 후리가나 (전각 가타카나) ----------------------------------- -->
+            <fieldset class="field" style="border:0; padding:0; margin-inline:0;">
+              <legend class="field__label" style="padding:0;">
+                フリガナ
+                <span class="field__required">必須</span>
+              </legend>
+
+              <p class="field__help" id="kana-help">
+                上でご入力いただいたお名前の読み方を<strong>全角カタカナ</strong>でご入力ください。
+              </p>
+
+              <p class="kana-guide">
+                <span class="kana-guide__row">
+                  <span class="kana-guide__ok" aria-hidden="true">○</span>
+                  <span><strong>正しい例</strong> — 田中 太郎 → <b>タナカ</b> / <b>タロウ</b></span>
+                </span>
+                <span class="kana-guide__row">
+                  <span class="kana-guide__ng" aria-hidden="true">×</span>
+                  <span><strong>誤った例</strong> — たなか（ひらがな）・ﾀﾅｶ（半角）・Tanaka（英字）・田中（漢字）</span>
+                </span>
+                <span class="kana-guide__note">
+                  ひらがなや半角カタカナで入力されても、全角カタカナに自動で変換します。
+                </span>
+              </p>
+
+              <div class="name-grid" aria-describedby="kana-help">
+                <span class="name-grid__cell">
+                  <label class="name-grid__label" for="last-name-kana">姓のフリガナ</label>
+                  <input class="input" type="text" id="last-name-kana"
+                         lang="ja" enterkeyhint="next"
+                         aria-invalid="false" placeholder="タナカ">
+                </span>
+                <span class="name-grid__cell">
+                  <label class="name-grid__label" for="first-name-kana">名のフリガナ</label>
+                  <input class="input" type="text" id="first-name-kana"
+                         lang="ja" enterkeyhint="next"
+                         aria-invalid="false" placeholder="タロウ">
+                </span>
+              </div>
+
+              <p class="field__error" id="kana-error">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M12 7.5v5M12 16h.01"></path>
+                </svg>
+                <span></span>
+              </p>
+
+              <!-- 자동 변환이 일어났을 때 스크린 리더에도 알린다 -->
+              <p id="kana-converted" class="field__note" role="status" aria-live="polite"></p>
+            </fieldset>
+
+            <!-- 미들네임 (외국인 전용 · 임의) ------------------------------ -->
+            <fieldset class="field" style="border:0; padding:0; margin-inline:0;">
+              <legend class="field__label" style="padding:0;">
+                ミドルネーム
+                <span class="field__optional">お持ちの方のみ</span>
+              </legend>
+              <p class="field__help" id="middle-help">
+                ミドルネームをお持ちの方のみご入力ください。ない場合は空欄で構いません。
+              </p>
+
+              <div class="name-grid" aria-describedby="middle-help">
+                <span class="name-grid__cell">
+                  <label class="name-grid__label" for="middle-name">ミドルネーム</label>
+                  <input class="input" type="text" id="middle-name"
+                         autocomplete="additional-name"
+                         aria-invalid="false" placeholder="例：ウィリアム">
+                </span>
+                <span class="name-grid__cell">
+                  <label class="name-grid__label" for="middle-name-kana">
+                    ミドルネームのフリガナ
+                  </label>
+                  <input class="input" type="text" id="middle-name-kana"
+                         lang="ja" aria-invalid="false" placeholder="ウィリアム">
+                </span>
+              </div>
+
+              <p class="field__error" id="middle-error">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M12 7.5v5M12 16h.01"></path>
+                </svg>
+                <span></span>
+              </p>
+            </fieldset>
+
+            <!-- 성별 ------------------------------------------------------ -->
+            <fieldset class="field" style="border:0; padding:0; margin-inline:0;">
+              <legend class="field__label" style="padding:0;">
+                性別
+                <span class="field__required">必須</span>
+              </legend>
+              <p class="field__help" id="gender-help">
+                健康保険証に記載の性別（戸籍上の性別）をお選びください。
+              </p>
+
+              <div class="choice-group" aria-describedby="gender-help">
+                <label class="choice">
+                  <input type="radio" name="gender" value="M" id="gender-m">
+                  <span class="choice__box">
+                    <span class="choice__dot" aria-hidden="true"></span>
+                    <span class="choice__text">男性</span>
+                  </span>
+                </label>
+                <label class="choice">
+                  <input type="radio" name="gender" value="F" id="gender-f">
+                  <span class="choice__box">
+                    <span class="choice__dot" aria-hidden="true"></span>
+                    <span class="choice__text">女性</span>
+                  </span>
+                </label>
+              </div>
+
+              <p class="field__error" id="gender-error">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M12 7.5v5M12 16h.01"></path>
+                </svg>
+                <span></span>
+              </p>
+            </fieldset>
+
+            <!-- 생년월일 -------------------------------------------------- -->
+            <fieldset class="field" style="border:0; padding:0; margin-inline:0;">
+              <legend class="field__label" style="padding:0;">
+                生年月日
+                <span class="field__required">必須</span>
+              </legend>
+              <p class="field__help" id="birth-help">
+                西暦でご入力ください。（例：1970年5月12日）
+              </p>
+
+              <div class="input-group" aria-describedby="birth-help">
+                <span class="input-group__item">
+                  <label class="sr-only" for="birth-year">生まれた年</label>
+                  <input class="input input--year" type="text" id="birth-year"
+                         inputmode="numeric" maxlength="4" placeholder="1970"
+                         autocomplete="bday-year" aria-invalid="false">
+                  <span class="input-group__unit">年</span>
+                </span>
+
+                <span class="input-group__item">
+                  <label class="sr-only" for="birth-month">生まれた月</label>
+                  <select class="input" id="birth-month"
+                          autocomplete="bday-month" aria-invalid="false">
+                    <option value="">選択</option>
+                  </select>
+                  <span class="input-group__unit">月</span>
+                </span>
+
+                <span class="input-group__item">
+                  <label class="sr-only" for="birth-day">生まれた日</label>
+                  <select class="input" id="birth-day"
+                          autocomplete="bday-day" aria-invalid="false">
+                    <option value="">選択</option>
+                  </select>
+                  <span class="input-group__unit">日</span>
+                </span>
+              </div>
+
+              <!-- 나이 되묻기 안내.
+
+                   대상은 만 40~74세다. 20·30대가 끝까지 입력하고 나서야
+                   「대상자를 확인할 수 없습니다」를 보는 것은 시간 낭비다.
+                   그렇다고 「대상이 아닙니다」라고 하면 거절로 읽히는데,
+                   실제로는 생년월일 오타인 경우가 섞여 있다.
+
+                   그래서 입력한 날짜를 되돌려 보여 주고 확인을 요청한다.
+                   오타면 본인이 알아채고, 정말 대상 밖이면 문의처로 간다. -->
+
+                   
+                   
+                   
+                   
+
+                   
+                   
+              <div class="birth-check is-hidden" id="birth-check" role="status">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M9.5 9.5a2.5 2.5 0 113.5 2.3V13"></path>
+                  <path d="M12 16.5h.01"></path>
+                </svg>
+                <div class="birth-check__body">
+                  <strong class="birth-check__title">生年月日をご確認ください</strong>
+                  <p class="birth-check__line" id="birth-check-entered"></p>
+                  <p class="birth-check__line" id="birth-check-range"></p>
+                  <p class="birth-check__line">
+                    ご入力の生年月日にお間違いがなければ、下記のお問い合わせ先までご連絡ください。
+                  </p>
+                </div>
+              </div>
+
+              <p class="field__error" id="birth-error">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M12 7.5v5M12 16h.01"></path>
+                </svg>
+                <span></span>
+              </p>
+            </fieldset>
+
+            <!-- 건강보험증 ------------------------------------------------ -->
+            <fieldset class="field" style="border:0; padding:0; margin-inline:0;">
+              <legend class="field__label" style="padding:0;">
+                健康保険証の番号
+                <span class="field__required">必須</span>
+              </legend>
+              <p class="field__help" id="card-help">
+                カードに記載の<strong>保険者番号・記号・番号</strong>を順にご入力ください。
+              </p>
+
+              <div class="input-group" aria-describedby="card-help">
+                <span class="input-group__item">
+                  <label class="sr-only" for="insurer-no">保険者番号</label>
+                  <input class="input input--code" type="text" id="insurer-no"
+                         maxlength="20" placeholder="0000" aria-invalid="false">
+                </span>
+                <span class="input-group__sep" aria-hidden="true">–</span>
+                <span class="input-group__item">
+                  <label class="sr-only" for="insurance-symbol">記号</label>
+                  <input class="input input--code" type="text" id="insurance-symbol"
+                         maxlength="20" placeholder="ABCD" aria-invalid="false">
+                </span>
+                <span class="input-group__sep" aria-hidden="true">–</span>
+                <span class="input-group__item">
+                  <label class="sr-only" for="insurance-no">番号</label>
+                  <input class="input input--code" type="text" id="insurance-no"
+                         maxlength="20" placeholder="0000" aria-invalid="false">
+                </span>
+              </div>
+
+              <p class="field__error" id="card-error">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M12 7.5v5M12 16h.01"></path>
+                </svg>
+                <span></span>
+              </p>
+            </fieldset>
+
+            <div class="btn-row btn-row--inline">
+              <button class="btn btn--primary" type="submit" id="submit-btn">
+                <span class="btn__label">次へ進む</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M9 5l7 7-7 7"></path>
+                </svg>
+              </button>
+              <a class="btn btn--ghost" href="../index.html">最初の画面へ戻る</a>
+            </div>
+
+          </form>
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           B. 결과 — ① 검진 대상자가 아님
+           ================================================================== -->
+      <section id="result-not-eligible" class="is-hidden" aria-labelledby="ne-title" tabindex="-1">
+        <div class="result result--warn">
+
+          <div class="result__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M12 7.5v5M12 16h.01"></path>
+            </svg>
+          </div>
+
+          <h1 class="result__title" id="ne-title">
+            受診の対象かどうかを確認できませんでした
+          </h1>
+          <p class="result__message" id="ne-message"></p>
+
+          <div class="contact-box">
+            <p class="contact-box__title">次のような場合が考えられます</p>
+            <ul class="hint-list" id="ne-hints"></ul>
+
+            <div class="contact-box__items">
+              <div class="contact-box__item">
+                <span class="contact-box__ico" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4.5 5.5c0-1 .8-1.8 1.8-1.8h2c.8 0 1.5.5 1.7 1.3l.8 2.6c.2.7 0 1.4-.6 1.8l-1.3 1a12.5 12.5 0 0 0 5 5l1-1.3c.4-.6 1.1-.8 1.8-.6l2.6.8c.8.2 1.3.9 1.3 1.7v2c0 1-.8 1.8-1.8 1.8A15.5 15.5 0 0 1 4.5 5.5z"></path>
+                  </svg>
+                </span>
+                <span>
+                  <span class="contact-box__k">お電話でのお問い合わせ</span>
+                  <strong class="contact-box__v" id="ne-tel"></strong>
+                  <span class="contact-box__hours" id="ne-hours"></span>
+                </span>
+              </div>
+
+              <div class="contact-box__item">
+                <span class="contact-box__ico" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="5" width="18" height="14" rx="3"></rect>
+                    <path d="M3.8 7.2l7.3 5.2c.5.4 1.3.4 1.8 0l7.3-5.2"></path>
+                  </svg>
+                </span>
+                <span>
+                  <span class="contact-box__k">メールでのお問い合わせ</span>
+                  <strong class="contact-box__v" id="ne-email"></strong>
+                  <span class="contact-box__hours">2営業日以内にご返信します</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="btn-row btn-row--inline">
+            <button class="btn btn--primary" type="button" data-action="retry">
+              入力しなおす
+            </button>
+            <a class="btn btn--ghost" href="../index.html">最初の画面へ戻る</a>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           C. 결과 — ② 이미 예약 내용이 있음
+           ================================================================== -->
+      <section id="result-already" class="is-hidden" aria-labelledby="ar-title" tabindex="-1">
+        <div class="result result--info">
+
+          <div class="result__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="5" width="18" height="16" rx="3"></rect>
+              <path d="M3 10h18M8 3v4M16 3v4"></path>
+              <path d="M8.8 15.2l2.2 2.2 4.2-4.4"></path>
+            </svg>
+          </div>
+
+          <h1 class="result__title" id="ar-title">
+            すでにご予約が入っています
+          </h1>
+          <p class="result__message" id="ar-message"></p>
+
+          <!-- ============================================================
+               예약번호도 예약 내용도 여기서는 보여 주지 않는다.
+               이 화면에 넣는 값(성명·생년월일·보험증)은 가족이나 동거인이라면
+               알 수 있는 정보다. 그것만으로 예약번호가 나오면, 예약번호 하나로
+               열리는 예약 조회(U-20)가 통째로 열리는 셈이 된다.
+
+               대신 「이제 무엇을 하면 되는지」를 평소보다 자세히 적는다.
+               여기서 막힌 이용자는 화면에서 더 할 수 있는 일이 없으므로,
+               안내가 부족하면 그대로 전화가 된다.
+               ============================================================ -->
+          <ul class="guide-list" id="ar-hints"></ul>
+
+          <div class="contact-box">
+            <p class="contact-box__title">このようなときはお電話でご相談ください</p>
+            <p class="contact-box__desc">
+              <strong>ご予約の内容を確認</strong>したいが予約番号がわからない場合、<br>
+              <strong>ご予約を変更・キャンセル</strong>したい場合は、いずれもお電話で承ります。<br>
+              インターネットでの変更・キャンセルは承っておりません。変更・キャンセルは<strong>受診日の3日前まで</strong>承ります。
+            </p>
+
+            <div class="contact-box__items">
+              <div class="contact-box__item">
+                <span class="contact-box__ico" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4.5 5.5c0-1 .8-1.8 1.8-1.8h2c.8 0 1.5.5 1.7 1.3l.8 2.6c.2.7 0 1.4-.6 1.8l-1.3 1a12.5 12.5 0 0 0 5 5l1-1.3c.4-.6 1.1-.8 1.8-.6l2.6.8c.8.2 1.3.9 1.3 1.7v2c0 1-.8 1.8-1.8 1.8A15.5 15.5 0 0 1 4.5 5.5z"></path>
+                  </svg>
+                </span>
+                <span>
+                  <span class="contact-box__k">お電話でのお問い合わせ</span>
+                  <strong class="contact-box__v" id="ar-tel"></strong>
+                  <span class="contact-box__hours" id="ar-hours"></span>
+                </span>
+              </div>
+
+              <!-- 전화가 어려운 시간대를 위한 두 번째 창구.
+                   창구가 하나뿐이면 그 시간에 닿지 못한 사람은 포기한다. -->
+                   
+              <div class="contact-box__item">
+                <span class="contact-box__ico" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6.5h18v11H3z"></path>
+                    <path d="M3 7l9 6 9-6"></path>
+                  </svg>
+                </span>
+                <span>
+                  <span class="contact-box__k">メールでのお問い合わせ</span>
+                  <strong class="contact-box__v" id="ar-email"></strong>
+                  <span class="contact-box__hours">
+                    お名前と生年月日をご記入ください
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="btn-row btn-row--inline">
+            <a class="btn btn--primary" href="../index.html">最初の画面へ戻る</a>
+            <button class="btn btn--ghost" type="button" data-action="retry">
+              入力しなおす
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           D. 결과 — ③ 본인 확인 완료 (예약 진행 가능)
+           ================================================================== -->
+      <section id="result-eligible" class="is-hidden" aria-labelledby="ok-title" tabindex="-1">
+        <div class="result result--ok">
+
+          <div class="result__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 6L9 17l-5-5"></path>
+            </svg>
+          </div>
+
+          <h1 class="result__title" id="ok-title">本人確認が完了しました</h1>
+          <p class="result__message" id="ok-message"></p>
+
+          <dl class="datalist">
+            <div class="datalist__row">
+              <dt class="datalist__key">お名前</dt>
+              <dd class="datalist__val" id="ok-name"></dd>
+            </div>
+            <div class="datalist__row">
+              <dt class="datalist__key">フリガナ</dt>
+              <dd class="datalist__val" id="ok-kana" lang="ja"></dd>
+            </div>
+            <div class="datalist__row">
+              <dt class="datalist__key">性別</dt>
+              <dd class="datalist__val" id="ok-gender"></dd>
+            </div>
+            <div class="datalist__row">
+              <dt class="datalist__key">生年月日</dt>
+              <dd class="datalist__val" id="ok-birth"></dd>
+            </div>
+            <div class="datalist__row">
+              <dt class="datalist__key">健康保険証</dt>
+              <dd class="datalist__val" id="ok-card"></dd>
+            </div>
+          </dl>
+
+          <div class="btn-row btn-row--inline">
+            <button class="btn btn--primary" type="button" id="next-step-btn">
+              <span id="next-step-label">会場・日時の選択へ進む</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M9 5l7 7-7 7"></path>
+              </svg>
+            </button>
+            <button class="btn btn--ghost" type="button" data-action="retry">
+              入力しなおす
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p class="site-footer__name">医療法人　Sample Group　健康診断予約センター</p>
+      <p class="site-footer__desc">
+        当サイトは満40歳～74歳の方を対象とした健康診断の予約専用サイトです。<br>
+        ご予約の変更・キャンセルは、受診日の3日前までお電話でのみ承っております。
+      </p>
+
+      <nav class="site-footer__links" aria-label="サイト情報">
+        <a href="../index.html#steps-heading">ご利用案内</a>
+        <a href="../faq.html">よくあるご質問</a>
+        <a href="../privacy.html">個人情報保護方針</a>
+        <a href="https://example.com/" target="_blank" rel="noopener noreferrer">運営法人について</a>
+      </nav>
+
+      <p class="site-footer__copy">© 2026 Sample Group Medical Corporation. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="../assets/js/font-scale.js"></script>
+  <script src="../assets/js/flow.js"></script>
+  <script src="../assets/js/verify.js"></script>
+</body>
+</html>

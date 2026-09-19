@@ -1,0 +1,1149 @@
+/* ==========================================================================
+   form.css — 예약 흐름 공통 스타일 (진행 표시 · 입력 폼 · 결과 패널)
+   plan.md §12.3 컴포넌트 규격 준수
+   ========================================================================== */
+
+/* ==========================================================================
+   1. 진행 표시 — 「○단계 중 △단계」 (자체 피드백 P-1)
+   고령 이용자가 「얼마나 남았는지」를 알 수 있어야 중도 이탈이 줄어든다.
+   ========================================================================== */
+
+.progress {
+  padding-block: var(--sp-3);
+  background: var(--c-surface);
+  border-bottom: 1px solid var(--c-line);
+
+  /* 헤더 바로 아래에 붙여 둔다.
+
+     긴 화면(정보 입력)에서 아래로 내려가면 진행 표시가 화면 밖으로 사라져,
+     「지금 몇 단계이고 얼마나 남았는지」를 확인하려면 위로 되돌아가야 했다.
+     고령 이용자에게 그 왕복은 그대로 이탈로 이어진다.
+
+     top 값을 px 로 못 박지 않는 이유
+     --------------------------------
+     이 사이트에는 글자 크기 조절(보통/크게/아주 크게)이 있어서 헤더 높이가
+     이용자마다 다르고, 좁은 화면에서는 헤더가 두 줄로 접히기도 한다.
+     그래서 헤더 높이를 실측해 --header-h 로 넘겨받는다. (flow.js)
+     값이 아직 없을 때를 대비해 0px 을 기본으로 둔다. */
+  position: sticky;
+  top: var(--header-h, 0px);
+  z-index: 900;
+  /* .site-header(1000) 아래, 본문 위 */
+}
+
+.progress__count {
+  display: block;
+  margin-bottom: var(--sp-1);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  color: var(--c-primary);
+}
+
+.progress__bar {
+  height: 10px;
+  background: var(--c-line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress__fill {
+  height: 100%;
+  background: var(--c-primary);
+  border-radius: 999px;
+  transition: width var(--dur) var(--ease);
+}
+
+.progress__steps {
+  display: flex;
+  gap: var(--sp-1);
+  margin-top: var(--sp-2);
+}
+
+/* `flex: 1 1 0` 으로 다섯 칸을 똑같이 나누면 가장 긴 「会場・日時の選択」만
+   두 줄로 접혀 다른 단계와 높이가 어긋난다. 내용 너비를 기준(`auto`)으로
+   나누고 줄바꿈을 막아 다섯 라벨이 모두 한 줄에 놓이게 한다. */
+.progress__step {
+  flex: 1 1 auto;
+  font-size: var(--fs-caption);
+  color: var(--c-ink-weak);
+  text-align: center;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.progress__step[aria-current="step"] {
+  color: var(--c-primary);
+  font-weight: var(--fw-bold);
+}
+
+/* 지나온 단계. 「어디까지 왔는지」가 보여야 남은 단계를 가늠할 수 있다.
+   빈자리 확인으로 들어온 경우 회장·일시 선택이 첫 단계가 되므로,
+   본인 확인 화면에서 이미 끝난 단계가 하나 생긴다. (assets/js/flow.js) */
+.progress__step.is-done {
+  color: var(--c-ink-sub);
+}
+
+.progress__step.is-done::before {
+  content: "✓";
+  margin-right: 4px;
+  color: var(--c-primary);
+  font-weight: var(--fw-bold);
+}
+
+/* 태블릿 폭에서는 글자를 한 단계 줄여 한 줄을 유지한다 */
+@media (max-width: 820px) {
+  .progress__steps {
+    gap: 2px;
+  }
+
+  .progress__step {
+    font-size: 12px;
+  }
+
+  .progress__step.is-done::before {
+    margin-right: 2px;
+  }
+}
+
+/* 좁은 화면에서는 현재 단계 외의 라벨을 감춰 혼잡을 줄인다 */
+@media (max-width: 560px) {
+  .progress__steps {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   2. 페이지 헤딩
+   ========================================================================== */
+
+.page {
+  padding-block: var(--sp-4) var(--sp-6);
+}
+
+.page__title {
+  font-size: var(--fs-h1);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-tight);
+  letter-spacing: -0.02em;
+}
+
+.page__lead {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-body);
+  color: var(--c-ink-sub);
+  line-height: var(--lh-base);
+}
+
+/* ==========================================================================
+   3. 카드
+   ========================================================================== */
+
+.card {
+  margin-top: var(--sp-3);
+  padding: var(--sp-4) var(--sp-3);
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+@media (min-width: 600px) {
+  .card {
+    padding: var(--sp-4);
+  }
+}
+
+/* 준비물 등 사전 안내 */
+.hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--c-accent-soft);
+  border: 1px solid #CBDDF1;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-small);
+  line-height: 1.6;
+}
+
+.hint svg {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin-top: 3px;
+  color: var(--c-accent);
+}
+
+.hint strong {
+  font-weight: var(--fw-bold);
+}
+
+/* ==========================================================================
+   4. 입력 폼
+   ========================================================================== */
+
+.field {
+  margin-top: var(--sp-4);
+}
+
+.field:first-of-type {
+  margin-top: var(--sp-3);
+}
+
+/* 라벨은 반드시 필드 위에 둔다. 플레이스홀더를 라벨로 쓰지 않는다. */
+.field__label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
+  line-height: 1.4;
+}
+
+.field__required {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  background: #FCE9E4;
+  color: #A3341A;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-bold);
+  border-radius: 6px;
+  vertical-align: 2px;
+}
+
+.field__optional {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  background: var(--c-bg);
+  border: 1px solid var(--c-line-strong);
+  color: var(--c-ink-sub);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  border-radius: 6px;
+  vertical-align: 2px;
+}
+
+.field__help {
+  margin-bottom: 10px;
+  font-size: var(--fs-small);
+  color: var(--c-ink-sub);
+  line-height: 1.55;
+}
+
+.input {
+  width: 100%;
+  min-height: 56px;
+  padding: 12px 16px;
+  font: inherit;
+  font-size: var(--fs-body);
+  color: var(--c-ink);
+  background: var(--c-surface);
+  border: 2px solid var(--c-line-strong);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+
+.input::placeholder {
+  color: #9AA9A6;
+}
+
+.input:hover {
+  border-color: var(--c-ink-weak);
+}
+
+.input:focus {
+  border-color: var(--c-primary);
+  box-shadow: 0 0 0 3px rgba(11, 110, 91, .16);
+}
+
+select.input {
+  cursor: pointer;
+  /* 기본 화살표를 유지하되 텍스트와 겹치지 않도록 여백 확보 */
+  padding-right: 12px;
+}
+
+.input[aria-invalid="true"] {
+  border-color: #C0341A;
+  background: #FFFBFA;
+}
+
+/* --- 여러 칸으로 나뉜 입력 (생년월일 · 보험증) ------------------------- */
+
+.input-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.input-group__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.input-group__unit {
+  flex: none;
+  font-size: var(--fs-body);
+  color: var(--c-ink-sub);
+}
+
+.input-group__sep {
+  flex: none;
+  font-size: var(--fs-lead);
+  color: var(--c-ink-weak);
+}
+
+.input--year {
+  min-width: 92px;
+}
+
+.input--code {
+  text-align: center;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 400px) {
+  .input-group {
+    gap: 6px;
+  }
+
+  .input-group__item {
+    gap: 4px;
+  }
+
+  .input {
+    padding-inline: 10px;
+  }
+}
+
+/* --- 성 / 이름 2칸 배치 ------------------------------------------------- */
+
+.name-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-2);
+}
+
+.name-grid__cell {
+  display: block;
+  min-width: 0;
+}
+
+/* 어느 칸이 성이고 어느 칸이 이름인지 항상 보이게 둔다.
+   플레이스홀더만으로는 입력을 시작한 순간 사라져 헷갈린다. */
+.name-grid__label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-medium);
+  color: var(--c-ink-sub);
+}
+
+/* 좁은 화면에서는 세로로 쌓는다 */
+@media (max-width: 430px) {
+  .name-grid {
+    grid-template-columns: 1fr;
+    gap: var(--sp-2);
+  }
+}
+
+/* --- 택1 선택 (성별 등) -------------------------------------------------
+   라디오 버튼 자체는 고령 이용자에게 너무 작다.
+   실제 <input type="radio"> 는 접근성을 위해 남겨 두고(키보드·스크린 리더),
+   시각적으로는 넉넉한 카드를 누르게 한다.
+   ------------------------------------------------------------------------ */
+
+.choice-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-2);
+}
+
+@media (max-width: 380px) {
+  .choice-group {
+    grid-template-columns: 1fr;
+  }
+}
+
+.choice {
+  display: block;
+  cursor: pointer;
+}
+
+/* 화면에서 감추되 포커스는 살아 있게 한다 */
+.choice input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.choice__box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 72px;
+  padding: 14px 16px;
+  background: var(--c-surface);
+  border: 2px solid var(--c-line-strong);
+  border-radius: var(--radius);
+  transition: border-color var(--dur) var(--ease),
+    background-color var(--dur) var(--ease);
+}
+
+.choice:hover .choice__box {
+  border-color: var(--c-primary);
+  background: var(--c-primary-soft);
+}
+
+.choice__dot {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--c-line-strong);
+  border-radius: 50%;
+  background: var(--c-surface);
+  transition: border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+
+.choice__text {
+  font-size: var(--fs-btn);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.01em;
+}
+
+/* 선택 상태 — 색 외에 원 안의 점으로도 구분한다 */
+.choice input:checked+.choice__box {
+  border-color: var(--c-primary);
+  background: var(--c-primary-soft);
+}
+
+.choice input:checked+.choice__box .choice__dot {
+  border-color: var(--c-primary);
+  box-shadow: inset 0 0 0 6px var(--c-primary);
+}
+
+.choice input:focus-visible+.choice__box {
+  outline: 3px solid var(--c-focus);
+  outline-offset: 3px;
+}
+
+.choice input[aria-invalid="true"]+.choice__box {
+  border-color: #C0341A;
+  background: #FFFBFA;
+}
+
+/* --- 후리가나 입력 안내 ------------------------------------------------- */
+
+.kana-guide {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: var(--sp-2);
+  padding: 14px var(--sp-2);
+  background: var(--c-bg);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-small);
+  line-height: 1.55;
+}
+
+.kana-guide__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+/* 색만으로 구분하지 않도록 ○ / × 기호를 함께 쓴다 */
+.kana-guide__ok,
+.kana-guide__ng {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-bold);
+  line-height: 1;
+}
+
+.kana-guide__ok {
+  background: var(--c-primary-soft);
+  color: var(--c-primary-strong);
+}
+
+.kana-guide__ng {
+  background: #FDECE6;
+  color: #A3341A;
+}
+
+.kana-guide b {
+  font-weight: var(--fw-bold);
+  color: var(--c-primary-strong);
+}
+
+.kana-guide__note {
+  padding-top: 8px;
+  border-top: 1px dashed var(--c-line-strong);
+  font-size: var(--fs-caption);
+  color: var(--c-ink-sub);
+}
+
+/* 후리가나 입력란은 일본어 폰트를 우선한다 */
+#last-name-kana,
+#first-name-kana {
+  font-family: var(--font-base);
+  letter-spacing: 0.04em;
+}
+
+/* 자동 변환 안내 */
+.field__note {
+  display: none;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: var(--c-primary-soft);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-small);
+  color: var(--c-primary-strong);
+  line-height: 1.5;
+}
+
+.field__note.is-visible {
+  display: block;
+}
+
+/* --- 오류 메시지 -------------------------------------------------------
+   「무엇이 잘못됐는지」가 아니라 「어떻게 고치면 되는지」를 쓴다. (P-7)
+   ------------------------------------------------------------------------ */
+
+.field__error {
+  display: none;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-medium);
+  color: #A3341A;
+  line-height: 1.5;
+}
+
+.field__error.is-visible {
+  display: flex;
+}
+
+.field__error svg {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+}
+
+/* ==========================================================================
+   5. 버튼
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 72px;
+  padding: 16px 24px;
+  font-size: var(--fs-btn);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.02em;
+  text-align: center;
+  text-decoration: none;
+  border-radius: var(--radius);
+  border: 2px solid transparent;
+  transition: background-color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+
+.btn svg {
+  flex: none;
+  width: 24px;
+  height: 24px;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn--primary {
+  background: var(--c-primary);
+  color: #fff;
+}
+
+.btn--primary:hover {
+  background: var(--c-primary-strong);
+  color: #fff;
+}
+
+.btn--ghost {
+  background: var(--c-surface);
+  border-color: var(--c-line-strong);
+  color: var(--c-ink);
+}
+
+.btn--ghost:hover {
+  border-color: var(--c-ink-sub);
+  background: var(--c-bg);
+  color: var(--c-ink);
+}
+
+.btn[disabled],
+.btn.is-loading {
+  opacity: .6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+}
+
+@media (min-width: 600px) {
+  .btn-row--inline {
+    flex-direction: row-reverse;
+    /* 주 버튼을 오른쪽에 */
+  }
+
+  .btn-row--inline .btn {
+    flex: 1 1 0;
+  }
+}
+
+/* 로딩 스피너 */
+.spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid rgba(255, 255, 255, .4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2s;
+  }
+}
+
+/* ==========================================================================
+   6. 결과 패널 (검진 대상자 아님 / 이미 예약 있음 / 확인 완료)
+   ========================================================================== */
+
+.result {
+  padding: var(--sp-4) var(--sp-3);
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-top: 6px solid var(--c-ink-weak);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+@media (min-width: 600px) {
+  .result {
+    padding: var(--sp-5) var(--sp-4);
+  }
+}
+
+.result__icon {
+  width: 72px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  margin-inline: auto;
+  border-radius: 50%;
+}
+
+.result__icon svg {
+  width: 40px;
+  height: 40px;
+}
+
+.result__title {
+  margin-top: var(--sp-3);
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-tight);
+  text-align: center;
+}
+
+.result__message {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-body);
+  color: var(--c-ink-sub);
+  line-height: var(--lh-base);
+  text-align: center;
+  word-break: keep-all;
+  /* 본인 확인 안내문이 서버에서 줄바꿈을 담아 온다. */
+  white-space: pre-line;
+}
+
+/* --- 색상 변형 --------------------------------------------------------- */
+
+.result--info {
+  border-top-color: var(--c-accent);
+}
+
+.result--info .result__icon {
+  background: var(--c-accent-soft);
+  color: var(--c-accent);
+}
+
+.result--warn {
+  border-top-color: var(--c-warn);
+}
+
+.result--warn .result__icon {
+  background: var(--c-warn-soft);
+  color: var(--c-warn);
+}
+
+.result--ok {
+  border-top-color: var(--c-primary);
+}
+
+.result--ok .result__icon {
+  background: var(--c-primary-soft);
+  color: var(--c-primary);
+}
+
+/* --- 정보 나열 --------------------------------------------------------- */
+
+.datalist {
+  margin-top: var(--sp-4);
+  border-top: 1px solid var(--c-line);
+}
+
+.datalist__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px var(--sp-2);
+  padding-block: 14px;
+  border-bottom: 1px solid var(--c-line);
+}
+
+.datalist__key {
+  flex: 0 0 auto;
+  min-width: 128px;
+  font-size: var(--fs-small);
+  color: var(--c-ink-sub);
+}
+
+.datalist__val {
+  flex: 1 1 auto;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
+  word-break: break-all;
+}
+
+/* 예약번호 강조 — 최다 문의(「예약 내용을 잊었다」) 대응 (P-4) */
+.callout-no {
+  margin-top: var(--sp-3);
+  padding: var(--sp-3);
+  background: var(--c-primary-soft);
+  border: 2px dashed var(--c-primary);
+  border-radius: var(--radius);
+  text-align: center;
+}
+
+.callout-no__label {
+  display: block;
+  font-size: var(--fs-small);
+  color: var(--c-primary-strong);
+  font-weight: var(--fw-bold);
+}
+
+.callout-no__value {
+  display: block;
+  margin-top: 6px;
+  /* 영문 대소문자 + 숫자가 섞인 무작위 12자다. 본문 서체는 글자 폭이
+     제각각이라 옮겨 적을 때 자리를 놓친다. 고정폭 서체로 띄운다. */
+  font-family: var(--font-mono);
+  /* 고정폭 12자다. 좁은 화면에서 줄이 넘어가지 않도록 display(40px)에서 낮췄다. */
+  font-size: var(--fs-h1);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.06em;
+  color: var(--c-primary-strong);
+  line-height: 1.25;
+  word-break: break-all;
+}
+
+/* --- 문의처 안내 ------------------------------------------------------- */
+
+.contact-box {
+  margin-top: var(--sp-4);
+  padding: var(--sp-3);
+  background: var(--c-bg);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius);
+}
+
+.contact-box__title {
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
+}
+
+.contact-box__desc {
+  margin-top: 6px;
+  font-size: var(--fs-small);
+  color: var(--c-ink-sub);
+  line-height: 1.6;
+}
+
+/* 원인 안내 목록 (서버가 내려준 hints) */
+.hint-list {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hint-list li {
+  position: relative;
+  padding-left: 18px;
+  font-size: var(--fs-small);
+  color: var(--c-ink-sub);
+  line-height: 1.6;
+}
+
+.hint-list li::before {
+  content: "·";
+  position: absolute;
+  left: 4px;
+  font-weight: var(--fw-bold);
+  color: var(--c-ink-weak);
+}
+
+.contact-box__items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+
+.contact-box__item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.contact-box__ico {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 12px;
+  color: var(--c-accent);
+}
+
+.contact-box__ico svg {
+  width: 24px;
+  height: 24px;
+}
+
+.contact-box__k {
+  display: block;
+  font-size: var(--fs-caption);
+  color: var(--c-ink-sub);
+}
+
+.contact-box__v {
+  display: block;
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-bold);
+  word-break: break-all;
+}
+
+.contact-box__hours {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--fs-caption);
+  color: var(--c-ink-weak);
+}
+
+/* ==========================================================================
+   7. 전역 오류 (통신 실패 등)
+   ========================================================================== */
+
+.alert {
+  display: none;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  background: #FDF2F0;
+  border: 1px solid #F3CFC6;
+  border-left: 4px solid #C0341A;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-small);
+  line-height: 1.6;
+  color: var(--c-ink);
+}
+
+.alert.is-visible {
+  display: flex;
+}
+
+.alert svg {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  color: #C0341A;
+}
+
+/* ==========================================================================
+   8. 유틸
+   ========================================================================== */
+
+.is-hidden {
+  display: none !important;
+}
+
+/* ==========================================================================
+   선택해 둔 검진 일시 (U-30 → 본인 확인)
+   --------------------------------------------------------------------------
+   빈자리 확인에서 일시를 먼저 고르고 본인 확인으로 넘어온 경우에만 보인다.
+   여기서 다시 보여 주지 않으면, 본인 확인을 입력하는 동안 「내가 고른 시간이
+   아직 살아 있나」를 알 수 없어 뒤로가기를 눌러 확인하러 간다.
+   그러면 입력하던 값이 날아가고 그것이 그대로 문의가 된다.
+   ========================================================================== */
+
+.held {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: flex-start;
+  margin-top: var(--sp-3);
+  padding: var(--sp-3);
+  background: var(--c-primary-soft);
+  border: 2px solid var(--c-primary);
+  border-radius: var(--radius);
+}
+
+.held__ico {
+  flex: 0 0 auto;
+  display: inline-flex;
+  color: var(--c-primary-strong);
+}
+
+.held__ico svg {
+  width: 26px;
+  height: 26px;
+}
+
+.held__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.held__label {
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  color: var(--c-primary-strong);
+}
+
+.held__hospital,
+.held__when {
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-bold);
+  line-height: 1.35;
+  color: var(--c-ink);
+  word-break: keep-all;
+}
+
+.held__note {
+  margin-top: 4px;
+  font-size: var(--fs-small);
+  line-height: var(--lh-base);
+  color: var(--c-ink-sub);
+}
+
+/* 「변경」은 눈에 띄되 주 동작(본인 확인 입력)을 이기지 않아야 한다.
+   고령 이용자 기준 터치 영역을 확보한다. */
+.held__change {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--sp-2);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  color: var(--c-primary-strong);
+  text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .held {
+    flex-wrap: wrap;
+  }
+
+  .held__change {
+    margin-left: auto;
+  }
+}
+
+/* ==========================================================================
+   안내 목록 — 「이제 무엇을 하면 되는지」
+   --------------------------------------------------------------------------
+   더 이상 화면에서 할 수 있는 일이 없는 이용자에게 보여 주는 목록이다.
+   (이미 예약이 있는 경우 등) 여기서 안내가 부족하면 그대로 전화가 되므로,
+   본문과 같은 크기로 넉넉히 띄운다. 「부가 정보」처럼 작게 쓰지 않는다.
+   ========================================================================== */
+
+.guide-list {
+  margin-top: var(--sp-3);
+  padding: var(--sp-3);
+  background: var(--c-bg);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius);
+  text-align: left;
+}
+
+.guide-list__item {
+  position: relative;
+  padding-left: 26px;
+  font-size: var(--fs-body);
+  line-height: var(--lh-base);
+  color: var(--c-ink);
+}
+
+.guide-list__item+.guide-list__item {
+  margin-top: var(--sp-2);
+}
+
+/* 체크 표시. 「막혔다」가 아니라 「이렇게 하시면 됩니다」로 읽히게 한다. */
+.guide-list__item::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 0.55em;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c-primary);
+}
+
+/* 휴대전화 3분할 칸.
+   우편번호 칸(.input--postal)과 같은 폭 규칙을 쓰되, 4자리가 들어가므로
+   조금 더 넓게 잡는다. 세 칸이 좁은 화면에서도 한 줄에 들어가야 한다 —
+   줄이 넘어가면 「-」 구분자가 어느 칸 사이인지 알 수 없어진다. */
+.input--tel {
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: var(--fs-lead);
+}
+
+@media (max-width: 420px) {
+  .input--tel {
+    font-size: var(--fs-body);
+  }
+}
+
+/* 휴대전화 앞자리 목록.
+   고를 수 있는 것이 090/080/070 셋뿐이라 목록으로 둔다.
+   옆 칸(4자리 입력)과 높이·글자 크기를 맞춘다. */
+.select--tel {
+  flex: 0 0 auto;
+  width: 6.5em;
+  min-height: 56px;
+  padding: 12px 8px;
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-bold);
+  text-align: center;
+  cursor: pointer;
+}
+
+@media (max-width: 420px) {
+  .select--tel {
+    width: 5.6em;
+    font-size: var(--fs-body);
+    padding-inline: 4px;
+  }
+}
+
+
+/* ==========================================================================
+   생년월일 되묻기
+
+   오류(field__error)와 색을 달리한다. 이것은 「틀렸다」가 아니라
+   「확인해 달라」이기 때문이다. 빨간색을 쓰면 거절당한 느낌이 남는다.
+   ========================================================================== */
+
+.birth-check {
+  display: flex;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+  padding: var(--sp-3);
+  background: #FDF6E3;
+  border: 1px solid #E8D3A6;
+  border-radius: var(--radius);
+}
+
+.birth-check.is-hidden {
+  display: none;
+}
+
+.birth-check>svg {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin-top: 2px;
+  color: #8A5A00;
+}
+
+.birth-check__title {
+  display: block;
+  margin-bottom: var(--sp-1);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
+  color: #6B4600;
+}
+
+.birth-check__line {
+  margin: 0 0 6px;
+  font-size: var(--fs-small);
+  line-height: var(--lh-base);
+  color: var(--c-ink);
+}
+
+.birth-check__line:last-child {
+  margin-bottom: 0;
+}
+
+.birth-check__line strong {
+  font-weight: var(--fw-bold);
+}

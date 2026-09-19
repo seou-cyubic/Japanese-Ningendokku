@@ -1,0 +1,135 @@
+/* ==========================================================================
+   faq.css — 자주 묻는 질문 전용 스타일
+   ========================================================================== */
+
+/* --- 분류 바로가기 --------------------------------------------------------
+
+   질문이 17개고 「예약 확정 후」에만 7개가 몰려 있어, 아래쪽 분류는
+   스크롤을 한참 내려야 닿는다. 다섯 개를 위에 늘어놓고 바로 가게 한다.
+
+   크기는 전부 토큰으로 잡는다. 여기에 고정 px 을 쓰면 「글자 크게」를
+   눌러도 이 줄만 그대로 남는다. 이 사이트에서 그런 일이 이미 한 번 있었다.
+
+   최소 높이 44px 은 터치 타깃 기준이다. 주요 액션(--tap-min: 88px)만큼
+   클 필요는 없지만, 손가락으로 눌러 빗나가면 엉뚱한 분류로 간다.
+   -------------------------------------------------------------------------- */
+
+.faq-jump {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  margin-top: var(--sp-3);
+}
+
+.faq-jump__btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--sp-1) var(--sp-2);
+  border: 2px solid var(--c-line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--c-surface);
+  color: var(--c-ink);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  text-decoration: none;
+  transition: background .12s, border-color .12s, color .12s;
+}
+
+.faq-jump__btn:hover,
+.faq-jump__btn:focus-visible {
+  border-color: var(--c-primary);
+  background: var(--c-primary-soft);
+  color: var(--c-primary);
+}
+
+/* 링크로 뛰어온 분류를 잠깐 짚어 준다. 눌렀는데 화면만 움직이면
+   어디에 도착했는지 알기 어렵다. */
+.faq-cat__title:target {
+  background: var(--c-primary-soft);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-1) var(--sp-2);
+  margin-left: calc(var(--sp-2) * -1);
+}
+
+.faq-cat {
+  margin-top: var(--sp-5);
+}
+
+.faq-cat:first-child {
+  margin-top: var(--sp-4);
+}
+
+.faq-cat__title {
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-bold);
+  color: var(--c-primary);
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+}
+
+.faq-item {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.faq-item__q {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
+  cursor: pointer;
+  list-style: none;
+}
+
+.faq-item__q::-webkit-details-marker { display: none; }
+
+.faq-item__q-mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--c-accent-soft);
+  color: var(--c-accent);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-small);
+}
+
+.faq-item__q-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.faq-item__chevron {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  color: var(--c-ink-sub);
+  transition: transform .15s ease;
+}
+
+.faq-item[open] .faq-item__chevron {
+  transform: rotate(180deg);
+}
+
+.faq-item__a {
+  padding: 0 var(--sp-3) var(--sp-3) calc(26px + var(--sp-2) + var(--sp-3));
+  font-size: var(--fs-small);
+  line-height: 1.7;
+  color: var(--c-ink-sub);
+}
+
+.faq-item__a a {
+  color: var(--c-primary);
+}

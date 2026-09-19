@@ -1,0 +1,730 @@
+/* ==========================================================================
+   apply.css — U-14 신청자 정보 입력
+   plan.md BR-05 / BR-11 / BR-13 / §12
+   --------------------------------------------------------------------------
+   이 화면에서 새로 받는 것은 주소 · 연락처 · 옵션 검사뿐이다.
+   성명 · 성별 · 생년월일 · 보험증은 U-11 에서, 회장 · 일시는 U-12 에서
+   이미 확정되었으므로 읽기 전용으로 보여 주기만 한다.
+   이미 입력한 것을 또 묻는 화면은 그 자리에서 이탈을 만든다.
+   ========================================================================== */
+
+/* ==========================================================================
+   1. 확인 화면(U-16)의 항목 묶음
+   각 묶음에 「수정」을 달아 그 값을 입력했던 자리로 되돌려 보낸다.
+   ========================================================================== */
+
+.sumsec {
+  margin-top: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3) var(--sp-3);
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+@media (max-width: 560px) {
+  .sumsec { padding: var(--sp-2); }
+}
+
+.sumsec__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+}
+
+.sumsec__ico {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  background: var(--c-primary-soft);
+  border-radius: 10px;
+  color: var(--c-primary);
+}
+
+.sumsec__ico svg { width: 21px; height: 21px; }
+
+.sumsec__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-bold);
+  line-height: 1.3;
+}
+
+/* 「수정」은 눈에 띄되 주 동선(예약 확정)보다 약하게 둔다.
+   터치 타깃 44px 은 지킨다. */
+.sumsec__edit {
+  flex: none;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 18px;
+  background: var(--c-surface);
+  border: 1.5px solid var(--c-accent);
+  border-radius: var(--radius-sm);
+  color: var(--c-accent-strong);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  text-decoration: none;
+}
+
+.sumsec__edit:hover {
+  background: var(--c-accent-soft);
+  color: var(--c-accent-strong);
+}
+
+.sumsec__none {
+  margin-top: 10px;
+  font-size: var(--fs-caption);
+  color: var(--c-ink-sub);
+  line-height: 1.7;
+}
+
+/* form.css 의 .datalist 를 확인 화면에서 조금 촘촘하게 쓴다 */
+.datalist--tight {
+  margin-top: 0;
+}
+
+.datalist--tight .datalist__row {
+  padding-block: 11px;
+}
+
+.datalist--tight .datalist__row:last-child { border-bottom: none; }
+
+.datalist--tight .datalist__key {
+  min-width: 116px;
+  font-size: var(--fs-caption);
+}
+
+.datalist--tight .datalist__val {
+  font-size: var(--fs-small);
+  word-break: keep-all;
+}
+
+/* 비어 있는 항목은 지우지 않고 「입력하지 않으셨습니다」로 남긴다.
+   줄을 없애 버리면 「입력했는데 안 보인다」와 구별되지 않는다. */
+.datalist__val--empty {
+  color: var(--c-ink-weak);
+  font-weight: var(--fw-normal);
+}
+
+/* 선택한 옵션 검사 */
+.optpick {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.optpick__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--c-primary-soft);
+  border-radius: var(--radius-sm);
+}
+
+.optpick__check {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  background: var(--c-primary);
+  border-radius: 6px;
+  color: #fff;
+}
+
+.optpick__check svg { width: 15px; height: 15px; }
+
+.optpick__name {
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+}
+
+/* 확정 직전 안내 — main.css 의 .notice 를 그대로 쓰되 위 여백만 넓힌다 */
+.notice--final {
+  margin-top: var(--sp-4);
+}
+
+/* ==========================================================================
+   2. 입력 구획 — 1 주소 / 2 연락처 / 3 옵션 검사
+   ========================================================================== */
+
+.formsec {
+  margin-top: var(--sp-5);
+}
+
+/* U-16 「수정」으로 돌아온 구획을 잠깐 강조한다.
+   주소만 열리면 「눌렀는데 어디를 고치라는 건지」를 다시 찾아야 한다.
+   오류 표시로 오해되지 않도록 주색을 쓰고 잠시 뒤 거둔다. */
+.formsec.is-target .formsec__body {
+  border-color: var(--c-primary);
+  box-shadow: 0 0 0 3px rgba(11, 110, 91, .16), var(--shadow-card);
+}
+
+.formsec__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: var(--sp-2);
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-bold);
+  line-height: 1.3;
+}
+
+.formsec__num {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  background: var(--c-primary);
+  color: #fff;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
+  line-height: 1;
+  border-radius: 50%;
+}
+
+.formsec__badge {
+  padding: 3px 12px;
+  background: var(--c-bg);
+  border: 1px solid var(--c-line-strong);
+  color: var(--c-ink-sub);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  border-radius: 999px;
+}
+
+.formsec__body {
+  padding: var(--sp-3);
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+@media (max-width: 560px) {
+  .formsec__body { padding: var(--sp-2); }
+}
+
+/* form.css 의 .field:first-of-type 은 폼 전체 기준이라 구획마다 어긋난다 */
+.field--first { margin-top: 0; }
+
+/* 우편번호 — 3자리 / 4자리로 나눠 받는다.
+   7자리를 한 칸에 받으면 하이픈을 넣을지 말지부터 헷갈린다. */
+.input--postal {
+  flex: 0 0 auto;
+  width: 7.5em;
+  max-width: 100%;
+  font-size: var(--fs-lead);
+}
+
+/* ==========================================================================
+   3. 이메일 미입력 경고
+   임의 항목이지만 미입력의 결과를 반드시 알려야 한다. (BR-11)
+   확인 메일·리마인드 메일을 못 받으면 그대로 문의 전화가 된다.
+   ========================================================================== */
+
+.mail-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px var(--sp-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-small);
+  line-height: 1.6;
+  background: var(--c-warn-soft);
+  border: 1px solid #F0D9C6;
+  border-left: 4px solid var(--c-warn);
+  color: var(--c-ink);
+}
+
+.mail-warn svg {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  color: var(--c-warn);
+}
+
+.mail-warn strong { font-weight: var(--fw-bold); }
+
+/* 입력이 채워지면 안심 톤으로 바꾼다 */
+.mail-warn.is-ok {
+  background: var(--c-primary-soft);
+  border-color: #BFDDD5;
+  border-left-color: var(--c-primary);
+}
+
+.mail-warn.is-ok svg { color: var(--c-primary); }
+
+/* ==========================================================================
+   4. 옵션 검사
+   ========================================================================== */
+
+.optlist {
+  display: grid;
+  gap: 10px;
+  margin-top: var(--sp-2);
+}
+
+.opt {
+  display: block;
+  cursor: pointer;
+}
+
+/* 체크박스 자체는 고령 이용자에게 너무 작다.
+   접근성을 위해 실제 input 은 남기고 넓은 카드를 누르게 한다. */
+.opt input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.opt__box {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px var(--sp-2);
+  background: var(--c-surface);
+  border: 2px solid var(--c-line);
+  border-radius: var(--radius);
+  transition: border-color var(--dur) var(--ease),
+              background-color var(--dur) var(--ease);
+}
+
+.opt:hover .opt__box {
+  border-color: var(--c-primary);
+  background: var(--c-primary-soft);
+}
+
+/* 선택 상태를 색 외에 체크 표시로도 알린다 */
+.opt__check {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  margin-top: 2px;
+  display: grid;
+  place-items: center;
+  background: var(--c-surface);
+  border: 2px solid var(--c-line-strong);
+  border-radius: 7px;
+  color: transparent;
+}
+
+.opt__check svg { width: 17px; height: 17px; }
+
+.opt input:checked + .opt__box {
+  border-color: var(--c-primary);
+  background: var(--c-primary-soft);
+}
+
+.opt input:checked + .opt__box .opt__check {
+  background: var(--c-primary);
+  border-color: var(--c-primary);
+  color: #fff;
+}
+
+.opt input:focus-visible + .opt__box {
+  outline: 3px solid var(--c-focus);
+  outline-offset: 3px;
+}
+
+.opt__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.opt__name {
+  display: block;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
+  line-height: 1.4;
+}
+
+.opt__desc {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--fs-caption);
+  color: var(--c-ink-sub);
+  line-height: 1.6;
+}
+
+/* 금식 등 당일 준비가 필요한 검사는 고르기 전에 알려야 한다 */
+.opt__note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: var(--c-warn-soft);
+  border-radius: 6px;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  color: #8A4A12;
+  line-height: 1.5;
+}
+
+.optnote {
+  margin-top: var(--sp-2);
+  padding-top: var(--sp-2);
+  border-top: 1px dashed var(--c-line-strong);
+  font-size: var(--fs-caption);
+  color: var(--c-ink-sub);
+  line-height: 1.7;
+}
+
+.optnote strong { color: var(--c-ink); font-weight: var(--fw-bold); }
+
+/* ==========================================================================
+   5. 오류 요약
+   항목별 메시지만 두면 화면 밖의 오류를 못 찾는다.
+   무엇을 고쳐야 하는지 한곳에 모아 주고, 누르면 그 칸으로 데려간다. (P-7)
+   ========================================================================== */
+
+.errsum {
+  display: none;
+  margin-top: var(--sp-4);
+  padding: var(--sp-3);
+  background: #FDF2F0;
+  border: 1px solid #F3CFC6;
+  border-left: 4px solid #C0341A;
+  border-radius: var(--radius-sm);
+}
+
+.errsum.is-visible { display: block; }
+
+.errsum:focus-visible {
+  outline: 3px solid var(--c-focus);
+  outline-offset: 3px;
+}
+
+.errsum__title {
+  display: block;
+  margin-bottom: 10px;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
+  color: #A3341A;
+}
+
+.errsum__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.errsum__list a {
+  color: #A3341A;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-medium);
+}
+
+/* ==========================================================================
+   주소 검색 (U-14)
+   --------------------------------------------------------------------------
+   우편번호와 한자 주소를 손으로 적게 하지 않는다. 검색해서 고르게 하고,
+   고른 값은 손으로 고칠 수 없게 한다. 고칠 수 있게 두면 우편번호와 주소가
+   어긋난 채 접수되고, 그것을 걸러 낼 방법이 없다.
+   ========================================================================== */
+
+.addr-search {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.addr-search__btn {
+  min-height: 56px;
+}
+
+/* 넓은 화면에서는 입력 칸과 버튼을 한 줄에 둔다.
+   `.btn` 은 기본이 `width: 100%` 라 그대로 두면 버튼이 줄을 다 먹고
+   입력 칸이 한 글자 폭으로 찌그러진다. 여기서 폭 규칙을 되돌린다. */
+@media (min-width: 560px) {
+  .addr-search {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .addr-search .input {
+    flex: 1 1 auto;
+    min-width: 0;      /* flex 자식의 기본 min-width: auto 를 풀어 준다 */
+    width: auto;
+  }
+
+  .addr-search__btn {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 168px;
+  }
+}
+
+/* --- 상태 안내 ----------------------------------------------------------
+   「찾는 중」·「n건 찾았습니다」·「없습니다」를 같은 자리에 띄운다.
+   결과가 어디에 나타났는지 눈으로 좇지 않아도 되게 한다.
+   ------------------------------------------------------------------------ */
+
+.addr-status {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-small);
+  line-height: var(--lh-base);
+  color: var(--c-ink-sub);
+}
+
+.addr-status:empty { margin-top: 0; }
+
+.addr-status--ok   { color: var(--c-primary-strong); font-weight: var(--fw-bold); }
+.addr-status--warn { color: var(--c-warn); font-weight: var(--fw-bold); }
+
+/* --- 검색 결과 목록 ----------------------------------------------------- */
+
+.addr-results {
+  margin-top: var(--sp-2);
+  border: 2px solid var(--c-line-strong);
+  border-radius: var(--radius);
+  overflow: hidden;
+  /* 결과가 많아도 화면을 다 밀어내지 않게 한다. 안에서만 스크롤한다. */
+  max-height: 340px;
+  overflow-y: auto;
+  background: var(--c-surface);
+}
+
+.addr-results.is-hidden { display: none; }
+
+.addr-result {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  /* 고령 이용자 기준 터치 영역. 목록에서 오탭이 가장 잦다. */
+  min-height: 64px;
+  padding: 12px var(--sp-3);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--c-line);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.addr-results li:last-child .addr-result { border-bottom: 0; }
+
+.addr-result:hover,
+.addr-result:focus-visible {
+  background: var(--c-primary-soft);
+}
+
+.addr-result__zip {
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  color: var(--c-primary-strong);
+  font-family: var(--font-mono);
+}
+
+.addr-result__text {
+  font-size: var(--fs-body);
+  line-height: 1.45;
+  color: var(--c-ink);
+}
+
+/* --- 고른 주소 ----------------------------------------------------------- */
+
+.addr-picked {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 64px;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--c-primary-soft);
+  border: 2px solid var(--c-primary);
+  border-radius: var(--radius);
+}
+
+/* 아직 고르지 않은 상태는 강조하지 않는다. 오류처럼 보이면 안 된다. */
+.addr-picked.is-empty {
+  background: var(--c-bg);
+  border-color: var(--c-line-strong);
+  border-style: dashed;
+}
+
+.addr-picked__empty {
+  font-size: var(--fs-small);
+  color: var(--c-ink-sub);
+}
+
+.addr-picked__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.addr-picked__body.is-hidden { display: none; }
+
+.addr-picked__zip {
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  color: var(--c-primary-strong);
+}
+
+.addr-picked__zip strong {
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
+.addr-picked__text {
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-bold);
+  line-height: 1.35;
+  color: var(--c-ink);
+  word-break: break-all;
+}
+
+.addr-picked__reset {
+  flex: none;
+  min-height: 44px;
+  padding: 0 var(--sp-2);
+  background: var(--c-surface);
+  border: 2px solid var(--c-primary);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  color: var(--c-primary-strong);
+  cursor: pointer;
+}
+
+.addr-picked__reset.is-hidden { display: none; }
+
+.addr-picked__reset:hover { background: var(--c-primary-soft); }
+
+@media (max-width: 480px) {
+  .addr-picked { flex-wrap: wrap; }
+  .addr-picked__reset { margin-left: auto; }
+}
+
+/* 오타 도메인 제안 버튼.
+   「gmail.co 를 치셨는데 gmail.com 아니십니까?」를 눌러서 고칠 수 있게 한다.
+   막지 않고 되묻는 자리이므로 오류색(빨강)을 쓰지 않는다. */
+.mail-fix {
+  display: inline;
+  padding: 2px 6px;
+  margin: 0 2px;
+  background: var(--c-surface);
+  border: 2px solid var(--c-primary);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-weight: var(--fw-bold);
+  color: var(--c-primary-strong);
+  cursor: pointer;
+}
+
+.mail-fix:hover { background: var(--c-primary-soft); }
+
+/* --- 주소를 찾지 못했을 때 ----------------------------------------------
+   **직접 입력 칸을 열어 주지 않는다.** 검색에 없는 주소를 손으로 적게 하면
+   우편번호와 주소가 어긋난 채 접수되고, 그것을 걸러 낼 방법이 없다.
+   넣을 수 없는 것이 맞다 — 데이터를 지키는 장치다.
+
+   다만 막다른 길로 두지도 않는다. 여기서 더 할 수 있는 일이 없는 사람에게
+   전화번호를 그 자리에서 보여 준다. 안내가 없으면 화면을 떠나거나
+   아무 주소나 넣으려 든다. (plan.md P-9)
+   ------------------------------------------------------------------------ */
+
+.addr-notfound {
+  margin-top: var(--sp-2);
+  padding: var(--sp-3);
+  background: var(--c-warn-soft);
+  border: 2px solid var(--c-warn);
+  border-radius: var(--radius);
+}
+
+.addr-notfound.is-hidden { display: none; }
+
+.addr-notfound__tips {
+  font-size: var(--fs-small);
+  line-height: var(--lh-base);
+  color: var(--c-ink);
+}
+
+.addr-notfound__help {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-base);
+  color: var(--c-ink);
+}
+
+/* 여기까지 온 사람에게는 전화가 유일한 길이다. 가장 크게 둔다. */
+.addr-notfound__tel {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 4px;
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-bold);
+  color: var(--c-primary-strong);
+  text-decoration: none;
+}
+
+.addr-notfound__tel:hover { text-decoration: underline; }
+
+.addr-notfound__hours {
+  display: block;
+  font-size: var(--fs-caption);
+  color: var(--c-ink-sub);
+}
+
+/* 고른 주소를 도도부현 · 시·구·정·촌 · 정역으로 나누어 보여 준다.
+   일본 주소 폼의 관례이며, 한 줄로 붙여 두면 어디까지가 시구정촌인지
+   이용자가 읽어 내야 해서 자기 주소가 맞는지 확인하기 어렵다. */
+.addr-picked__parts {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+.addr-part {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+}
+
+.addr-part.is-hidden { display: none; }
+
+.addr-part__k {
+  flex: 0 0 auto;
+  width: 84px;
+  font-size: var(--fs-caption);
+  color: var(--c-ink-sub);
+}
+
+.addr-part__v {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-bold);
+  line-height: 1.35;
+  color: var(--c-ink);
+  word-break: break-all;
+}
+
+@media (max-width: 420px) {
+  .addr-part { flex-direction: column; gap: 0; }
+  .addr-part__k { width: auto; }
+}

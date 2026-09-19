@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <title>管理画面ログイン | 健康診断予約システム</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body class="admin login-page">
+
+  <main class="login">
+
+    <div class="login__brand">
+      <span class="login__mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 4v7M12 15v5M4.5 12h6M15 12h4.5"></path>
+          <path d="M14.5 17.5l2 2 4-4.5"></path>
+        </svg>
+      </span>
+      <span>
+        <span class="login__org">医療法人 Sample Group</span>
+        <span class="login__name">健康診断予約管理</span>
+      </span>
+    </div>
+
+    <h1 class="login__title">ログイン</h1>
+    <p class="login__desc">管理画面は承認された担当者のみご利用いただけます。</p>
+
+    <p class="login__error" id="login-error" role="alert">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" width="16" height="16"
+           aria-hidden="true" style="flex:none;margin-top:2px">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M12 7.5v5M12 16h.01"></path>
+      </svg>
+      <span id="login-error-text"></span>
+    </p>
+
+    <form class="login__form" id="login-form" novalidate>
+      <div class="field">
+        <label class="field__label" for="login-id">ログイン ID</label>
+        <input class="input" type="text" id="login-id" name="login_id"
+               placeholder="例: admin" autocomplete="username" autocapitalize="off" spellcheck="false" required>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="password">パスワード</label>
+        <input class="input" type="password" id="password" name="password"
+               placeholder="••••••••" autocomplete="current-password" required>
+      </div>
+
+      <button class="btn btn--primary login__submit" type="submit" id="login-btn">
+        ログイン
+      </button>
+    </form>
+
+  </main>
+
+  <script src="../assets/js/admin/login.js"></script>
+</body>
+</html>

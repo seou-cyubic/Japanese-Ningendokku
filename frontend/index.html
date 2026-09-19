@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="健康診断のインターネット予約。お申し込み・ご予約の確認・空き状況の確認を、スマートフォンとパソコンからご利用いただけます。">
+  <meta name="theme-color" content="#0B6E5B">
+  <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg">
+  <title>健康診断予約｜Sample Group</title>
+
+  <!-- 디자인 토큰 → 리셋/기본 → 화면 전용 순으로 로드 -->
+
+  <link rel="stylesheet" href="assets/css/tokens.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+
+  <!-- 키보드 이용자를 위한 본문 바로가기 -->
+  <a class="skip-link" href="#main">本文へ移動</a>
+
+  <!-- ======================================================================
+       헤더
+       ====================================================================== -->
+  <header class="site-header">
+    <div class="container site-header__inner">
+
+      <a class="brand" href="./index.html">
+        <span class="brand__mark" aria-hidden="true">
+          <!-- 십자(의료) + 체크(예약 완료) 심볼 -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 4v7M12 15v5M4.5 12h6M15 12h4.5"></path>
+            <path d="M14.5 17.5l2 2 4-4.5"></path>
+          </svg>
+        </span>
+        <span class="brand__text">
+          <span class="brand__org">医療法人　Sample Group</span>
+          <span class="brand__name">健康診断予約</span>
+        </span>
+      </a>
+
+      <!-- 글자 크기 조절 : 액션 CTA 가 아닌 접근성 컨트롤 -->
+      <div class="font-scale">
+        <span class="font-scale__label" id="font-scale-label">文字サイズ</span>
+        <div class="font-scale__group" role="group" aria-labelledby="font-scale-label">
+          <button type="button" class="font-scale__btn"
+                  data-scale="1" data-scale-label="標準" aria-pressed="true">標準</button>
+          <button type="button" class="font-scale__btn"
+                  data-scale="1.15" data-scale-label="大" aria-pressed="false">大</button>
+          <button type="button" class="font-scale__btn"
+                  data-scale="1.3" data-scale-label="特大" aria-pressed="false">特大</button>
+        </div>
+      </div>
+
+      <!-- 스크린 리더에 변경 사실을 알린다 -->
+      <p id="font-scale-status" class="sr-only" role="status" aria-live="polite"></p>
+
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ====================================================================
+         히어로
+         ==================================================================== -->
+    <section class="hero">
+      <div class="container">
+
+        <p class="hero__badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 6L9 17l-5-5"></path>
+          </svg>
+          郵送のお手続きは不要です
+        </p>
+
+        <h1 class="hero__title">
+          今年の健康診断は<br>
+          <em>3分</em>でご予約いただけます
+        </h1>
+
+        <p class="hero__lead">
+          お近くの会場とご希望のお時間をお選びいただき、<br>
+          画面のご案内に沿ってご入力ください。
+        </p>
+
+        <!-- 대상 조건을 최상단에 명시하여 헛걸음을 막는다 (자체 피드백 P-8) -->
+        <p class="hero__target">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M12 16v-5M12 8h.01"></path>
+          </svg>
+          <span>対象は<strong>満40歳～74歳の方</strong>です</span>
+        </p>
+
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         액션 버튼 2개 — 이 페이지의 핵심
+         --------------------------------------------------------------------
+         「예약 가능 시간 확인하기」를 따로 두지 않는다. 예약을 누르면 곧바로
+         남은 자리부터 보여 주므로, 빈자리를 보는 것과 예약하는 것이 같은 길이다.
+         입구를 나누면 「어느 쪽을 눌러야 하는지」가 새 고민거리가 된다.
+
+         ※ 이 두 개 외의 액션 버튼을 추가하지 말 것 (plan.md §7.3 / §16.2)
+         ==================================================================== -->
+    <section class="actions" aria-labelledby="actions-heading">
+      <div class="container">
+
+        <h2 id="actions-heading" class="sr-only">ご希望のメニューをお選びください</h2>
+
+        <ul class="actions__list actions__list--duo">
+
+          <!-- ① 예약 하기 — 남은 자리 확인부터 시작한다 -->
+          <li>
+            <a class="action action--primary" href="reserve/schedule.html" onclick="sessionStorage.setItem('kenshin.flowStart', 'slot');">
+              <span class="action__icon" aria-hidden="true">
+                <!-- 달력 + 플러스 -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="5" width="18" height="16" rx="3"></rect>
+                  <path d="M3 10h18M8 3v4M16 3v4"></path>
+                  <path d="M12 13v5M9.5 15.5h5"></path>
+                </svg>
+              </span>
+              <span class="action__body">
+                <strong class="action__label">予約する</strong>
+                <span class="action__desc">
+                  会場ごとの空き状況を見ながら<br>ご希望のお時間をお選びいただけます
+                </span>
+              </span>
+              <svg class="action__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M9 5l7 7-7 7"></path>
+              </svg>
+            </a>
+          </li>
+
+          <!-- ② 예약 확인하기 (U-20)
+               예약번호 하나만 받는다. 번호가 곧 열쇠이며, 성함·생년월일은
+               가족이라면 아는 값이라 열쇠가 되지 못한다. -->
+               
+               
+          <li>
+            <a class="action action--secondary" href="lookup.html">
+              <span class="action__icon" aria-hidden="true">
+                <!-- 문서 + 돋보기 -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"></path>
+                  <path d="M14 3l5 5v3"></path>
+                  <path d="M8.5 8h3M8.5 12h4"></path>
+                  <circle cx="16.5" cy="16.5" r="3.2"></circle>
+                  <path d="M19 19l2.2 2.2"></path>
+                </svg>
+              </span>
+              <span class="action__body">
+                <strong class="action__label">予約を確認する</strong>
+                <span class="action__desc">
+                  予約番号で<br>ご予約の内容を照会します
+                </span>
+              </span>
+              <svg class="action__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M9 5l7 7-7 7"></path>
+              </svg>
+            </a>
+          </li>
+
+        </ul>
+
+        <div style="margin-top: var(--sp-3);">
+          <a class="action action--outline" href="reserve/verify.html" onclick="sessionStorage.setItem('kenshin.flowStart', 'verify');">
+            <span class="action__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+            </span>
+            <span class="action__body">
+              <strong class="action__label">対象かどうかを先に確認する</strong>
+              <span class="action__desc">
+                本人確認のうえ、今年の受診対象かどうかを確かめてからご予約に進みます
+              </span>
+            </span>
+            <svg class="action__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 5l7 7-7 7"></path>
+            </svg>
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         이용 안내 3스텝
+         ==================================================================== -->
+    <section class="section section--surface" aria-labelledby="steps-heading">
+      <div class="container">
+
+        <h2 id="steps-heading" class="section__title">ご予約の流れ</h2>
+        <p class="section__sub">順番にご案内しますので、そのまま進めてください。</p>
+
+        <ol class="steps">
+          <li class="step">
+            <span class="step__num" aria-hidden="true">1</span>
+            <span class="step__body">
+              <strong class="step__title">会場とお時間を選ぶ</strong>
+              <span class="step__desc">お住まいの地域を選ぶと、ご予約いただける会場とお時間が表示されます。</span>
+            </span>
+          </li>
+          <li class="step">
+            <span class="step__num" aria-hidden="true">2</span>
+            <span class="step__body">
+              <strong class="step__title">お申し込み内容を入力</strong>
+              <span class="step__desc">お名前・生年月日・健康保険証の情報・ご連絡先をご入力ください。</span>
+            </span>
+          </li>
+          <li class="step">
+            <span class="step__num" aria-hidden="true">3</span>
+            <span class="step__body">
+              <strong class="step__title">予約番号を受け取る</strong>
+              <span class="step__desc">お申し込みと同時にご予約が確定し、予約番号をお知らせします。</span>
+            </span>
+          </li>
+        </ol>
+
+        <!-- 준비물 안내 : 중도 이탈을 줄이기 위해 시작 전에 알린다 -->
+        <p class="notice">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3.5l9 16H3l9-16z"></path>
+            <path d="M12 10v4M12 17h.01"></path>
+          </svg>
+          <span class="notice__text">
+            お申し込みの前に<strong>健康保険証</strong>をお手元にご用意ください。保険者番号・記号・番号のご入力が必要です。
+          </span>
+        </p>
+
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         문의 안내 — 챗봇 없이 전화·메일만 제공
+         ==================================================================== -->
+    <section class="section" aria-labelledby="contact-heading">
+      <div class="container">
+
+        <h2 id="contact-heading" class="section__title">ご不明な点がございましたら</h2>
+        <p class="section__sub">担当者が直接ご案内します。お気軽にご連絡ください。</p>
+
+        <!-- 문의 구분 안내 박스 -->
+        <div style="margin:16px 0 24px;padding:14px 18px;border:1.5px solid #94A3B8;border-radius:10px;font-size:var(--fs-small);line-height:1.6;color:var(--c-ink);background:#ffffff;">
+          <p style="margin:0;">
+            <strong>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;vertical-align:-2px;margin-right:4px;color:#0B6E5B;"><path d="M3 21h18M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16M9 9h6M9 13h6M12 7v10"></path></svg>
+              検査項目の内容・持ち物・医療機関に関するお問い合わせ
+            </strong><br>
+            各受診会場・医療機関の窓口へ直接お問い合わせください。
+          </p>
+        </div>
+
+        <div class="contact-list">
+
+          <div class="contact">
+            <span class="contact__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4.5 5.5c0-1 .8-1.8 1.8-1.8h2c.8 0 1.5.5 1.7 1.3l.8 2.6c.2.7 0 1.4-.6 1.8l-1.3 1a12.5 12.5 0 0 0 5 5l1-1.3c.4-.6 1.1-.8 1.8-.6l2.6.8c.8.2 1.3.9 1.3 1.7v2c0 1-.8 1.8-1.8 1.8A15.5 15.5 0 0 1 4.5 5.5z"></path>
+              </svg>
+            </span>
+            <span class="contact__body">
+              <span class="contact__label">お電話でのお問い合わせ</span>
+              <strong class="contact__value" data-contact="tel">03-1234-5678</strong>
+              <span class="contact__hours" data-contact="hours">平日 9:00～17:00（土日・祝日を除く）</span>
+            </span>
+          </div>
+
+          <div class="contact">
+            <span class="contact__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="5" width="18" height="14" rx="3"></rect>
+                <path d="M3.8 7.2l7.3 5.2c.5.4 1.3.4 1.8 0l7.3-5.2"></path>
+              </svg>
+            </span>
+            <span class="contact__body">
+              <span class="contact__label">メールでのお問い合わせ</span>
+              <strong class="contact__value" data-contact="email">kenshin@example.jp</strong>
+              <span class="contact__hours">2営業日以内にご返信します</span>
+            </span>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================================================================
+       푸터
+       ====================================================================== -->
+  <footer class="site-footer">
+    <div class="container">
+      <p class="site-footer__name">医療法人　Sample Group　健康診断予約センター</p>
+      <p class="site-footer__desc">
+        当サイトは満40歳～74歳の方を対象とした健康診断の予約専用サイトです。<br>
+        ご予約の変更・キャンセルは、受診日の3日前までお電話でのみ承っております。
+      </p>
+
+      <nav class="site-footer__links" aria-label="サイト情報">
+        <a href="#steps-heading">ご利用案内</a>
+        <a href="faq.html">よくあるご質問</a>
+        <a href="privacy.html">個人情報保護方針</a>
+        <a href="https://example.com/" target="_blank" rel="noopener noreferrer">運営法人について</a>
+      </nav>
+
+      <p class="site-footer__copy">© 2026 Sample Group Medical Corporation. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/font-scale.js"></script>
+  <script src="assets/js/contact-info.js"></script>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="医療法人 Sample Group 健康診断予約システムの個人情報保護方針（プライバシーポリシー）です。">
+  <meta name="theme-color" content="#0B6E5B">
+  <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg">
+  <title>個人情報保護方針 | 健康診断予約</title>
+
+  <link rel="stylesheet" href="assets/css/tokens.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/form.css">
+  <style>
+    .privacy-card {
+      background: #ffffff;
+      border-radius: var(--radius-lg, 12px);
+      padding: var(--sp-4, 24px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      margin-block: var(--sp-4, 24px);
+      color: #1E293B;
+      line-height: 1.8;
+    }
+    .privacy-header {
+      text-align: center;
+      margin-bottom: 28px;
+      border-bottom: 2px solid #0B6E5B;
+      padding-bottom: 20px;
+    }
+    .privacy-header h1 {
+      /* 文字サイズ調整（--font-scale）に対応するためCSS変数を使用 */
+         
+      font-size: var(--fs-h1);
+      color: #0B6E5B;
+      font-weight: bold;
+      margin: 0;
+    }
+    .privacy-section {
+      margin-bottom: 28px;
+    }
+    .privacy-section h2 {
+      font-size: var(--fs-lead);
+      color: #0B6E5B;
+      border-left: 4px solid #0B6E5B;
+      padding-left: 10px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    .privacy-section p, .privacy-section ul {
+      font-size: var(--fs-small);
+      color: #334155;
+      margin-bottom: 8px;
+    }
+    .privacy-section ul {
+      padding-left: 20px;
+      list-style-type: disc;
+    }
+  </style>
+</head>
+<body>
+
+  <a class="skip-link" href="#main">本文へ移動</a>
+
+  <!-- ======================================================================
+       헤더
+       ====================================================================== -->
+  <header class="site-header">
+    <div class="container site-header__inner">
+
+      <div class="site-header__left">
+        <a href="javascript:history.back()" class="btn-back" aria-label="前のページへ戻る" title="戻る">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </a>
+        <a class="brand" href="./index.html">
+          <span class="brand__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 4v7M12 15v5M4.5 12h6M15 12h4.5"></path>
+              <path d="M14.5 17.5l2 2 4-4.5"></path>
+            </svg>
+          </span>
+          <span class="brand__text">
+            <span class="brand__org">医療法人 Sample Group</span>
+            <span class="brand__name">健康診断予約</span>
+          </span>
+        </a>
+      </div>
+
+      <div class="font-scale">
+        <span class="font-scale__label" id="font-scale-label">文字サイズ</span>
+        <div class="font-scale__group" role="group" aria-labelledby="font-scale-label">
+          <button type="button" class="font-scale__btn"
+                  data-scale="1" data-scale-label="標準" aria-pressed="true">標準</button>
+          <button type="button" class="font-scale__btn"
+                  data-scale="1.15" data-scale-label="大" aria-pressed="false">大</button>
+          <button type="button" class="font-scale__btn"
+                  data-scale="1.3" data-scale-label="特大" aria-pressed="false">特大</button>
+        </div>
+      </div>
+
+      <p id="font-scale-status" class="sr-only" role="status" aria-live="polite"></p>
+
+    </div>
+  </header>
+
+  <main id="main" class="page">
+    <div class="container container--narrow">
+
+      <article class="privacy-card">
+        
+        <div class="privacy-header">
+          <h1>個人情報保護方針 （プライバシーポリシー）</h1>
+        </div>
+
+        <div style="background: #FFFBEB; border: 1px solid #FCD34D; color: #92400E; padding: 10px 16px; border-radius: 6px; font-size: var(--fs-caption); font-weight: bold; margin-bottom: 20px; text-align: center;">
+          ※ 本文書はサンプル・例として作成されたものです。
+        </div>
+
+        <p style="font-size: var(--fs-small); color: #475569; margin-bottom: 24px;">
+          医療法人 Sample Group（以下「当法人」といいます。）は、当健診予約システム（以下「本サービス」といいます。）をご利用になる皆様（以下「利用者」といいます。）の個人情報および要配慮個人情報（健診結果・診療情報等）の重要性を認識し、「個人情報の保護に関する法律」ならびに厚生労働省「医療・介護関係事業者における個人情報の適切な取扱いのためのガイドライン」を遵守し、以下の通り適切に管理・運用いたします。
+        </p>
+
+        <!-- 1. 利用目的 -->
+        <section class="privacy-section">
+          <h2>1. 個人情報の収集および利用目的</h2>
+          <p>当法人は、本サービスにおいて取得した個人情報を以下の目的の範囲内で利用いたします。</p>
+          <ul>
+            <li>健康診断（人間ドック・巡回健診）の予約受付、対象者照合および本人確認</li>
+            <li>受診票・案内状・確認メール等の発送および健診に関する連絡・リマインド</li>
+            <li>受診会場の定員管理および受診履歴の管理</li>
+            <li>健診結果の送付および必要に応じた医療機関への連携</li>
+            <li>サービスの質向上および統計資料の作成（個人を特定できない形式に加工したデータ）</li>
+          </ul>
+        </section>
+
+        <!-- 2. 収集する個人情報 -->
+        <section class="privacy-section">
+          <h2>2. 収集する個人情報の項目</h2>
+          <p>
+            本サービスのご利用にあたり、氏名（漢字・フリガナ）、生年月日、性別、電話番号、住所、電子メールアドレス、保険証番号、ご希望の受診会場・日時、および選択検査項目等の情報を取得いたします。
+          </p>
+        </section>
+
+        <!-- 3. 第三者提供 -->
+        <section class="privacy-section">
+          <h2>3. 個人情報の第三者提供</h2>
+          <p>
+            当法人は、法令に基づく場合や人命・財産の保護のために必要な場合を除き、あらかじめご本人の同意を得ることなく個人情報を第三者に提供することはございません。<br>
+            ただし、委託健診において所属事業者・健康保険組合・自治体への報告が必要な場合は、契約および法令の範囲内で適切に連携いたします。
+          </p>
+        </section>
+
+        <!-- 4. 安全管理措置 -->
+        <section class="privacy-section">
+          <h2>4. 個人情報の安全管理措置</h2>
+          <p>当法人は、個人情報の漏洩、紛失、改ざん等を防止するため、以下の安全管理措置を講じています。</p>
+          <ul>
+            <li>SSL/TLS 暗号化通信によるデータ伝送の保護</li>
+            <li>アクセス権限（L1～L3 段階）の厳格な制御および管理者認証</li>
+            <li>所定の保持期間を経過した予約データの自動削除システムの運用</li>
+            <li>システム担当者に対する継続的な情報セキュリティ教育の実施</li>
+          </ul>
+        </section>
+
+        <!-- 5. 開示・訂正・利用停止 -->
+        <section class="privacy-section">
+          <h2>5. 個人情報の開示・訂正・利用停止等の請求</h2>
+          <p>
+            利用者ご本人から自己の個人情報について開示、訂正、追加、削除、または利用停止のご請求があった場合は、ご本人確認を行った上で、法令に基づき速やかに対応いたします。
+          </p>
+        </section>
+
+        <div style="text-align: right; font-size: var(--fs-caption); color: #64748B; margin-top: 24px;">
+          制定日：2026年4月1日<br>
+          医療法人 Sample Group
+        </div>
+
+      </article>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p class="site-footer__name">医療法人　Sample Group　健康診断予約センター</p>
+      <p class="site-footer__desc">
+        当サイトは満40歳～74歳の方を対象とした健康診断の予約専用サイトです。<br>
+        ご予約の変更・キャンセルは、受診日の3日前までお電話でのみ承っております。
+      </p>
+
+      <nav class="site-footer__links" aria-label="サイト情報">
+        <a href="index.html#steps-heading">ご利用案内</a>
+        <a href="faq.html">よくあるご質問</a>
+        <a href="privacy.html">個人情報保護方針</a>
+        <a href="https://example.com/" target="_blank" rel="noopener noreferrer">運営法人について</a>
+      </nav>
+
+      <p class="site-footer__copy">© 2026 Sample Group Medical Corporation. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/font-scale.js"></script>
+</body>
+</html>

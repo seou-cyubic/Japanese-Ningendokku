@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="健康診断のインターネット予約に関するよくあるご質問。受診対象・お申し込み方法・ご予約確定後・オプション検査・お問い合わせ先をご案内します。">
+  <meta name="theme-color" content="#0B6E5B">
+  <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg">
+  <title>よくあるご質問｜健康診断予約</title>
+
+  <link rel="stylesheet" href="assets/css/tokens.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/form.css">
+  <link rel="stylesheet" href="assets/css/faq.css">
+</head>
+<body>
+
+  <a class="skip-link" href="#main">本文へ移動</a>
+
+  <!-- ======================================================================
+       헤더
+       ====================================================================== -->
+  <header class="site-header">
+    <div class="container site-header__inner">
+
+      <div class="site-header__left">
+        <a href="javascript:history.back()" class="btn-back" aria-label="前のページへ戻る" title="戻る">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </a>
+        <a class="brand" href="./index.html">
+          <span class="brand__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 4v7M12 15v5M4.5 12h6M15 12h4.5"></path>
+              <path d="M14.5 17.5l2 2 4-4.5"></path>
+            </svg>
+          </span>
+          <span class="brand__text">
+            <span class="brand__org">医療法人　Sample Group</span>
+            <span class="brand__name">健康診断予約</span>
+          </span>
+        </a>
+      </div>
+
+      <div class="font-scale">
+        <span class="font-scale__label" id="font-scale-label">文字サイズ</span>
+        <div class="font-scale__group" role="group" aria-labelledby="font-scale-label">
+          <button type="button" class="font-scale__btn"
+                  data-scale="1" data-scale-label="標準" aria-pressed="true">標準</button>
+          <button type="button" class="font-scale__btn"
+                  data-scale="1.15" data-scale-label="大" aria-pressed="false">大</button>
+          <button type="button" class="font-scale__btn"
+                  data-scale="1.3" data-scale-label="特大" aria-pressed="false">特大</button>
+        </div>
+      </div>
+
+      <p id="font-scale-status" class="sr-only" role="status" aria-live="polite"></p>
+
+    </div>
+  </header>
+
+  <main id="main" class="page">
+    <div class="container">
+
+      <h1 class="page__title">よくあるご質問</h1>
+      <p class="page__lead">
+        ご予約の前に、よくいただくご質問をまとめました。ほかにご不明な点は<strong>お問い合わせ先（電話：<span data-contact="tel">03-1234-5678</span>）</strong>までご連絡ください。担当者がご案内します。
+      </p>
+
+      <!-- ==================================================================
+           분류 바로가기
+
+           질문이 17개라 아래쪽 분류는 스크롤을 한참 내려야 닿는다.
+           특히 「예약 확정 후」에 7개가 몰려 있다.
+
+           `<a href="#...">` 로 둔다. 자바스크립트가 없어도 동작하고,
+           브라우저의 「뒤로」로 원래 자리에 돌아온다.
+           머리글에 가려지는 것은 main.css 의 scroll-padding-top 이 이미 막는다.
+           ================================================================== -->
+      <nav class="faq-jump" aria-label="カテゴリへ移動">
+        <a class="faq-jump__btn" href="#cat-target">受診の対象</a>
+        <a class="faq-jump__btn" href="#cat-apply">お申し込み方法</a>
+        <a class="faq-jump__btn" href="#cat-after">ご予約の確定後</a>
+        <a class="faq-jump__btn" href="#cat-option">オプション検査</a>
+        <a class="faq-jump__btn" href="#cat-error">エラーが出たとき</a>
+      </nav>
+
+      <!-- ==================================================================
+           ① 검진 대상
+           ================================================================== -->
+      <section class="faq-cat" aria-labelledby="cat-target">
+        <h2 class="faq-cat__title" id="cat-target">受診の対象</h2>
+        <div class="faq-list">
+
+          <details class="faq-item">
+            <summary class="faq-item__q">
+              <span class="faq-item__q-mark" aria-hidden="true">Q</span>
+              <span class="faq-item__q-text">どなたでも申し込めますか。</span>
+              <svg class="faq-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </summary>
+            <p class="faq-item__a">
+              当サイトは<strong>満40歳～74歳の方</strong>を対象とした健康診断の予約専用サイトです。本人確認の画面で、お名前・生年月日・健康保険証の情報を対象者名簿と照合して確認します。
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-item__q">
+              <span class="faq-item__q-mark" aria-hidden="true">Q</span>
+              <span class="faq-item__q-text">本人確認で「対象者ではありません」と表示されます。</span>
+              <svg class="faq-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </summary>
+            <p class="faq-item__a">
+              ご入力の内容が名簿と一致しないか、まだ名簿に登録されていない可能性があります。画面に表示される<strong>お問い合わせ先（電話：<span data-contact="tel">03-1234-5678</span>）</strong>までご連絡ください。お調べします。
+            </p>
+          </details>
+
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           ② 신청 방법
+           ================================================================== -->
+      <section class="faq-cat" aria-labelledby="cat-apply">
+        <h2 class="faq-cat__title" id="cat-apply">お申し込み方法</h2>
+        <div class="faq-list">
+
+          <details class="faq-item">
+            <summary class="faq-item__q">
+              <span class="faq-item__q-mark" aria-hidden="true">Q</span>
+              <span class="faq-item__q-text">ご予約はどのように進みますか。</span>
+              <svg class="faq-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </summary>
+            <p class="faq-item__a">
+              どちらから入るかで、順番が少し変わります。<br><br>
+              「予約する」からお入りいただくと、<strong>会場・日時の選択 → 本人確認 → 情報の入力 → 内容の確認 →
+              予約完了</strong>の順です。<br>
+              「対象かどうかを先に確認する」からお入りいただくと、<strong>本人確認 → 会場・日時の選択</strong>の順になり、はじめの2つが入れ替わります。<br><br>
+              いずれも5つの手順で、画面の上部に今どこまで進んだかが表示されます。ご案内に沿って順にご入力ください。
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-item__q">
+              <span class="faq-item__q-mark" aria-hidden="true">Q</span>
+              <span class="faq-item__q-text">本人確認には何を用意すればよいですか。</span>
+              <svg class="faq-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </summary>
+            <p class="faq-item__a">
+              <strong>健康保険証</strong>をお手元にご用意ください。お名前（漢字）・フリガナ・性別・生年月日と、健康保険証に記載された保険者番号・記号・番号をそのままご入力ください。フリガナはひらがなや半角で入力されても、全角カタカナに自動で変換します。
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-item__q">
+              <span class="faq-item__q-mark" aria-hidden="true">Q</span>
+              <span class="faq-item__q-text">個人情報を入力せずに、会場ごとの空き状況だけ先に見られますか。</span>
+              <svg class="faq-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </summary>
+            <p class="faq-item__a">
+              はい。最初の画面の<strong>「予約する」</strong>からお入りいただくと、個人情報のご入力なしに会場ごとの空き状況をご覧いただけます。ご希望のお時間をお選びいただいた時点で、本人確認へご案内します。<br><br>
+              一方、<strong>「対象かどうかを先に確認する」</strong>は本人確認から始まります。受診の対象かどうかを先に知りたい方はこちらをお選びください。
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-item__q">
+              <span class="faq-item__q-mark" aria-hidden="true">Q</span>
+              <span class="faq-item__q-text">インターネットの操作が苦手です。ほかの方法で申し込めますか。</span>
+              <svg class="faq-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </summary>
+            <p class="faq-item__a">
+              はい、郵送でもお申し込みいただけます。郵送の場合も、インターネットからのお申し込みと同じように受け付けます。申込書の様式や送付先については<strong>お問い合わせ先（電話：<span data-contact="tel">03-1234-5678</span>）</strong>までご連絡ください。
+            </p>
+          </details>
+
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           ③ 예약 확정 후
+           ================================================================== -->
+      <section class="faq-cat" aria-labelledby="cat-after">
+        <h2 class="faq-cat__title" id="cat-after">ご予約の確定後</h2>
+        <div class="faq-list">
+
+          <details class="faq-item">
+            <summary class="faq-item__q">
+              <span class="faq-item__q-mark" aria-hidden="true">Q</span>
+              <span class="faq-item__q-text">予約した内容をもう一度確認したいのですが。</span>
+              <svg class="faq-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </summary>
+            <p class="faq-item__a">
+              最初の画面の<a href="lookup.html">「予約を確認する」</a>で<strong>予約番号</strong>をご入力いただくと、いつでもご予約の内容をご覧いただけます。予約番号もお忘れの場合は<strong>お問い合わせ先（電話：<span data-contact="tel">03-1234-5678</span>）</strong>までお名前と生年月日をお知らせください。担当者がお調べします。
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-item__q">
+              <span class="faq-item__q-mark" aria-hidden="true">Q</span>
+              <span class="faq-item__q-text">予約番号は、あとから見直せますか。</span>
+              <svg class="faq-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </summary>
+            <p class="faq-item__a">
+              <strong>メールアドレスをご入力いただいていれば、確認メールからいつでもご覧いただけます。</strong>メールの件名にも予約番号を記載していますので、メールボックスで「予約番号」と検索すればすぐに見つかります。受診の前日にお送りするリマインドメールにも同じ番号を記載しています。<br><br>
+              <strong>メールアドレスをご入力いただいていない場合</strong>は、予約完了画面が番号をご覧いただける唯一の場所です。その画面で必ずお控えいただくか、印刷してください。英字の大文字と小文字を区別しますので、正確にお書き写しください。<br><br>
+              番号がわからなくなった場合も、お問い合わせ先までご連絡いただければ担当者がお調べします。
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-item__q">
+              <span class="faq-item__q-mark" aria-hidden="true">Q</span>
+              <span class="faq-item__q-text">電話番号は必ず入力しなければいけませんか。</span>
+              <svg class="faq-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </summary>
+            <p class="faq-item__a">
+              <strong>携帯電話と固定電話のいずれか一方は、必ずご入力ください。</strong>両方をご入力いただく必要はありません。<br><br>
+              ご予約の変更・キャンセルのほか、会場の都合で日程が変わる場合にご連絡する手段が必要なためです。メールアドレスと違い、電話番号は省略できません。
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-item__q">
+              <span class="faq-item__q-mark" aria-hidden="true">Q</span>
+              <span class="faq-item__q-text">メールアドレスは必ず入力しなければいけませんか。</span>
+              <svg class="faq-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </summary>
+            <p class="faq-item__a">
+              いいえ、メールアドレスのご入力は任意です。ただし、ご入力がない場合は<strong>予約確認メール</strong>と<strong>受診前日のリマインドメール</strong>をお送りできません。その場合は、予約番号を必ずお控えください。
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-item__q">
+              <span class="faq-item__q-mark" aria-hidden="true">Q</span>
+              <span class="faq-item__q-text">予約を変更・キャンセルしたいのですが。</span>
+              <svg class="faq-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </summary>
+            <p class="faq-item__a">
+              <strong>インターネットでの変更・キャンセルは承っておりません。</strong>受診日の3日前までに、ご予約の会場へお電話ください。担当者が対応いたします。会場の電話番号は予約完了画面と確認メールに記載しています。
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-item__q">
+              <span class="faq-item__q-mark" aria-hidden="true">Q</span>
+              <span class="faq-item__q-text">受診当日は何を持って行けばよいですか。</span>
+              <svg class="faq-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </summary>
+            <p class="faq-item__a">
+              <strong>健康保険証</strong>と、予約番号がわかるもの（印刷したものやお控え）をお持ちください。
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-item__q">
+              <span class="faq-item__q-mark" aria-hidden="true">Q</span>
+              <span class="faq-item__q-text">1年に何回も申し込めますか。</span>
+              <svg class="faq-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </summary>
+            <p class="faq-item__a">
+              いいえ、健康診断のお申し込みは<strong>1年に1回</strong>です。すでにご予約がある場合は、本人確認の画面でお知らせします。
+            </p>
+          </details>
+
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           ④ 옵션 검사
+           ================================================================== -->
+      <section class="faq-cat" aria-labelledby="cat-option">
+        <h2 class="faq-cat__title" id="cat-option">オプション検査</h2>
+        <div class="faq-list">
+
+          <details class="faq-item">
+            <summary class="faq-item__q">
+              <span class="faq-item__q-mark" aria-hidden="true">Q</span>
+              <span class="faq-item__q-text">オプション検査の費用は、いつどのように支払いますか。</span>
+              <svg class="faq-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </summary>
+            <p class="faq-item__a">
+              オンラインでのお支払いはありません。オプション検査をお申し込みの場合は、<strong>受診当日に会場で</strong>お支払いください。
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-item__q">
+              <span class="faq-item__q-mark" aria-hidden="true">Q</span>
+              <span class="faq-item__q-text">希望するオプション検査が申し込み画面に出てきません。</span>
+              <svg class="faq-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </summary>
+            <p class="faq-item__a">
+              オプション検査は、性別・年齢の条件に合うものだけが表示されます。条件に合わない場合は一覧に表示されませんので、対象の年齢・性別ではない可能性があります。ご不明な場合は<strong>お問い合わせ先（電話：<span data-contact="tel">03-1234-5678</span>）</strong>までご連絡ください。
+            </p>
+          </details>
+
+        </div>
+      </section>
+
+      <!-- ==================================================================
+           ⑤ 오류가 발생했어요
+           ================================================================== -->
+      <section class="faq-cat" aria-labelledby="cat-error">
+        <h2 class="faq-cat__title" id="cat-error">エラーが出たとき</h2>
+        <div class="faq-list">
+
+          <details class="faq-item">
+            <summary class="faq-item__q">
+              <span class="faq-item__q-mark" aria-hidden="true">Q</span>
+              <span class="faq-item__q-text">入力の途中で時間が経ち、はじめからやり直すよう表示されます。</span>
+              <svg class="faq-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </summary>
+            <p class="faq-item__a">
+              本人確認は安全のため<strong>30分で期限が切れます</strong>。お手数ですが、本人確認からもう一度お進みください。
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-item__q">
+              <span class="faq-item__q-mark" aria-hidden="true">Q</span>
+              <span class="faq-item__q-text">選ぼうとした時間が、たった今埋まったと表示されます。</span>
+              <svg class="faq-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </summary>
+            <p class="faq-item__a">
+              ほかの方が一足先にその時間をご予約された場合です。別のお時間か、別の日をお選びください。
+            </p>
+          </details>
+
+        </div>
+      </section>
+
+      <!-- 그 외 문의 (어르신도 한눈에 알아보기 쉬운 심플 안내 카드) -->
+      <section class="faq-contact-box" style="margin-top:var(--sp-6);padding:20px 24px;border:1.5px solid #94A3B8;border-radius:10px;background:#ffffff;">
+        <h3 style="margin:0 0 12px;font-size:var(--fs-lead);font-weight:700;color:var(--c-ink);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;vertical-align:-3px;margin-right:6px;color:#0B6E5B;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+          お困りのときは（お電話でのお問い合わせ）
+        </h3>
+
+        <!-- 문의 구분 안내 박스 -->
+        <div style="margin:0 0 16px;padding:12px 16px;border:1px solid #CBD5E1;border-radius:8px;font-size:var(--fs-small);line-height:1.6;color:var(--c-ink);">
+          <p style="margin:0;">
+            <strong>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;vertical-align:-2px;margin-right:4px;color:#0B6E5B;"><path d="M3 21h18M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16M9 9h6M9 13h6M12 7v10"></path></svg>
+              検査項目の内容・持ち物・医療機関に関するお問い合わせ
+            </strong><br>
+            各受診会場・医療機関の窓口へ直接お問い合わせください。
+          </p>
+        </div>
+
+        <div style="font-size:var(--fs-caption);color:var(--c-ink);">
+          <strong style="font-size:var(--fs-body);color:#0B6E5B;">電話番号：<span data-contact="tel">03-1234-5678</span></strong>
+          <span style="font-size:var(--fs-caption);color:#64748B;margin-left:12px;" data-contact="hours">平日 9:00～17:00（土日・祝日を除く）</span>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ======================================================================
+       푸터
+       ====================================================================== -->
+  <footer class="site-footer">
+    <div class="container">
+      <p class="site-footer__name">医療法人　Sample Group　健康診断予約センター</p>
+      <p class="site-footer__desc">
+        当サイトは満40歳～74歳の方を対象とした健康診断の予約専用サイトです。<br>
+        ご予約の変更・キャンセルは、受診日の3日前までお電話でのみ承っております。
+      </p>
+
+      <nav class="site-footer__links" aria-label="サイト情報">
+        <a href="index.html#steps-heading">ご利用案内</a>
+        <a href="faq.html">よくあるご質問</a>
+        <a href="privacy.html">個人情報保護方針</a>
+        <a href="https://example.com/" target="_blank" rel="noopener noreferrer">運営法人について</a>
+      </nav>
+
+      <p class="site-footer__copy">© 2026 Sample Group Medical Corporation. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/font-scale.js"></script>
+  <script src="assets/js/contact-info.js"></script>
+</body>
+</html>

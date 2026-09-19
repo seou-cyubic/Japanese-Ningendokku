@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="健康診断予約 3/5 — お申し込み情報の入力。ご住所・ご連絡先・オプション検査をご入力いただきます。">
+  <meta name="theme-color" content="#0B6E5B">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <title>情報の入力｜健康診断予約</title>
+
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/form.css">
+  <link rel="stylesheet" href="../assets/css/apply.css">
+</head>
+<body>
+
+  <a class="skip-link" href="#main">本文へ移動</a>
+
+  <!-- ======================================================================
+       헤더
+       ====================================================================== -->
+  <header class="site-header">
+    <div class="container site-header__inner">
+
+      <div class="site-header__left">
+        <a href="javascript:history.back()" class="btn-back" aria-label="前のページへ戻る" title="戻る">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </a>
+        <a class="brand" href="../index.html">
+          <span class="brand__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 4v7M12 15v5M4.5 12h6M15 12h4.5"></path>
+              <path d="M14.5 17.5l2 2 4-4.5"></path>
+            </svg>
+          </span>
+          <span class="brand__text">
+            <span class="brand__org">医療法人　Sample Group</span>
+            <span class="brand__name">健康診断予約</span>
+          </span>
+        </a>
+      </div>
+
+
+      <div class="font-scale">
+        <span class="font-scale__label" id="font-scale-label">文字サイズ</span>
+        <div class="font-scale__group" role="group" aria-labelledby="font-scale-label">
+          <button type="button" class="font-scale__btn"
+                  data-scale="1" data-scale-label="標準" aria-pressed="true">標準</button>
+          <button type="button" class="font-scale__btn"
+                  data-scale="1.15" data-scale-label="大" aria-pressed="false">大</button>
+          <button type="button" class="font-scale__btn"
+                  data-scale="1.3" data-scale-label="特大" aria-pressed="false">特大</button>
+        </div>
+      </div>
+
+      <p id="font-scale-status" class="sr-only" role="status" aria-live="polite"></p>
+
+    </div>
+  </header>
+
+  <!-- ======================================================================
+       진행 표시 — 5단계 중 3단계
+       ====================================================================== -->
+  <div class="progress" data-step="info">
+    <div class="container">
+      <strong class="progress__count">5ステップ中 <span>3</span>ステップ目</strong>
+      <div class="progress__bar" role="progressbar"
+           aria-valuenow="3" aria-valuemin="1" aria-valuemax="5"
+           aria-label="ご予約の進行状況">
+        <div class="progress__fill" style="width: 60%"></div>
+      </div>
+      <ol class="progress__steps">
+        <li class="progress__step is-done">会場・日時の選択</li>
+        <li class="progress__step is-done">本人確認</li>
+        <li class="progress__step" aria-current="step">情報の入力</li>
+        <li class="progress__step">内容の確認</li>
+        <li class="progress__step">予約完了</li>
+      </ol>
+    </div>
+  </div>
+
+  <main id="main" class="page">
+    <div class="container">
+
+      <h1 class="page__title">お申し込みされる方の情報をご入力ください</h1>
+      <p class="page__lead">
+        <strong>ご住所</strong>と<strong>ご連絡先</strong>のみご入力ください。次の画面で、すべての内容をもう一度ご確認いただけます。
+      </p>
+
+      <!-- 통신 실패 · 앞 단계 미완료 등 전역 안내 -->
+      <p class="alert" id="global-alert" role="alert">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M12 7.5v5M12 16h.01"></path>
+        </svg>
+        <span id="global-alert-text"></span>
+      </p>
+
+      <!-- 개인정보 칸에 브라우저가 앞사람의 값을 채워 넣지 않게 한다.
+           가족과 PC 를 함께 쓰는 이용자가 많다. -->
+      <form id="apply-form" novalidate autocomplete="off">
+
+        <!-- ==============================================================
+             ① 주소
+             ============================================================== -->
+        <section class="formsec" id="sec-address" aria-labelledby="addr-heading">
+          <h2 class="formsec__head" id="addr-heading">
+            <span class="formsec__num">1</span>
+            <span>ご住所</span>
+          </h2>
+
+          <div class="formsec__body">
+
+            <!-- ==========================================================
+                 주소는 **검색해서 고르게 한다.**
+                 한자 주소와 우편번호를 손으로 적게 하면 반드시 틀리고,
+                 틀린 주소는 안내문이 되돌아오는 것으로 끝난다.
+                 이용자가 직접 적는 것은 번지와 건물명뿐이다.
+                 ========================================================== -->
+            <div class="field field--first">
+              <span class="field__label" id="addr-search-label">
+                郵便番号・住所の検索 <span class="field__required">必須</span>
+              </span>
+              <p class="field__help">
+                <strong>郵便番号7桁</strong>をご入力のうえ、検索を押してください。
+                （ハイフンはあってもなくても構いません）<br>
+                郵便番号がわからない場合は、<strong>市区町村名</strong>で検索することもできます。
+              </p>
+
+              <div class="addr-search">
+                <label class="sr-only" for="addr-query">住所または郵便番号</label>
+                <input class="input" id="addr-query" type="search"
+                       enterkeyhint="search" autocomplete="off" maxlength="100"
+                       aria-describedby="addr-search-label"
+                       placeholder="例)101-0021　・　千代田区外神田">
+                <button type="button" class="btn btn--primary addr-search__btn" id="addr-search-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="6.5"></circle>
+                    <path d="M16 16l4.5 4.5"></path>
+                  </svg>
+                  <span>住所を検索</span>
+                </button>
+              </div>
+
+              <p class="addr-status" id="addr-status" role="status" aria-live="polite"></p>
+
+              <!-- 검색 결과. 고르면 아래 칸이 채워지고 목록은 닫힌다. -->
+              <ul class="addr-results is-hidden" id="addr-results"
+                  aria-label="検索結果の住所一覧"></ul>
+
+              <!-- 찾지 못했을 때.
+                   **직접 입력 칸을 열어 주지 않는다.** 검색에 없는 주소를 손으로
+                   적게 하면 우편번호와 주소가 어긋난 채 접수된다. 넣을 수 없는
+                   것이 맞다. 다만 막다른 길로 두지 않기 위해 전화번호를 준다. -->
+              <div class="addr-notfound is-hidden" id="addr-notfound"></div>
+            </div>
+
+            <!-- 고른 결과. 직접 고치지 못하게 하고 「다시 찾기」로만 바꾼다.
+                 손으로 고치게 두면 우편번호와 주소가 어긋난 채 접수된다. -->
+            <div class="field">
+              <span class="field__label">お選びいただいた住所</span>
+
+              <div class="addr-picked is-empty" id="addr-picked">
+                <span class="addr-picked__empty" id="addr-empty">
+                  まだ住所が選ばれていません。上の検索からお選びください。
+                </span>
+
+                <!-- 일본 주소 폼의 관례대로 도도부현 · 시구정촌 · 정역을
+                     나누어 보여 준다. 한 줄로 붙여 두면 어디까지가 시구정촌인지
+                     읽어 내야 하고, 자기 주소가 맞는지 확인하기 어렵다. -->
+                <span class="addr-picked__body is-hidden" id="addr-body">
+                  <span class="addr-picked__zip">
+                    〒 <strong id="addr-zip-view"></strong>
+                  </span>
+                  <span class="addr-picked__parts">
+                    <span class="addr-part">
+                      <span class="addr-part__k">都道府県</span>
+                      <strong class="addr-part__v" id="addr-pref"></strong>
+                    </span>
+                    <span class="addr-part">
+                      <span class="addr-part__k">市区町村</span>
+                      <strong class="addr-part__v" id="addr-city"></strong>
+                    </span>
+                    <span class="addr-part">
+                      <span class="addr-part__k">町域</span>
+                      <strong class="addr-part__v" id="addr-town"></strong>
+                    </span>
+                  </span>
+                </span>
+
+                <button type="button" class="addr-picked__reset is-hidden" id="addr-reset">
+                  検索しなおす
+                </button>
+              </div>
+
+              <!-- 서버로 보내는 실제 값. 화면에는 위 상자로만 보인다. -->
+              <input type="hidden" id="postal1" name="postal1">
+              <input type="hidden" id="postal2" name="postal2">
+              <input type="hidden" id="address" name="address">
+
+              <p class="field__error" id="err-postal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M12 7.5v5M12 16h.01"></path>
+                </svg>
+                <span></span>
+              </p>
+              <p class="field__error" id="err-address">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M12 7.5v5M12 16h.01"></path>
+                </svg>
+                <span></span>
+              </p>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="address-detail">
+                番地 <span class="field__required">必須</span>
+              </label>
+              <p class="field__help">数字のみで構いません。（例：1-2-3）</p>
+              <input class="input" id="address-detail" name="address_detail" type="text"
+                     autocomplete="off" maxlength="60" placeholder="1-2-3">
+              <p class="field__error" id="err-address-detail">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M12 7.5v5M12 16h.01"></path>
+                </svg>
+                <span></span>
+              </p>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="building">
+                アパート・マンション名 <span class="field__optional">任意</span>
+              </label>
+              <p class="field__help">
+                該当する方のみ、建物名とお部屋番号をご入力ください。（例：サンプルマンション 201）
+              </p>
+              <input class="input" id="building" name="building" type="text"
+                     maxlength="120" placeholder="サンプルマンション 201"
+                       autocomplete="off">
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ==============================================================
+             ② 연락처
+             ============================================================== -->
+        <section class="formsec" id="sec-contact" aria-labelledby="contact-heading">
+          <h2 class="formsec__head" id="contact-heading">
+            <span class="formsec__num">2</span>
+            <span>ご連絡先</span>
+          </h2>
+
+          <div class="formsec__body">
+
+            <p class="hint">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 4h4l2 5-2.5 1.5a12 12 0 005 5L15 13l5 2v4a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1z"></path>
+              </svg>
+              <span>
+                <strong>携帯電話と固定電話のいずれか一方</strong>をご入力ください。ご予約の内容に確認事項がある場合のみご連絡します。
+              </span>
+            </p>
+
+            <!-- ==========================================================
+                 휴대전화 — 앞자리는 목록에서 고른다.
+
+                 일본 휴대전화 번호의 앞 3자리는 090 / 080 / 070 세 가지뿐이다.
+                 고를 수 있는 것이 셋뿐인데 손으로 치게 하면 오타만 생긴다.
+                 뒤 두 칸은 각각 4자리로 고정이다.
+                 ========================================================== -->
+            <div class="field field--first">
+              <span class="field__label" id="tel-mobile-label">
+                携帯電話番号
+              </span>
+              <p class="field__help">
+                先頭の番号をお選びのうえ、残りを<strong>4桁ずつ</strong>ご入力ください。ハイフン(-)は不要です。
+              </p>
+              <div class="input-group" role="group" aria-labelledby="tel-mobile-label">
+                <label class="sr-only" for="tel-mobile">携帯電話の先頭番号</label>
+                <select class="input select--tel" id="tel-mobile"
+                        autocomplete="off">
+                  <option value="">選択</option>
+                  <option value="090">090</option>
+                  <option value="080">080</option>
+                  <option value="070">070</option>
+                </select>
+                <span class="input-group__sep" aria-hidden="true">–</span>
+                <label class="sr-only" for="tel-mobile2">携帯電話の中間4桁</label>
+                <input class="input input--code input--tel" id="tel-mobile2"
+                       type="tel" inputmode="numeric" maxlength="4"
+                       placeholder="1234"
+                       autocomplete="off">
+                <span class="input-group__sep" aria-hidden="true">–</span>
+                <label class="sr-only" for="tel-mobile3">携帯電話の下4桁</label>
+                <input class="input input--code input--tel" id="tel-mobile3"
+                       type="tel" inputmode="numeric" maxlength="4"
+                       placeholder="5678"
+                       autocomplete="off">
+              </div>
+              <p class="field__error" id="err-tel-mobile">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M12 7.5v5M12 16h.01"></path>
+                </svg>
+                <span></span>
+              </p>
+            </div>
+
+            <!-- ==========================================================
+                 유선전화 — 같은 3칸 형식이되 **목록으로 고르지 않는다.**
+
+                 일본 고정전화는 시외국번이 2~5자리로 제각각이고 전국에 500개가
+                 넘는다. 목록으로 만들면 그 안에서 자기 번호를 찾는 일이 더 어렵다.
+                 다만 세 조각의 **합이 10자리**인 것은 공통이므로 그것으로 검증한다.
+
+                     03  - 1234 - 5678      (2 + 4 + 4)
+                     045 - 123  - 4567      (3 + 3 + 4)
+                     0123- 45   - 6789      (4 + 2 + 4)
+                 ========================================================== -->
+            <div class="field">
+              <span class="field__label" id="tel-home-label">
+                固定電話番号
+              </span>
+              <p class="field__help">
+                <strong>市外局番から</strong>3つの欄に分けてご入力ください。
+                （例：03 – 1234 – 5678）
+              </p>
+              <div class="input-group" role="group" aria-labelledby="tel-home-label">
+                <label class="sr-only" for="tel-home">固定電話の市外局番</label>
+                <input class="input input--code input--tel" id="tel-home"
+                       type="tel" inputmode="numeric" maxlength="5"
+                       placeholder="03"
+                       autocomplete="off">
+                <span class="input-group__sep" aria-hidden="true">–</span>
+                <label class="sr-only" for="tel-home2">固定電話の市内局番</label>
+                <input class="input input--code input--tel" id="tel-home2"
+                       type="tel" inputmode="numeric" maxlength="4"
+                       placeholder="1234"
+                       autocomplete="off">
+                <span class="input-group__sep" aria-hidden="true">–</span>
+                <label class="sr-only" for="tel-home3">固定電話の下4桁</label>
+                <input class="input input--code input--tel" id="tel-home3"
+                       type="tel" inputmode="numeric" maxlength="4"
+                       placeholder="5678"
+                       autocomplete="off">
+              </div>
+              <p class="field__error" id="err-tel-home">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M12 7.5v5M12 16h.01"></path>
+                </svg>
+                <span></span>
+              </p>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="email">
+                メールアドレス <span class="field__optional">任意</span>
+              </label>
+              <!-- 브라우저 자동완성을 끈다.
+
+                   고령 이용자는 가족과 PC 를 함께 쓰는 일이 잦다. 자동완성이
+                   켜져 있으면 **앞사람의 메일 주소**가 채워지고, 그대로 접수되면
+                   예약번호가 담긴 확인 메일이 남에게 간다. 예약번호는 예약 조회의
+                   열쇠이므로(U-20) 그것은 곧 예약 내용 전체가 새는 것이다.
+
+                   비워 두면 「입력하지 않음」이다. 값이 저절로 들어가면 안 된다. -->
+
+                   
+                   
+                   
+                   
+
+                   
+              <input class="input" id="email" name="email" type="email"
+                     inputmode="email" autocomplete="off" maxlength="255"
+                     placeholder="example@example.jp">
+              <p class="field__error" id="err-email">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M12 7.5v5M12 16h.01"></path>
+                </svg>
+                <span></span>
+              </p>
+
+              <!-- 이메일은 임의지만, 미입력의 결과를 반드시 알려야 한다 (BR-11) -->
+              <div class="mail-warn" id="mail-warn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 6.5h18v11H3z"></path>
+                  <path d="M3 7l9 6 9-6"></path>
+                </svg>
+                <span class="mail-warn__text" id="mail-warn-text"></span>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ==============================================================
+             ③ 옵션 검사
+             ============================================================== -->
+        <section class="formsec" id="sec-option" aria-labelledby="option-heading">
+          <h2 class="formsec__head" id="option-heading">
+            <span class="formsec__num">3</span>
+            <span>オプション検査</span>
+            <span class="formsec__badge">任意</span>
+          </h2>
+
+          <div class="formsec__body">
+            <p class="field__help" id="option-lead">
+              お申し込みいただける検査を読み込んでいます…
+            </p>
+
+            <div class="optlist" id="option-list"></div>
+
+            <p class="optnote">
+              お選びにならなくても、基本の健診は予定どおり受診いただけます。<br>
+              オプション検査の費用は<strong>受診当日に会場で</strong>お支払いいただきます。
+            </p>
+          </div>
+        </section>
+
+        <!-- 제출 전 오류 요약 — 어디를 고쳐야 하는지 한곳에 모아 준다 -->
+        <div class="errsum" id="error-summary" role="alert" tabindex="-1">
+          <strong class="errsum__title">未入力の項目があります</strong>
+          <ul class="errsum__list" id="error-summary-list"></ul>
+        </div>
+
+        <div class="btn-row btn-row--inline">
+          <button class="btn btn--primary" type="submit" id="submit-btn">
+            <span>入力内容を確認する</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 5l7 7-7 7"></path>
+            </svg>
+          </button>
+          <a class="btn btn--ghost" href="schedule.html" data-flow-prev>前の画面へ戻る</a>
+        </div>
+
+      </form>
+
+      <p class="sr-only" id="live-status" role="status" aria-live="polite"></p>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p class="site-footer__name">医療法人　Sample Group　健康診断予約センター</p>
+      <p class="site-footer__desc">
+        当サイトは満40歳～74歳の方を対象とした健康診断の予約専用サイトです。<br>
+        ご予約の変更・キャンセルは、受診日の3日前までお電話でのみ承っております。
+      </p>
+
+      <nav class="site-footer__links" aria-label="サイト情報">
+        <a href="../index.html#steps-heading">ご利用案内</a>
+        <a href="../faq.html">よくあるご質問</a>
+        <a href="../privacy.html">個人情報保護方針</a>
+        <a href="https://example.com/" target="_blank" rel="noopener noreferrer">運営法人について</a>
+      </nav>
+
+      <p class="site-footer__copy">© 2026 Sample Group Medical Corporation. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="../assets/js/font-scale.js"></script>
+  <script src="../assets/js/flow.js"></script>
+  <!-- apply.js 가 먼저 앞 단계의 입력값을 되살린 뒤,
+       address-search.js 가 그 값을 「고른 주소」 상자에 그린다. 순서가 중요하다. -->
+  <script src="../assets/js/apply.js"></script>
+  <script src="../assets/js/address-search.js"></script>
+</body>
+</html>
