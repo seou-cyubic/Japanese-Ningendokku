@@ -759,11 +759,17 @@
 .bulk-grid__number,
 .bulk-grid__groups > .bulk-grid__fixed-head:nth-child(1) {
   left: var(--grid-fixed-left-1, 0px);
+  width: var(--grid-fixed-width-1, 46px);
+  min-width: var(--grid-fixed-width-1, 46px);
+  box-sizing: border-box;
 }
 
 .bulk-grid__status,
 .bulk-grid__groups > .bulk-grid__fixed-head:nth-child(2) {
   left: var(--grid-fixed-left-2, 46px);
+  width: var(--grid-fixed-width-2, 120px);
+  min-width: var(--grid-fixed-width-2, 120px);
+  box-sizing: border-box;
   /* 얼어 있는 구역이 어디서 끝나는지 눈에 보이게 한다. */
   border-right: 2px solid #BBCDC9;
 }

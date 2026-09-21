@@ -124,11 +124,12 @@
        예전에는 CSS 에 `left: 46px` 를 손으로 적어 두었다. 폭을 여기서 한 번
        바꾸면 조용히 어긋나는 종류의 중복이라, 폭에서 계산한 값을 표에
        실어 보낸다. CSS 는 그 값을 그대로 쓴다. */
-    var FIXED_WIDTHS = [46, 74];
+    var FIXED_WIDTHS = [46, 120];
     var fixedLeft = 0;
     FIXED_WIDTHS.slice(0, fixedLabels.length).forEach(function (width, index) {
       colgroup.appendChild(el('col', { style: 'width:' + width + 'px' }));
       table.style.setProperty('--grid-fixed-left-' + (index + 1), fixedLeft + 'px');
+      table.style.setProperty('--grid-fixed-width-' + (index + 1), width + 'px');
       fixedLeft += width;
     });
     columns.forEach(function (column) {
@@ -224,6 +225,9 @@
         debug.push('fixed[' + fi + '] left=' + Math.round(offset) + ' width=' + w);
         table.style.setProperty(
           '--grid-fixed-left-' + (fi + 1), Math.round(offset) + 'px'
+        );
+        table.style.setProperty(
+          '--grid-fixed-width-' + (fi + 1), Math.round(w) + 'px'
         );
         offset += w;
       }
