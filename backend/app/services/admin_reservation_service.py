@@ -777,6 +777,10 @@ def update(
     # 서식은 보낼 때 한다 — `format_date_ja` 가 mail_service 에 있고, 이 모듈은
     # 그것을 함수 안에서만 부른다(순환 import 를 피하기 위해서다).
     moved_from: tuple[object, str] | None = None
+    # 옮기기 전에 「일정변경요(휴진)」였는지도 여기서 붙잡는다. 옮기고 나면
+    # `reservation.schedule` 이 새 회차를 가리켜 판정할 수 없다. 휴진 때문에
+    # 옮기는 예약에는 「휴진에 의한 변경 안내」 메일을 보낸다.
+    was_holiday = _reservation_is_holiday(reservation)
 
     if payload.slot_id and payload.slot_id != current_slot_id:
         moved_from = (reservation.slot_date, reservation.time_label or "-")
@@ -867,12 +871,15 @@ def update(
     if moved_from and payload.notify_change:
         from app.services import mail_service
 
-        log = mail_service.send_schedule_changed(
-            db,
-            reservation,
-            mail_service.format_date_ja(moved_from[0]) if moved_from[0] else "-",
-            moved_from[1],
-        )
+        if was_holiday:
+            log = mail_service.send_reserve_change_by_clinic(db, reservation)
+        else:
+            log = mail_service.send_schedule_changed(
+                db,
+                reservation,
+                mail_service.format_date_ja(moved_from[0]) if moved_from[0] else "-",
+                moved_from[1],
+            )
         db.commit()
         messages.append(
             "変更案内メールを送信しました。"
