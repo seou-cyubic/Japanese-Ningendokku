@@ -56,6 +56,7 @@ ACTION_LABELS: dict[str, str] = {
     # 되돌리기는 **새 조작**으로 남긴다. 기록을 지우지 않는다 —
     # 되돌렸다는 사실 자체가 남아야 나중에 설명할 수 있다.
     "BATCH_REVERT": "一括保存を元に戻す",
+    "RECORD_RESTORE": "削除を元に戻す",
 }
 
 

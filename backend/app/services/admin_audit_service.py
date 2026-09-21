@@ -606,9 +606,29 @@ def _format_plain_dict(val: dict, target_type: str = "", exclude: set[str] | Non
 
         if k == "cells":
             items.append(f"{k_label}: {_format_cells(v)}")
+        elif k == "schedules" and isinstance(v, list) and v and isinstance(v[0], dict):
+            # 회장 삭제 시 남긴 회차 백업. 날짜만 요약한다.
+            dates = ", ".join(str(s.get("event_date", "")) for s in v)
+            items.append(f"{k_label}: {dates}（{len(v)}件）")
         else:
             items.append(f"{k_label}: {_format_value(k, v)}")
     return " | ".join(items) if items else "なし"
+
+
+def _restore_summary(after: dict, target_type: str = "") -> str:
+    """삭제 복원 로그를 사람이 읽는 한 문장으로."""
+    what = "オプション検査" if target_type == "exam_option" else "会場"
+    text = f"削除された{what}を元の内容で復元しました"
+    extra = []
+    deleted_at = str(after.get("deleted_at") or "")[:16].replace("T", " ")
+    if deleted_at:
+        extra.append(f"削除日時 {deleted_at}")
+    if after.get("deleted_by"):
+        extra.append(f"削除した担当者 {after['deleted_by']}")
+    lines = after.get("schedule_lines")
+    if isinstance(lines, list) and lines:
+        extra.append("開催日程 " + " / ".join(str(x) for x in lines))
+    return text + (f"（{' / '.join(extra)}）" if extra else "")
 
 
 def _format_diff_cols_for_csv(log: AuditLog) -> tuple[str, str]:
@@ -775,6 +795,10 @@ def _format_diff_cols_for_csv(log: AuditLog) -> tuple[str, str]:
         if after.get("items"):
             after_text += f" [{_format_revert_items(after['items'])}]"
         return "なし", after_text
+
+    # 12-2) 삭제 복원 (RECORD_RESTORE) — 내부 키(log_id 등)는 보여 주지 않는다.
+    if action == "RECORD_RESTORE" and isinstance(after, dict):
+        return "なし", _restore_summary(after, target_type)
 
     # 13) Diff 형식 판정: after_json 에 {before, after} 쌍이 포함되어 있는 경우
     # (RESERVATION_UPDATE, HOSPITAL_UPDATE, EXAM_OPTION_UPDATE, HOSPITAL_SCHEDULE_SAVE, ACCOUNT_UPDATE 등)

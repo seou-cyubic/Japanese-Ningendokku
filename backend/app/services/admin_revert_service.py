@@ -552,6 +552,135 @@ def revert(
     }
 
 
+# --------------------------------------------------------------------------
+# 삭제 복원
+# --------------------------------------------------------------------------
+# 삭제는 일괄 저장이 아니라 **한 건씩** 일어나 `batch_id` 가 없다. 그래서 위의
+# 되돌리기(batch 단위)에는 나오지 않고, 삭제 로그 한 건에서 직접 되살린다.
+#
+# 근거는 삭제 직전에 로그에 남긴 `before_json` 이다. 같은 코드가 이미 다시
+# 만들어졌거나 이미 복원한 삭제라면 만들지 않는다 — 조용히 덮어쓰는 것보다
+# 「할 수 없다」고 말하는 편이 안전하다.
+
+RESTORABLE_DELETES = {
+    "HOSPITAL_DELETE": "hospital",
+    "EXAM_OPTION_DELETE": "exam_option",
+}
+
+
+def schedule_backup(schedule: HospitalSchedule) -> dict[str, Any]:
+    """회장을 지울 때 딸린 회차를 로그에 남기는 모양.
+
+    회장을 지우면 회차와 정원이 함께 사라진다(cascade). 회장 필드만 남기면
+    복원해도 개최일과 정원이 돌아오지 않는다.
+    """
+    data = audit_service.snapshot(schedule, _SCHEDULE_FIELDS + ["sort_order", "closed_mask"])
+    data["capacities"] = list(schedule.capacity_row())
+    return data
+
+
+def _schedule_line(schedule: HospitalSchedule) -> str:
+    """복원한 회차를 사람이 읽는 한 줄로. 예: 2026-10-05 09:00～15:00（定員 35名）"""
+    parts = [schedule.event_date.isoformat()]
+    if schedule.open_time and schedule.reception_end_time:
+        parts.append(
+            f"{schedule.open_time:%H:%M}～{schedule.reception_end_time:%H:%M}"
+        )
+    elif schedule.open_time:
+        parts.append(f"{schedule.open_time:%H:%M}～")
+    line = " ".join(parts)
+    if schedule.total_capacity:
+        line += f"（定員 {schedule.total_capacity}名）"
+    if schedule.note:
+        line += f" {schedule.note}"
+    return line
+
+
+def restore_deleted(
+    db: Session, log_id: int, *, admin: AdminUser, ip_address: str
+) -> dict:
+    """삭제 로그 한 건으로 회장·옵션 검사를 되살린다."""
+    log = db.get(AuditLog, log_id)
+    kind = RESTORABLE_DELETES.get(log.action) if log else None
+    if kind is None:
+        raise RevertError("元に戻せる削除記録ではありません。")
+
+    data = log.before_json
+    if not isinstance(data, dict) or not data:
+        raise RevertError("削除前のデータが記録されていないため、元に戻せません。")
+
+    already = db.execute(
+        select(AuditLog).where(
+            AuditLog.action == "RECORD_RESTORE", AuditLog.target_type == kind
+        )
+    ).scalars().all()
+    if any((row.after_json or {}).get("log_id") == log.id for row in already):
+        raise RevertError("すでに元に戻した削除です。")
+
+    model = MODEL_OF[kind]
+    code = data.get("code")
+    if code and db.execute(select(model).where(model.code == code)).scalars().first():
+        raise RevertError(
+            f"同じコード（{code}）がすでに登録されているため、元に戻せません。"
+        )
+
+    obj = model()
+    for key in FIELDS_OF[kind]:
+        if key in data:
+            setattr(obj, key, _coerce(model, key, data[key]))
+    # 예전 ID 가 비어 있으면 그대로 쓴다. 다른 로그의 대상 ID 와 어긋나지 않는다.
+    if log.target_id and db.get(model, log.target_id) is None:
+        obj.id = log.target_id
+
+    schedules_restored = 0
+    schedule_lines: list[str] = []
+    if kind == "hospital":
+        obj.region = f"{obj.area or ''}{obj.city or ''}"
+        for item in data.get("schedules") or []:
+            if not isinstance(item, dict):
+                continue
+            schedule = HospitalSchedule()
+            for key in _SCHEDULE_FIELDS + ["sort_order"]:
+                if key in item:
+                    setattr(schedule, key, _coerce(HospitalSchedule, key, item[key]))
+            schedule.closed_mask = int(item.get("closed_mask") or 0)
+            for index, value in enumerate(item.get("capacities") or []):
+                if index < time_grid.SLOT_COUNT:
+                    schedule.set_capacity_at(index, None if value is None else int(value))
+            obj.schedules.append(schedule)
+            schedules_restored += 1
+            schedule_lines.append(_schedule_line(schedule))
+
+    db.add(obj)
+    db.flush()
+
+    audit_service.write_log(
+        db,
+        admin=admin,
+        action="RECORD_RESTORE",
+        target_type=kind,
+        target_id=obj.id,
+        target_label=f"{log.target_label} （削除を元に戻す）",
+        # `log_id` 는 「이미 복원한 삭제인가」 판정용이라 화면에는 보이지 않는다.
+        # 사람이 읽을 것은 언제·누가 지운 것을 되살렸는가다.
+        after={
+            "log_id": log.id,
+            "deleted_at": log.created_at.isoformat() if log.created_at else "",
+            "deleted_by": log.admin_name,
+            "schedule_lines": schedule_lines,
+        },
+        ip_address=ip_address,
+    )
+    db.commit()
+
+    return {
+        "target_type": kind,
+        "id": obj.id,
+        "label": log.target_label,
+        "schedules_restored": schedules_restored,
+    }
+
+
 def _restore_cells(schedule, was: dict) -> None:
     for index in time_grid.indexes():
         key = time_grid.sheet_key(index)

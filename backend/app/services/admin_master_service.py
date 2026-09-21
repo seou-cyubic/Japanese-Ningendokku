@@ -570,6 +570,13 @@ def delete_hospital(
             "予約画面で非表示にするには「予約画面表示」をオフにしてください。"
         )
 
+    # 회차·정원도 함께 남긴다. 회장을 지우면 딸린 회차가 같이 사라지므로,
+    # 회장 필드만 남기면 「삭제 복원」을 해도 개최일과 정원이 돌아오지 않는다.
+    from app.services.admin_revert_service import schedule_backup
+
+    before = audit_service.snapshot(hospital, _HOSPITAL_FIELDS)
+    before["schedules"] = [schedule_backup(s) for s in hospital.schedules]
+
     audit_service.write_log(
         db,
         admin=admin,
@@ -577,7 +584,7 @@ def delete_hospital(
         target_type="hospital",
         target_id=hospital.id,
         target_label=f"{hospital.code} {hospital.name}",
-        before=audit_service.snapshot(hospital, _HOSPITAL_FIELDS),
+        before=before,
         ip_address=ip_address,
     )
 

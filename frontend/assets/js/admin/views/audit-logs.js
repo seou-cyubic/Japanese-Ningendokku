@@ -266,6 +266,33 @@
       .catch(function (error) { A.toast(error.message, 'danger'); });
   }
 
+  /* 삭제 복원 — 삭제 로그 한 건에서 삭제 전 내용으로 다시 등록한다.
+     일괄 저장 되돌리기와 달리 batch 가 없어 로그 행에서 직접 실행한다. */
+  function restoreDeleted(log) {
+    var hasSchedules = log.action === 'HOSPITAL_DELETE' &&
+      log.before_json && Array.isArray(log.before_json.schedules) &&
+      log.before_json.schedules.length;
+    A.confirm({
+      title: '削除を元に戻す',
+      message: '「' + log.target_label + '」を削除前の内容で登録し直します。',
+      detail: log.action === 'HOSPITAL_DELETE'
+        ? (hasSchedules
+            ? '開催日程 ' + log.before_json.schedules.length + '件と定員も復元されます。'
+            : 'この削除の記録には開催日程がないため、会場情報のみ復元されます（日程・定員は再登録が必要です）。')
+        : '',
+      okLabel: '元に戻す',
+      tone: 'primary'
+    }).then(function (ok) {
+      if (!ok) return;
+      A.api.post('/audit-logs/' + log.id + '/restore')
+        .then(function (body) {
+          A.toast(body.message, 'ok');
+          A.render();
+        })
+        .catch(function (error) { A.toast(error.message, 'danger'); });
+    });
+  }
+
   function exportCurrentAuditLogs(params) {
     openExportModal(params);
   }
@@ -1095,6 +1122,11 @@
       text = buildDiffPreview(after);
     }
 
+    // --- 삭제 복원 ---
+    else if (action === 'RECORD_RESTORE' && after) {
+      text = restoreSummary(log);
+    }
+
     // --- 일괄 저장 되돌리기 ---
     else if (action === 'BATCH_REVERT' && after) {
       var totalChanged = (after.reverted || 0) + (after.deleted || 0);
@@ -1357,8 +1389,43 @@
      변경 전후 상세 — 구조화된 비교 테이블
      ====================================================================== */
 
+  /* 삭제 복원 로그의 한 줄 요약. `log_id` 같은 내부 값은 보여 주지 않는다. */
+  function restoreWhat(log) {
+    return log.target_type === 'exam_option' ? 'オプション検査' : '会場';
+  }
+
+  function restoreSummary(log) {
+    return '削除された' + restoreWhat(log) + 'を元の内容で復元しました';
+  }
+
   function buildDetailRow(log) {
     var content = el('div.log-detail');
+
+    if (log.action === 'RECORD_RESTORE') {
+      var info = log.after_json || {};
+      content.appendChild(el('div.log-detail__title', { text: '削除を元に戻した内容' }));
+
+      var restoreTable = el('table.log-info');
+      var restoreBody = el('tbody');
+      var rows = [
+        ['復元した' + restoreWhat(log), (log.target_label || '').replace(/\s*（削除を元に戻す）\s*$/, '')]
+      ];
+      if (info.deleted_at) rows.push(['削除された日時', A.fmt.datetime(info.deleted_at)]);
+      if (info.deleted_by) rows.push(['削除した担当者', info.deleted_by]);
+      if (Array.isArray(info.schedule_lines) && info.schedule_lines.length) {
+        rows.push(['開催日程', info.schedule_lines.join('\n')]);
+      }
+      rows.forEach(function (r) {
+        restoreBody.appendChild(el('tr', {}, [
+          el('td.log-info__label', { text: r[0] }),
+          el('td.log-info__value', { text: r[1], style: 'white-space:pre-line' })
+        ]));
+      });
+      restoreTable.appendChild(restoreBody);
+      content.appendChild(restoreTable);
+
+      return el('tr.log-detail-row', {}, el('td', { colSpan: 7 }, content));
+    }
 
     if (log.action === 'BATCH_REVERT') {
       var after = log.after_json || {};
@@ -1592,9 +1659,16 @@
       var delBody = el('tbody');
 
       Object.keys(log.before_json).forEach(function (k) {
+        var shown = log.before_json[k];
+        // 회장 삭제 때 남긴 회차 목록(객체 배열)은 날짜만 요약해 보여 준다.
+        if (k === 'schedules' && Array.isArray(shown)) {
+          shown = shown.length
+            ? shown.map(function (s) { return s.event_date; }).join(', ') + '（' + shown.length + '件）'
+            : '';
+        }
         delBody.appendChild(el('tr', {}, [
           el('td.log-info__label', { text: translateKey(k) }),
-          el('td.log-info__value', { text: translateValue(log.before_json[k]) })
+          el('td.log-info__value', { text: translateValue(shown) })
         ]));
       });
 
@@ -1647,10 +1721,17 @@
         text: 'この予約を表示'
       }));
     }
-    if (log.target_type === 'hospital' && log.target_id) {
+    if (log.target_type === 'hospital' && log.target_id && log.action !== 'HOSPITAL_DELETE') {
       links.appendChild(el('a.btn.btn--sm', {
         href: '#/capacity?hospital_id=' + log.target_id,
         text: 'この会場の定員を表示'
+      }));
+    }
+    if (log.action === 'HOSPITAL_DELETE' || log.action === 'EXAM_OPTION_DELETE') {
+      links.appendChild(el('button.btn.btn--sm.btn--primary', {
+        type: 'button',
+        text: '削除を元に戻す',
+        onClick: function () { restoreDeleted(log); }
       }));
     }
 

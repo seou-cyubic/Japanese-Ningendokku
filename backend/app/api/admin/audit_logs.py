@@ -197,3 +197,33 @@ def revert_batch(
         "data": data,
         "message": " · ".join(parts) + "。",
     }
+
+
+@router.post(
+    "/{log_id}/restore",
+    summary="削除を元に戻す",
+    description=(
+        "削除の操作ログ（会場・オプション検査）1件から、削除前の内容で登録し直す。\n\n"
+        "同じコードがすでにある場合、または復元済みの削除は409で拒否する。"
+        "会場は、削除時に日程を記録していれば日程と定員も復元する。"
+        "元に戻す操作は新規操作(`RECORD_RESTORE`)として残る。"
+    ),
+)
+def restore_deleted(
+    log_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+    admin: AdminUser = Depends(require_system_admin),
+) -> dict:
+    try:
+        data = admin_revert_service.restore_deleted(
+            db, log_id, admin=admin, ip_address=client_ip(request)
+        )
+    except admin_revert_service.RevertError as exc:
+        db.rollback()
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    message = f"{data['label']} を元に戻しました。"
+    if data["schedules_restored"]:
+        message += f"（開催日程 {data['schedules_restored']}件を含む）"
+    return {"success": True, "data": data, "message": message}
