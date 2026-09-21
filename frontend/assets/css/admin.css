@@ -1270,9 +1270,11 @@ a.btn:visited {
   overflow-y: auto;
 }
 
+/* 모든 모달은 같은 너비다 (가장 큰 wide 기준). 크기를 나누면 창마다 폭이
+   달라 화면이 들쭉날쭉해 보인다. `--wide` · `--slim` 은 호출부 호환용으로 남긴다. */
 .modal {
   width: 100%;
-  max-width: 680px;
+  max-width: 980px;
   background: var(--a-surface);
   border-radius: 12px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, .2), 0 1px 3px rgba(0, 0, 0, .1);
@@ -1286,7 +1288,7 @@ a.btn:visited {
 }
 
 .modal--slim {
-  max-width: 520px;
+  max-width: 980px;
 }
 
 .modal__head {
