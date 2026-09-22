@@ -385,6 +385,35 @@ def save_schedules(
     return {"success": True, "data": data, "message": "開催回を保存しました。"}
 
 
+@router.delete(
+    "/{hospital_id}/schedules/{schedule_id}",
+    response_model=Ok,
+    summary="開催回削除（1件のみ）",
+    description=(
+        "定員管理表で1行だけを削除する。`PUT /{hospital_id}/schedules` は一覧を"
+        "まるごと送り直す必要があり、表を絞り込んでいると意図せず他の開催回まで"
+        "削除される危険がある。こちらは1件のIDを指定するので安全。\n\n"
+        "予約が（キャンセル済みを含めて）1件でもあれば削除しない。"
+    ),
+)
+def delete_schedule(
+    hospital_id: int,
+    schedule_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+    admin: AdminUser = Depends(require_business_admin),
+) -> Ok:
+    try:
+        message = admin_master_service.delete_schedule(
+            db, hospital_id, schedule_id, admin=admin, ip_address=client_ip(request)
+        )
+    except MasterDataError as exc:
+        db.rollback()
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    return Ok(message=message)
+
+
 @router.get(
     "/{hospital_id}/capacity",
     response_model=CapacityResponse,

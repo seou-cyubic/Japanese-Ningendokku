@@ -36,6 +36,7 @@ ACTION_LABELS: dict[str, str] = {
     "HOSPITAL_UPDATE": "会場修正",
     "HOSPITAL_DELETE": "会場削除",
     "HOSPITAL_SCHEDULE_SAVE": "会場日程保存",
+    "HOSPITAL_SCHEDULE_DELETE": "開催回削除",
     "HOSPITAL_BULK_SAVE": "会場一括保存",
     "HOSPITAL_BULK_EXPORT": "会場マスター書き出し",
     "HOSPITAL_BULK_IMPORT": "会場マスター取り込み",

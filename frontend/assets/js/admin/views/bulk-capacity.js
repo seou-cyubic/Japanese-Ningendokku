@@ -87,7 +87,7 @@
       onChange: updateSummary,
       rowStatus: rowStatus,
       cellDecorator: decorate,
-      onCellMenu: toggleClosed,
+      onCellMenu: handleCellMenu,
       onFilterCleared: function () { /* 이 화면은 회장 콤보로만 좁힌다 */ }
     });
 
@@ -196,7 +196,8 @@
           }),
           el('button.btn.btn--sm', {
             type: 'button', text: '選択行を削除',
-            title: '表上でのみ削除します。登録済みの開催回は削除されません。',
+            title: '表上でのみ削除します。登録済みの開催回は削除されません — '
+                  + '登録済みの開催回を実際に削除するには、行を右クリックしてください。',
             onClick: removeRows
           }),
           el('button.btn.btn--sm.btn--ghost', {
@@ -305,6 +306,81 @@
       .length;
   }
 
+  /* ======================================================================
+     행 메뉴 (우클릭) — 시간대 칸이 아닌 칸에서
+     --------------------------------------------------------------------
+     시간대 칸(정원 16칸)의 우클릭은 이미 마감 표시(`toggleClosed`)가 쓰고
+     있다. 그래서 개최回 자체를 지우는 메뉴는 **그 밖의 칸**(会場コード・
+     開催日 등)에 둔다 — 회장 관리 화면의 행 메뉴와 같은 자리다.
+     ====================================================================== */
+
+  function handleCellMenu(event, row, column, cell) {
+    if (column.kind === 'capacity') return toggleClosed(event, row, column);
+    return openScheduleMenu(row);
+  }
+
+  /** 이 회차(schedule_id)에 걸린 예약 총수. 정원 칸별 예약 수를 더한다. */
+  function totalReserved(scheduleId) {
+    var cells = (data.reserved || {})[scheduleId] || {};
+    return Object.keys(cells).reduce(function (sum, key) {
+      return sum + (cells[key] || 0);
+    }, 0);
+  }
+
+  function openScheduleMenu(row) {
+    if (grid.isBlank(row)) return false;
+    if (!row.schedule_id) {
+      A.toast('先にこの開催回を保存してください。', 'warn');
+      return true;
+    }
+
+    var reserved = totalReserved(row.schedule_id);
+
+    A.modal({
+      title: grid.value(row, 'event_date') || row.event_date,
+      size: 'slim',
+      body: [
+        el('p.field__hint', {
+          style: 'margin:0 0 12px',
+          text: (row.hospital_code || '') + ' ' + (row.hospital_name || '')
+                + ' ・ 予約 ' + reserved + '件'
+        })
+      ],
+      actions: [
+        { label: '閉じる' },
+        {
+          label: 'この開催回を削除',
+          tone: 'danger',
+          onClick: function () { confirmDeleteSchedule(row, reserved); }
+        }
+      ]
+    });
+    return true;
+  }
+
+  function confirmDeleteSchedule(row, reserved) {
+    var eventDate = grid.value(row, 'event_date') || row.event_date;
+
+    A.confirm({
+      title: eventDate + ' の開催回を削除しますか？',
+      message: (row.hospital_code || '') + ' ' + (row.hospital_name || '') + ' の開催回です。',
+      detail: reserved
+        ? 'この開催回に予約が ' + reserved + '件（キャンセル済みを含む）あるため削除できません。'
+          + '予約画面で非表示にするには、この開催回の「表示」を「いいえ」に変更して保存してください。'
+        : '時間帯別定員もすべて削除されます。元に戻せません。',
+      okLabel: '削除',
+      tone: 'danger'
+    }).then(function (ok) {
+      if (!ok) return;
+      A.api.del('/hospitals/' + row.hospital_id + '/schedules/' + row.schedule_id)
+        .then(function (body) {
+          A.toast(body.message, 'ok');
+          A.render();
+        })
+        .catch(function (error) { A.toast(error.message, 'danger'); });
+    });
+  }
+
   function toggleClosed(event, row, column) {
     if (column.kind !== 'capacity') return false;
     if (!row.schedule_id) {
@@ -369,7 +445,7 @@
         ? 'このうち ' + registered + '件は登録済みの開催回です。'
         : 'まだ保存されていない行です。',
       detail: '表からのみ削除します。登録済みの開催回は削除されません。'
-        + '開催回を実際に削除するには、会場管理画面でその会場を開いてください — '
+        + '開催回を実際に削除するには、行を右クリックして「この開催回を削除」を選択してください — '
         + '予約が入っている開催回はそこでも削除できません。',
       okLabel: '表から削除'
     }).then(function (yes) {

@@ -40,7 +40,7 @@ from app.schemas.admin import (
     SlotUpdateRequest,
     SlotUpdateResult,
 )
-from app.core import time_grid
+from app.core import region_lookup, time_grid
 from app.services import audit_service
 from app.services import slot_grid_service as grid
 
@@ -474,6 +474,57 @@ def save_schedules(
     return [_to_schedule_row(s, stats, today) for s in hospital.schedules]
 
 
+def delete_schedule(
+    db: Session,
+    hospital_id: int,
+    schedule_id: int,
+    *,
+    admin: AdminUser,
+    ip_address: str,
+) -> str:
+    """정원 관리 표에서 개최回 하나만 지운다.
+
+    `회장 삭제`(`delete_hospital`)와 같은 원칙이다 — 예약이 걸려 있으면
+    (취소분을 포함해) 지우지 않는다. 취소된 예약도 세는 것은 `sync_schedules`
+    (원본 마스터 재적용)와 기준을 맞추기 위해서다. 취소 이력이라도 「그 날이
+    왜 있었는지」를 설명하는 자료이므로, 통째로 지우면 그 흔적이 사라진다.
+    """
+    schedule = db.get(HospitalSchedule, schedule_id)
+    if schedule is None or schedule.hospital_id != hospital_id:
+        raise MasterDataError("開催回が見つかりません。")
+
+    hospital = schedule.hospital
+    held = schedule_reservation_count(db, schedule_id)
+    if held:
+        raise MasterDataError(
+            f"この開催回に予約が {held}件（キャンセル済みを含む）あるため削除できません。"
+            "予約画面で非表示にするには、この開催回の「表示」をオフにして保存してください。"
+        )
+
+    # 삭제 전 내용을 통째로 남긴다 (시간대별 정원 포함). 지금은 이 로그에서
+    # 되돌리는 화면이 없지만, 날짜·정원을 다시 손으로 세지 않아도 되게
+    # 기록만은 남겨 둔다 (`admin_revert_service.schedule_backup`).
+    from app.services.admin_revert_service import schedule_backup
+
+    label = f"{hospital.code} {hospital.name} {schedule.event_date.isoformat()}"
+    before = schedule_backup(schedule)
+
+    audit_service.write_log(
+        db,
+        admin=admin,
+        action="HOSPITAL_SCHEDULE_DELETE",
+        target_type="schedule",
+        target_id=schedule.id,
+        target_label=label,
+        before=before,
+        ip_address=ip_address,
+    )
+
+    db.delete(schedule)
+    db.commit()
+    return f"{schedule.event_date.isoformat()} の開催回を削除しました。"
+
+
 def save_hospital(
     db: Session,
     hospital_id: int | None,
@@ -825,6 +876,21 @@ def _validate_bulk_row(
         if len(text) > limit:
             add(field, f"{label} は {limit}文字以内で入力してください。")
         values[field] = text
+
+    # 원본 마스터 파일에는 `地域` 칸이 없다 — `区・市町村`만 있다. 담당자가
+    # 매번 손으로 채우지 않도록, 비어 있으면 `区・市町村`로 추정해 채운다.
+    # 모르는 시정촌이면(오타·홋카이도 밖 주소) 비워 두고 사람에게 알린다 —
+    # 틀린 지역을 조용히 채우는 것보다 안전하다 (`region_lookup.guess_area`).
+    if not values["area"] and values["city"]:
+        guessed = region_lookup.guess_area(values["city"])
+        if guessed:
+            values["area"] = guessed
+        else:
+            warn(
+                "area",
+                f"「{values['city']}」の地域を自動判定できませんでした。"
+                "地域欄を確認・入力してください。",
+            )
 
     # 표시용 지역 한 줄은 두 칸에서 만든다. 사람이 따로 적지 않는다.
     values["region"] = f"{values['area']}{values['city']}"

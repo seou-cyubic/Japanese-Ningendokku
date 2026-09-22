@@ -299,6 +299,15 @@
               '開催日と定員は「定員管理」で設定します。'
       }));
 
+      // 地域を自動判定できなかった行など、保存はしたが確認してほしい内容。
+      if ((data.warnings || []).length) {
+        body.appendChild(A.notice('warn',
+          '取り込みましたが、ご確認いただきたい事項が ' + data.warnings.length + '件あります。'));
+        body.appendChild(el('ul.bulk-warn__list', {}, data.warnings.map(function (w) {
+          return el('li', { text: w.row_no + '行目「' + w.field + '」 — ' + w.message });
+        })));
+      }
+
       body.appendChild(el('button.btn.btn--primary', {
         type: 'button', text: '閉じて一覧を更新',
         onClick: function () {

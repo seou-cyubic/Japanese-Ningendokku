@@ -28,7 +28,7 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.core import time_grid
+from app.core import region_lookup, time_grid
 from app.models.admin import AdminUser
 from app.models.hospital import Hospital, HospitalSchedule
 from app.models.reservation import Reservation
@@ -350,9 +350,14 @@ def _validate_venue_row(
     by_code: dict[str, Hospital],
     seen_codes: dict[str, int],
     errors: list[BulkFieldError],
+    warnings: list[BulkFieldError] | None = None,
 ) -> tuple[Hospital | None, dict[str, Any]] | None:
     def add(field: str, message: str) -> None:
         errors.append(BulkFieldError(row_no=row_no, field=field, message=message))
+
+    def warn(field: str, message: str) -> None:
+        if warnings is not None:
+            warnings.append(BulkFieldError(row_no=row_no, field=field, message=message))
 
     before = len(errors)
     values: dict[str, Any] = {}
@@ -404,6 +409,20 @@ def _validate_venue_row(
         if len(text) > limit:
             add(field, f"{label} は {limit}文字以内で入力してください。")
         values[field] = text
+
+    # `地域`을 비워 두고 `区・市町村`만 적었으면 추정해 채운다. 원본 마스터
+    # 파일에는 애초에 `地域` 칸이 없어, 담당자가 이 표에 직접 새 행을
+    # 추가할 때도 매번 손으로 적지 않게 하기 위함이다 (詳細は region_lookup).
+    if not values["area"] and values["city"]:
+        guessed = region_lookup.guess_area(values["city"])
+        if guessed:
+            values["area"] = guessed
+        else:
+            warn(
+                "area",
+                f"「{values['city']}」の地域を自動判定できませんでした。"
+                "地域欄を確認・入力してください。",
+            )
 
     # 표시용 지역 한 줄은 두 칸에서 만든다. 사람이 따로 적지 않는다.
     values["region"] = f"{values['area']}{values['city']}"
@@ -489,6 +508,7 @@ def save_venues(
         parsed = _validate_venue_row(
             row, row_no,
             by_id=by_id, by_code=by_code, seen_codes=seen_codes, errors=errors,
+            warnings=warnings,
         )
         if parsed is not None:
             drafts.append((row_no, parsed[0], parsed[1]))
