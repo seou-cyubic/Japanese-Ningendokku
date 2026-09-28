@@ -750,6 +750,7 @@
 
     // 정원
     cells: '時間帯別定員',
+    closed_slots: '締切にした時間帯',
     dates: '対象日',
     delta: '定員の増減',
     updated: '変更件数',
@@ -1666,9 +1667,14 @@
             ? shown.map(function (s) { return s.event_date; }).join(', ') + '（' + shown.length + '件）'
             : '';
         }
+        // 개최回 삭제 때 남긴 시간대별 정원(cells)은 이미 있는 서식을 그대로 쓴다.
+        // 그대로 두면 객체가 JSON 문자열로 나가 사람이 읽을 수 없다.
+        if (k === 'cells' && shown && typeof shown === 'object' && !Array.isArray(shown)) {
+          shown = formatCellsLog(shown);
+        }
         delBody.appendChild(el('tr', {}, [
           el('td.log-info__label', { text: translateKey(k) }),
-          el('td.log-info__value', { text: translateValue(shown) })
+          el('td.log-info__value', { text: translateValue(shown, k) })
         ]));
       });
 

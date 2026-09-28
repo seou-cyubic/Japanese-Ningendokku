@@ -573,9 +573,28 @@ def schedule_backup(schedule: HospitalSchedule) -> dict[str, Any]:
 
     회장을 지우면 회차와 정원이 함께 사라진다(cascade). 회장 필드만 남기면
     복원해도 개최일과 정원이 돌아오지 않는다.
+
+    `sort_order`(並び順)·`closed_mask`(마감 비트값)는 사람이 조작 로그
+    화면에서 보기에 뜻을 알 수 없는 내부 값이라 그대로 남기지 않는다.
+    정원은 `cells` 라는 이름으로 시간대별 스냅샷(`capacity_snapshot`)과
+    **같은 모양**으로 남긴다 — 그래야 화면이 이미 갖고 있는 「시간대별
+    정원」 서식(`cells` 전용 렌더링)을 그대로 재사용해 보여 줄 수 있다.
+    마감된 시간대는 마감 여부를 사람이 읽는 시간대 이름 목록으로 바꿔
+    `closed_slots` 에 남기고, 마감된 칸이 하나도 없으면 아예 넣지 않는다.
     """
-    data = audit_service.snapshot(schedule, _SCHEDULE_FIELDS + ["sort_order", "closed_mask"])
-    data["capacities"] = list(schedule.capacity_row())
+    from app.services.admin_bulk_service import capacity_snapshot
+
+    data = audit_service.snapshot(schedule, _SCHEDULE_FIELDS)
+    data["cells"] = capacity_snapshot(schedule)
+
+    closed_slots = [
+        time_grid.label(i)
+        for i in time_grid.indexes()
+        if schedule.capacity_at(i) is not None and schedule.is_closed_at(i)
+    ]
+    if closed_slots:
+        data["closed_slots"] = closed_slots
+
     return data
 
 
@@ -640,13 +659,17 @@ def restore_deleted(
             if not isinstance(item, dict):
                 continue
             schedule = HospitalSchedule()
-            for key in _SCHEDULE_FIELDS + ["sort_order"]:
+            for key in _SCHEDULE_FIELDS:
                 if key in item:
                     setattr(schedule, key, _coerce(HospitalSchedule, key, item[key]))
-            schedule.closed_mask = int(item.get("closed_mask") or 0)
-            for index, value in enumerate(item.get("capacities") or []):
-                if index < time_grid.SLOT_COUNT:
+            for cell_key, value in (item.get("cells") or {}).items():
+                index = time_grid.index_of_sheet_key(cell_key)
+                if index is not None:
                     schedule.set_capacity_at(index, None if value is None else int(value))
+            for cell_label in item.get("closed_slots") or []:
+                index = time_grid.index_of_sheet_key(cell_label)
+                if index is not None:
+                    schedule.set_closed_at(index, True)
             obj.schedules.append(schedule)
             schedules_restored += 1
             schedule_lines.append(_schedule_line(schedule))

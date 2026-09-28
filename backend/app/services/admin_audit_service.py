@@ -280,6 +280,7 @@ FIELD_LABELS: dict[str, str] = {
 
     # 定員・枠
     "cells": "時間帯別定員",
+    "closed_slots": "締切にした時間帯",
     "dates": "対象日",
     "delta": "定員の増減",
     "updated": "更新件数",
@@ -610,6 +611,9 @@ def _format_plain_dict(val: dict, target_type: str = "", exclude: set[str] | Non
             # 회장 삭제 시 남긴 회차 백업. 날짜만 요약한다.
             dates = ", ".join(str(s.get("event_date", "")) for s in v)
             items.append(f"{k_label}: {dates}（{len(v)}件）")
+        elif k == "closed_slots" and isinstance(v, list):
+            # 개최回 삭제 시 남긴 마감 시간대 목록. 문자열 그대로 이어 붙인다.
+            items.append(f"{k_label}: {'、'.join(str(x) for x in v) if v else 'なし'}")
         else:
             items.append(f"{k_label}: {_format_value(k, v)}")
     return " | ".join(items) if items else "なし"
