@@ -22,7 +22,10 @@
 
       Array.prototype.forEach.call(document.querySelectorAll('[data-contact]'), function (node) {
         var value = data[node.getAttribute('data-contact')];
-        if (value) node.textContent = value;
+        if (!value) return;
+        // 접수 시간의 「（土・日・祝日を除く）」가 중간에서 꺾이지 않게
+        if (window.KeepText) KeepText.set(node, value);
+        else node.textContent = value;
       });
 
       Array.prototype.forEach.call(document.querySelectorAll('[data-contact-href]'), function (node) {

@@ -365,7 +365,7 @@ def main(argv: list[str] | None = None) -> int:
               f" (仮受付 {pending} / キャンセル {cancelled})")
         print("-" * 70)
         print(f"合計 予約 {len(total)}件")
-        print("\n管理画面で確認してください : http://127.0.0.1:8000/admin/\n")
+        print("\n管理画面で確認してください : http://127.0.0.1:8001/admin/\n")
         return 0
 
     except Exception:

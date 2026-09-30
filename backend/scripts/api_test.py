@@ -2,19 +2,38 @@
 
 서버를 띄운 상태에서 실행한다.
 
-    python -m uvicorn app.main:app --port 8000
+    python -m uvicorn app.main:app --port 8001
     python -m scripts.api_test
 """
 
 import scripts._console  # noqa: F401  (콘솔 UTF-8 보정)
+import http.cookiejar
 import json
 import sys
 import urllib.error
 import urllib.request
 
-URL = "http://127.0.0.1:8000/api/v1/reservations/verify"
+from app.core.seed_data import SEED_SITE_USERS
+
+BASE = "http://127.0.0.1:8001"
+URL = BASE + "/api/v1/reservations/verify"
 
 CARD = {"insurer_no": "0000", "insurance_symbol": "ABCD", "insurance_no": "0000"}
+
+# 이용자 화면 API 는 입장 로그인 쿠키가 있어야 부를 수 있다
+_opener = urllib.request.build_opener(
+    urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar())
+)
+
+
+def site_login() -> None:
+    login_id, password, _name = SEED_SITE_USERS[0]
+    req = urllib.request.Request(
+        BASE + "/api/v1/site/login",
+        data=json.dumps({"login_id": login_id, "password": password}).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+    )
+    _opener.open(req).close()
 
 
 def call(payload: dict) -> tuple[int, dict]:
@@ -24,7 +43,7 @@ def call(payload: dict) -> tuple[int, dict]:
         headers={"Content-Type": "application/json"},
     )
     try:
-        with urllib.request.urlopen(req) as res:
+        with _opener.open(req) as res:
             return res.status, json.loads(res.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         return e.code, json.loads(e.read().decode("utf-8"))
@@ -95,6 +114,7 @@ CASES = [
 
 
 def main() -> int:
+    site_login()
     for title, payload in CASES:
         status, body = call(payload)
         print(f"--- {title}   [HTTP {status}]")

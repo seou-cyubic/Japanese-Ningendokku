@@ -351,6 +351,8 @@ def seed_required(*, admins: bool = True) -> dict:
 
       · 메일 문구 — 없으면 메일 관리 화면과 발송이 빈 문구로 돈다
       · 관리자 계정 — 테이블이 **비어 있을 때만.** 없으면 아무도 로그인하지 못한다
+      · 이용자 화면 입장 계정 — 마찬가지로 **비어 있을 때만.** 없으면 이용자
+        화면에 아무도 들어오지 못한다
 
     이미 있는 행은 건드리지 않는다. 담당자가 고친 문구·비밀번호를 되돌리면 안 된다.
     검진 대상자 명부·옵션 검사·회장은 넣지 않는다 — 운영 데이터라 설치 스크립트
@@ -360,11 +362,12 @@ def seed_required(*, admins: bool = True) -> dict:
 
     from app.core.database import SessionLocal
     from app.core.security import hash_password
-    from app.core.seed_data import SEED_ADMINS
+    from app.core.seed_data import SEED_ADMINS, SEED_SITE_USERS
     from app.models.admin import AdminUser
+    from app.models.site_user import SiteUser
     from app.services import mail_service
 
-    result = {"mail_templates": 0, "admins": 0}
+    result = {"mail_templates": 0, "admins": 0, "site_users": 0}
     db = SessionLocal()
     try:
         from app.models.mail import MailTemplate
@@ -388,6 +391,18 @@ def seed_required(*, admins: bool = True) -> dict:
                     )
                 )
                 result["admins"] += 1
+
+        if not db.execute(select(func.count(SiteUser.id))).scalar():
+            for login_id, password, name in SEED_SITE_USERS:
+                db.add(
+                    SiteUser(
+                        login_id=login_id,
+                        password_hash=hash_password(password),
+                        name=name,
+                        is_active=True,
+                    )
+                )
+                result["site_users"] += 1
 
         db.commit()
     except Exception:

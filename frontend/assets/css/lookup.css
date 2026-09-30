@@ -96,7 +96,9 @@
 
 .rs-head__value {
   font-family: var(--font-mono);
-  font-size: var(--fs-h1);
+  /* 12자가 한 줄에 들어가야 옮겨 적기 쉽다. 좁은 화면 +「大・特大」에서는
+     「DPsLwoYAJl / Bq」처럼 두 줄로 갈라지므로 화면 폭에 맞춰 상한을 둔다. */
+  font-size: min(var(--fs-h1), 8vw);
   font-weight: var(--fw-bold);
   letter-spacing: 0.06em;
   line-height: 1.2;
@@ -251,12 +253,15 @@
 
 .change-box__tels {
   display: grid;
+  /* `1fr` 은 내용의 최소 폭 아래로 줄지 않아, 좁은 화면 +「特大」에서
+     칸이 화면 밖으로 몇 px 밀려났다. minmax(0, …) 로 칸 안에서 줄바꿈시킨다. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-2);
   margin-top: var(--sp-3);
 }
 
 @media (min-width: 620px) {
-  .change-box__tels { grid-template-columns: 1fr 1fr; }
+  .change-box__tels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 .change-box__tel {
@@ -285,7 +290,8 @@
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  font-size: var(--fs-h2);
+  /* 360px 폭 +「特大」에서는 번호가 칸 밖으로 넘쳤다. 화면 폭으로 상한을 둔다. */
+  font-size: min(var(--fs-h2), 7vw);
   font-weight: var(--fw-bold);
   color: var(--c-primary-strong);
   letter-spacing: 0.02em;

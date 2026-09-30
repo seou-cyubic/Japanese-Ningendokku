@@ -96,7 +96,7 @@
 
         <h1 class="page__title" id="page-title">本人確認</h1>
         <p class="page__lead">
-          はじめに、今年の健康診断の対象となる方かどうかを確認します。<br>
+          はじめに、今年の健康診断の<span class="keep">対象となる方</span>かどうかを確認します。<br>
           健康保険証に記載のとおりにご入力ください。
         </p>
 
@@ -203,7 +203,7 @@
                 </span>
                 <span class="kana-guide__row">
                   <span class="kana-guide__ng" aria-hidden="true">×</span>
-                  <span><strong>誤った例</strong> — たなか（ひらがな）・ﾀﾅｶ（半角）・Tanaka（英字）・田中（漢字）</span>
+                  <span><strong>誤った例</strong> — <span class="keep">たなか（ひらがな）・</span><span class="keep">ﾀﾅｶ（半角）・</span><span class="keep">Tanaka（英字）・</span><span class="keep">田中（漢字）</span></span>
                 </span>
                 <span class="kana-guide__note">
                   ひらがなや半角カタカナで入力されても、全角カタカナに自動で変換します。
@@ -318,7 +318,7 @@
                 <span class="field__required">必須</span>
               </legend>
               <p class="field__help" id="birth-help">
-                西暦でご入力ください。（例：1970年5月12日）
+                西暦でご入力ください。<span class="keep">（例：1970年5月12日）</span>
               </p>
 
               <div class="input-group" aria-describedby="birth-help">
@@ -663,7 +663,7 @@
       <p class="site-footer__name">医療法人　Sample Group　健康診断予約センター</p>
       <p class="site-footer__desc">
         当サイトは満40歳～74歳の方を対象とした健康診断の予約専用サイトです。<br>
-        ご予約の変更・キャンセルは、受診日の3日前までお電話でのみ承っております。
+        ご予約の変更・キャンセルは、受診日の3日前まで<span class="keep">お電話でのみ</span>承っております。
       </p>
 
       <nav class="site-footer__links" aria-label="サイト情報">
@@ -677,7 +677,9 @@
     </div>
   </footer>
 
+  <script src="../assets/js/site-auth.js"></script>
   <script src="../assets/js/font-scale.js"></script>
+  <script src="../assets/js/keep-text.js"></script>
   <script src="../assets/js/flow.js"></script>
   <script src="../assets/js/verify.js"></script>
 </body>

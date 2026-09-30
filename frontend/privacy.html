@@ -31,7 +31,9 @@
     .privacy-header h1 {
       /* 文字サイズ調整（--font-scale）に対応するためCSS変数を使用 */
          
-      font-size: var(--fs-h1);
+      /* 좁은 화면 + 「特大」에서는 「（プライバシー」 한 덩어리도 한 줄에 못 들어가
+         단어 중간에서 꺾인다. 화면 폭을 넘지 않는 크기로 줄인다. */
+      font-size: min(var(--fs-h1), 9vw);
       color: #0B6E5B;
       font-weight: bold;
       margin: 0;
@@ -112,7 +114,7 @@
       <article class="privacy-card">
         
         <div class="privacy-header">
-          <h1>個人情報保護方針 （プライバシーポリシー）</h1>
+          <h1><span class="keep">個人情報</span><span class="keep">保護方針</span><br><span class="keep">（プライバシー</span><span class="keep">ポリシー）</span></h1>
         </div>
 
         <div style="background: #FFFBEB; border: 1px solid #FCD34D; color: #92400E; padding: 10px 16px; border-radius: 6px; font-size: var(--fs-caption); font-weight: bold; margin-bottom: 20px; text-align: center;">
@@ -140,7 +142,7 @@
         <section class="privacy-section">
           <h2>2. 収集する個人情報の項目</h2>
           <p>
-            本サービスのご利用にあたり、氏名（漢字・フリガナ）、生年月日、性別、電話番号、住所、電子メールアドレス、保険証番号、ご希望の受診会場・日時、および選択検査項目等の情報を取得いたします。
+            本サービスのご利用にあたり、氏名（漢字・フリガナ）、<span class="keep">生年月日、</span>性別、電話番号、住所、電子メールアドレス、保険証番号、ご希望の受診会場・日時、および選択検査項目等の情報を取得いたします。
           </p>
         </section>
 
@@ -161,7 +163,7 @@
             <li>SSL/TLS 暗号化通信によるデータ伝送の保護</li>
             <li>アクセス権限（L1～L3 段階）の厳格な制御および管理者認証</li>
             <li>所定の保持期間を経過した予約データの自動削除システムの運用</li>
-            <li>システム担当者に対する継続的な情報セキュリティ教育の実施</li>
+            <li>システム担当者に対する継続的な情報セキュリティ<span class="keep">教育の実施</span></li>
           </ul>
         </section>
 
@@ -169,7 +171,7 @@
         <section class="privacy-section">
           <h2>5. 個人情報の開示・訂正・利用停止等の請求</h2>
           <p>
-            利用者ご本人から自己の個人情報について開示、訂正、追加、削除、または利用停止のご請求があった場合は、ご本人確認を行った上で、法令に基づき速やかに対応いたします。
+            利用者ご本人から自己の個人情報について開示、訂正、追加、削除、または利用停止のご請求があった場合は、<span class="keep">ご本人確認</span>を行った上で、法令に基づき速やかに対応いたします。
           </p>
         </section>
 
@@ -188,7 +190,7 @@
       <p class="site-footer__name">医療法人　Sample Group　健康診断予約センター</p>
       <p class="site-footer__desc">
         当サイトは満40歳～74歳の方を対象とした健康診断の予約専用サイトです。<br>
-        ご予約の変更・キャンセルは、受診日の3日前までお電話でのみ承っております。
+        ご予約の変更・キャンセルは、受診日の3日前まで<span class="keep">お電話でのみ</span>承っております。
       </p>
 
       <nav class="site-footer__links" aria-label="サイト情報">
@@ -202,6 +204,8 @@
     </div>
   </footer>
 
+  <script src="assets/js/site-auth.js"></script>
   <script src="assets/js/font-scale.js"></script>
+  <script src="assets/js/keep-text.js"></script>
 </body>
 </html>

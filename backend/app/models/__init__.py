@@ -18,6 +18,7 @@ from app.models.lookup_attempt import LookupAttempt
 from app.models.mail import MailLog, MailTemplate
 from app.models.postal_code import PostalCode
 from app.models.reservation import ContactHistory, Reservation, ReservationOption
+from app.models.site_user import SiteSession, SiteUser
 from app.models.target_person import TargetPerson
 
 __all__ = [
@@ -34,5 +35,7 @@ __all__ = [
     "Reservation",
     "ReservationCount",
     "ReservationOption",
+    "SiteSession",
+    "SiteUser",
     "TargetPerson",
 ]

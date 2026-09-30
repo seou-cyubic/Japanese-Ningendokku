@@ -76,8 +76,9 @@
      본문 서체는 글자 폭이 제각각이라 어디까지 읽었는지 놓치기 쉽다.
      한 글자씩 또박또박 짚을 수 있도록 고정폭 서체로 띄운다. */
   font-family: var(--font-mono);
-  /* 12자를 옮겨 적을 때 자릿수를 세기 쉽도록 자간을 벌린다. */
-  font-size: calc(2.25rem * var(--font-scale));
+  /* 12자를 옮겨 적을 때 자릿수를 세기 쉽도록 자간을 벌린다.
+     500px 안팎 폭 +「特大」에서도 한 줄에 들도록 화면 폭으로 상한을 둔다. */
+  font-size: min(calc(2.25rem * var(--font-scale)), 7vw);
   font-weight: var(--fw-bold);
   letter-spacing: 0.1em;
   line-height: 1.2;
@@ -167,7 +168,8 @@
    좁은 화면 + 「아주 크게」(x1.3) 조합에서도 한 줄이 유지되도록 낮춘다. */
 @media (max-width: 480px) {
   .resno__value {
-    font-size: calc(1.625rem * var(--font-scale));
+    /* 360px 폭 +「特大」에서는 이 크기로도 넘쳐 「…YAJl / Bq」가 되었다 */
+    font-size: min(calc(1.625rem * var(--font-scale)), 7vw);
     letter-spacing: 0.04em;
   }
 }

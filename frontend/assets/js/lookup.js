@@ -94,7 +94,7 @@
     v.className = 'datalist__val';
 
     if (value) {
-      v.textContent = value;
+      KeepText.set(v, value);
     } else {
       v.className += ' datalist__val--empty';
       v.textContent = emptyText || '入力なし';
@@ -264,7 +264,7 @@
       var htel = document.getElementById('rs-holiday-tel');
       htel.textContent = d.contact_tel;
       htel.href = 'tel:' + String(d.contact_tel).replace(/[^0-9+]/g, '');
-      document.getElementById('rs-holiday-hours').textContent = d.contact_hours || '';
+      KeepText.set(document.getElementById('rs-holiday-hours'), d.contact_hours);
     }
 
     document.getElementById('rs-lead').textContent =
@@ -321,7 +321,7 @@
     renderOptions(d.options || []);
 
     // --- 변경 · 취소 안내 --------------------------------------------------
-    document.getElementById('rs-change-notice').textContent = d.change_notice;
+    KeepText.set(document.getElementById('rs-change-notice'), d.change_notice);
 
     // 회장 이름 및 주소는 항상 표시
     document.getElementById('rs-hospital-name').textContent = h.name || '';
@@ -341,14 +341,14 @@
     }
 
     setTel('rs-contact-tel', d.contact_tel);
-    document.getElementById('rs-contact-hours').textContent = d.contact_hours || '';
+    KeepText.set(document.getElementById('rs-contact-hours'), d.contact_hours);
 
     // 언제까지 볼 수 있는지. 「어제는 보였는데」가 문의가 되지 않게 미리 알린다.
-    document.getElementById('rs-viewable').textContent =
+    KeepText.set(document.getElementById('rs-viewable'),
       d.status === 'CANCELLED'
         ? ''
         : '※ このご予約の内容は、受診後(' + d.viewable_until +
-          ')は照会できなくなります。必要な場合はこの画面を印刷してください。';
+          ')は照会できなくなります。必要な場合はこの画面を印刷してください。');
 
     // 이메일 버튼 상태
     var emailBtn = document.getElementById('email-btn');

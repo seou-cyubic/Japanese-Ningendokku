@@ -249,6 +249,43 @@ def seed_admins() -> None:
         db.close()
 
 
+def seed_site_users() -> None:
+    """이용자 화면 입장 계정. 이미 있으면 비밀번호를 건드리지 않는다."""
+    from app.core.seed_data import SEED_SITE_USERS
+    from app.models.site_user import SiteUser
+
+    db = SessionLocal()
+    try:
+        inserted = skipped = 0
+
+        for login_id, password, name in SEED_SITE_USERS:
+            exists = db.execute(
+                select(SiteUser).where(SiteUser.login_id == login_id)
+            ).scalar_one_or_none()
+
+            if exists:
+                skipped += 1
+                continue
+
+            db.add(
+                SiteUser(
+                    login_id=login_id,
+                    password_hash=hash_password(password),
+                    name=name,
+                    is_active=True,
+                )
+            )
+            inserted += 1
+
+        db.commit()
+        print(f"      利用者画面アカウント投入 完了 : 新規 {inserted}件 / 既存 {skipped}件")
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
+
+
 def seed_mail_templates() -> None:
     """메일 템플릿 초기값. 관리 화면(A-40)에서 이후 편집한다."""
     db = SessionLocal()
@@ -323,6 +360,7 @@ def main() -> int:
     seed()
     seed_exam_options()
     seed_admins()
+    seed_site_users()
     seed_mail_templates()
 
     # 결과 확인
@@ -345,7 +383,15 @@ def main() -> int:
         for login_id, password, name, _email, role in SEED_ADMINS:
             print(f"  {login_id:<8} / {password:<12} {name} ({role})")
         print("-" * 70)
-        print("  ⚠️ 本番投入前に必ずパスワードを変更すること\n")
+
+        from app.core.seed_data import SEED_SITE_USERS
+
+        print("\n--- 利用者画面アカウント (開発用パスワード) --------------------------")
+        for login_id, password, name in SEED_SITE_USERS:
+            print(f"  {login_id:<8} / {password:<12} {name}")
+        print("-" * 70)
+        print("  ⚠️ 本番投入前に必ずパスワードを変更すること")
+        print("     (利用者画面 : python -m scripts.site_users passwd <ID>)\n")
 
         print("続けて次の順に実行してください。（まとめて行うなら python -m scripts.setup_db）")
         print("  python -m scripts.import_hospitals      ← 会場マスター Excel")

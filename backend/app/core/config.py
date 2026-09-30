@@ -55,7 +55,15 @@ class Settings(BaseSettings):
     # 관리자 세션 유효 시간(초). 기본 8시간 — 하루 근무를 한 번의 로그인으로 덮는다.
     ADMIN_SESSION_TTL: int = 28800
     # HTTPS 전용 쿠키. 로컬 개발(http)에서는 False 여야 쿠키가 저장된다.
+    # 이용자 화면 입장 쿠키에도 같은 값을 쓴다.
     ADMIN_COOKIE_SECURE: bool = False
+
+    # --- 이용자 화면 입장 로그인 -----------------------------------------
+    # true 면 이용자 화면(첫 화면 · 예약 · 조회 · FAQ)과 그 API 를 로그인한
+    # 사람만 쓸 수 있다. 계정은 DB 의 `site_users` 표에 있다.
+    SITE_AUTH_ENABLED: bool = True
+    # 입장 세션 유효 시간(초). 기본 12시간.
+    SITE_SESSION_TTL: int = 43200
 
     # --- 예약 만료 정리 --------------------------------------------------
     # 검진 시각이 지난 예약은 자동으로 삭제한다.
@@ -101,7 +109,7 @@ class Settings(BaseSettings):
     CONTACT_HOURS: str = "平日 9:00～17:00（土日・祝日を除く）"
 
     # --- 프론트엔드 --------------------------------------------------------
-    FRONTEND_URL: str = "http://127.0.0.1:8000"
+    FRONTEND_URL: str = "http://127.0.0.1:8001"
 
     @property
     def database_url(self) -> URL:

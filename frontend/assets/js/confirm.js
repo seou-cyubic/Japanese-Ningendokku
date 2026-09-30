@@ -96,7 +96,7 @@
     v.className = 'datalist__val';
 
     if (value) {
-      v.textContent = value;
+      KeepText.set(v, value);
     } else {
       v.className += ' datalist__val--empty';
       v.textContent = emptyText || '入力なし';
@@ -191,8 +191,8 @@
     } else {
       elMailWarn.classList.remove('is-ok');
       elMailWarnTxt.innerHTML =
-        'メールアドレスのご入力がないため、<strong>確認メールとリマインドメールをお受け取りいただけません。</strong>' +
-        '予約番号は次の画面にのみ表示されますので、<strong>必ずお控えください</strong>。';
+        'メールアドレスのご入力がないため、<strong>確認メールとリマインドメールを<span class="keep">お受け取り</span>いただけません。</strong>' +
+        '予約番号は次の<span class="keep">画面にのみ</span>表示されますので、<strong>必ずお控えください</strong>。';
     }
   }
 

@@ -1,6 +1,6 @@
 """예약 확정 · 관리 화면 API 통합 검증.
 
-    python -m uvicorn app.main:app --reload      # 다른 창에서 서버 기동
+    python -m uvicorn app.main:app --reload --port 8001  # 다른 창에서 서버 기동
     python -m scripts.reservation_api_test
     python -m scripts.reservation_api_test --base http://127.0.0.1:8010
 
@@ -38,7 +38,7 @@ from app.models.reservation import Reservation
 PASS = "  [OK]  "
 FAIL = "  [FAIL]"
 
-BASE = "http://127.0.0.1:8000"
+BASE = "http://127.0.0.1:8001"
 
 failures = 0
 
@@ -304,6 +304,19 @@ def _run() -> int:
     print("=" * 70)
     print(f" 예약 확정 · 관리 화면 API 검증  ({base})")
     print("=" * 70)
+
+    # 이용자 화면 API 는 입장 로그인을 거쳐야 쓸 수 있다 (SITE_AUTH_ENABLED)
+    from app.core.config import settings
+    from app.core.seed_data import SEED_SITE_USERS
+
+    if settings.SITE_AUTH_ENABLED:
+        status, _ = Client(base).call("GET", "/api/v1/hospitals")
+        check("⓪ 입장 로그인 없이 이용자 API 호출 → 401", status == 401, f"{status}")
+    site_id, site_pw, _name = SEED_SITE_USERS[0]
+    status, _ = user.call(
+        "POST", "/api/v1/site/login", {"login_id": site_id, "password": site_pw}
+    )
+    check("⓪ 이용자 화면 입장 로그인", status == 200, f"{status}")
 
     cleaned = clean_previous_runs()
     if cleaned:

@@ -129,7 +129,7 @@
               </span>
               <p class="field__help">
                 <strong>郵便番号7桁</strong>をご入力のうえ、検索を押してください。
-                （ハイフンはあってもなくても構いません）<br>
+                <span class="keep">（ハイフンはあってもなくても構いません）</span><br>
                 郵便番号がわからない場合は、<strong>市区町村名</strong>で検索することもできます。
               </p>
 
@@ -227,7 +227,7 @@
               <label class="field__label" for="address-detail">
                 番地 <span class="field__required">必須</span>
               </label>
-              <p class="field__help">数字のみで構いません。（例：1-2-3）</p>
+              <p class="field__help">数字のみで構いません。<span class="keep">（例：1-2-3）</span></p>
               <input class="input" id="address-detail" name="address_detail" type="text"
                      autocomplete="off" maxlength="60" placeholder="1-2-3">
               <p class="field__error" id="err-address-detail">
@@ -245,7 +245,7 @@
                 アパート・マンション名 <span class="field__optional">任意</span>
               </label>
               <p class="field__help">
-                該当する方のみ、建物名とお部屋番号をご入力ください。（例：サンプルマンション 201）
+                該当する方のみ、建物名とお部屋番号をご入力ください。<span class="keep">（例：サンプルマンション 201）</span>
               </p>
               <input class="input" id="building" name="building" type="text"
                      maxlength="120" placeholder="サンプルマンション 201"
@@ -288,7 +288,7 @@
                 携帯電話番号
               </span>
               <p class="field__help">
-                先頭の番号をお選びのうえ、残りを<strong>4桁ずつ</strong>ご入力ください。ハイフン(-)は不要です。
+                先頭の番号をお選びのうえ、残りを<strong>4桁ずつ</strong>ご入力ください。<span class="keep">ハイフン(-)は不要です。</span>
               </p>
               <div class="input-group" role="group" aria-labelledby="tel-mobile-label">
                 <label class="sr-only" for="tel-mobile">携帯電話の先頭番号</label>
@@ -339,7 +339,7 @@
               </span>
               <p class="field__help">
                 <strong>市外局番から</strong>3つの欄に分けてご入力ください。
-                （例：03 – 1234 – 5678）
+                <span class="keep">（例：03 – 1234 – 5678）</span>
               </p>
               <div class="input-group" role="group" aria-labelledby="tel-home-label">
                 <label class="sr-only" for="tel-home">固定電話の市外局番</label>
@@ -468,7 +468,7 @@
       <p class="site-footer__name">医療法人　Sample Group　健康診断予約センター</p>
       <p class="site-footer__desc">
         当サイトは満40歳～74歳の方を対象とした健康診断の予約専用サイトです。<br>
-        ご予約の変更・キャンセルは、受診日の3日前までお電話でのみ承っております。
+        ご予約の変更・キャンセルは、受診日の3日前まで<span class="keep">お電話でのみ</span>承っております。
       </p>
 
       <nav class="site-footer__links" aria-label="サイト情報">
@@ -482,7 +482,9 @@
     </div>
   </footer>
 
+  <script src="../assets/js/site-auth.js"></script>
   <script src="../assets/js/font-scale.js"></script>
+  <script src="../assets/js/keep-text.js"></script>
   <script src="../assets/js/flow.js"></script>
   <!-- apply.js 가 먼저 앞 단계의 입력값을 되살린 뒤,
        address-search.js 가 그 값을 「고른 주소」 상자에 그린다. 순서가 중요하다. -->
