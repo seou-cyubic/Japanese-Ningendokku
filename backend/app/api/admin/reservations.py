@@ -131,10 +131,20 @@ def export_reservations_csv(
         created_date=created_date,
         fmt=format,
     )
+    # 헤더에는 ASCII 만 담을 수 있다. 「20261013_西区民センター_予約一覧.csv」를
+    # 그대로 넣으면 응답을 만들다 오류가 난다. RFC 5987 의 `filename*` 로 UTF-8
+    # 이름을 주고, 이를 모르는 오래된 브라우저를 위해 ASCII 이름을 함께 남긴다.
+    ascii_name = "reservations." + filename.rsplit(".", 1)[-1]
     return Response(
         content=file_bytes,
         media_type=media_type,
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers={
+            "Content-Disposition": (
+                f'attachment; filename="{ascii_name}"; '
+                f"filename*=UTF-8''{quote(filename)}"
+            ),
+            "Cache-Control": "no-store",
+        },
     )
 
 

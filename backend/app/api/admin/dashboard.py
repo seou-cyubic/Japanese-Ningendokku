@@ -1,3 +1,4 @@
+from urllib.parse import quote
 from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.orm import Session
 
@@ -51,19 +52,18 @@ def attention_count(db: Session = Depends(get_db)):
 
 @router.get(
     "/dashboard/export-csv",
-    summary="ダッシュボード統計 CSV / Excel 書き出し",
-    description="健診統計タブで選んだ会場・期間の統計を、表を2段に並べたCSV（またはシートを分けたExcel）でダウンロードする。",
+    summary="健診統計 CSV 書き出し（表ごと）",
+    description=(
+        "健診統計タブで選んだ会場・期間で、選んだ表をCSVで書き出す。"
+        "1つならCSV1つ、2つ以上ならZIP（解凍すると1つのフォルダ）で返す。"
+    ),
 )
 def export_dashboard_csv(
     hospital_id: int | None = Query(None, description="会場IDフィルター (任意)"),
-    format: str = Query("csv", alias="format", pattern="^(csv|xlsx)$"),
     part: str = Query(
-        "all",
-        pattern="^(all|summary|age|option|time|venue)(,(summary|age|option|time|venue))*$",
-        description=(
-            "CSVで書き出す表。all=まとめて1枚。"
-            "カンマ区切りで2つ以上指定するとZIPにまとめて返す"
-        ),
+        ...,
+        pattern="^(summary|age|option|time|venue)(,(summary|age|option|time|venue))*$",
+        description="書き出す表。カンマ区切りで2つ以上指定するとZIPにまとめて返す",
     ),
     year: int | None = Query(None, description="年フィルター (任意)"),
     month: int | None = Query(None, description="月フィルター (任意)"),
@@ -72,38 +72,35 @@ def export_dashboard_csv(
     week_end: str | None = Query(None, description="期間終了日 YYYY-MM-DD (任意)"),
     db: Session = Depends(get_db),
 ):
-    picked = [p for p in part.split(",") if p and p != "all"]
+    picked = [p for p in dict.fromkeys(part.split(",")) if p]
+    period = dict(year=year, month=month, date_str=date, week_start=week_start, week_end=week_end)
     if len(picked) > 1:
         # 2つ以上選ばれたときは、1つのZIPにまとめて渡す（解凍すると1フォルダになる）。
         filename, file_bytes, media_type = admin_dashboard_service.export_parts_zip(
-            db,
-            hospital_id=hospital_id,
-            parts=picked,
-            year=year,
-            month=month,
-            date_str=date,
-            week_start=week_start,
-            week_end=week_end,
+            db, hospital_id=hospital_id, parts=picked, **period
         )
-        return Response(
-            content=file_bytes,
-            media_type=media_type,
-            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    else:
+        filename, file_bytes, media_type = admin_dashboard_service.export_file(
+            db, hospital_id=hospital_id, part=picked[0], **period
         )
-
-    filename, file_bytes, media_type = admin_dashboard_service.export_file(
-        db,
-        hospital_id=hospital_id,
-        fmt=format,
-        part=part,
-        year=year,
-        month=month,
-        date_str=date,
-        week_start=week_start,
-        week_end=week_end,
-    )
     return Response(
         content=file_bytes,
         media_type=media_type,
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers=_download_headers(filename),
     )
+
+def _download_headers(file_name: str) -> dict[str, str]:
+    """일본어 파일 이름을 그대로 쓰기 위한 Content-Disposition.
+
+    헤더는 ASCII 만 담을 수 있다. 「2026年09月_西区民センター_集計.csv」를 그대로 넣으면
+    응답을 만들다 오류가 난다. RFC 5987 의 `filename*` 로 UTF-8 이름을 주고,
+    이를 모르는 오래된 브라우저를 위해 ASCII 이름을 함께 남긴다.
+    """
+    ascii_name = "health-stats." + file_name.rsplit(".", 1)[-1]
+    return {
+        "Content-Disposition": (
+            f'attachment; filename="{ascii_name}"; '
+            f"filename*=UTF-8''{quote(file_name)}"
+        ),
+        "Cache-Control": "no-store",
+    }

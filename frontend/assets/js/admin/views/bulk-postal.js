@@ -89,7 +89,18 @@
       : A.api.get('/reservations/filters').then(function (body) { filters = body.data; });
 
     ready.then(function () {
-      if (isCurrentRoute()) draw(view);
+      if (!isCurrentRoute()) return;
+      /* 保存が終わった表は、この画面をもう一度開いた時点で捨てる。
+         下書きを残すのは「入力の途中で他の画面を見に行った」人のためであり、
+         登録まで済んだ表はもう用がない。残っていると、次の分を入力しようと
+         開いた人が前回の結果を見ることになる。
+         （保存直後の画面では結果がそのまま出たままになる — draw を通らない。） */
+      if (draftApplied) {
+        draftRows = initialRows(INITIAL_ROWS);
+        draftDirty = false;
+        draftApplied = false;
+      }
+      draw(view);
     }).catch(function (error) {
       if (isCurrentRoute()) A.fail(view, error);
     });
@@ -1465,7 +1476,9 @@
       event.preventDefault();
       event.stopPropagation();
     } else {
+      draftRows = null;
       draftDirty = false;
+      draftApplied = false;
     }
   }, true);
 
