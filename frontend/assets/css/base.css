@@ -39,6 +39,11 @@ body {
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* 일본어 줄바꿈을 글자 단위가 아닌 문절(文節) 단위로 — 「受 / 診」「くださ / い。」처럼
+     단어 중간이나 한두 글자만 남기고 꺾이지 않게 한다.
+     auto-phrase 를 모르는 브라우저는 선언을 무시하고 기본 줄바꿈으로 돌아간다. */
+  word-break: auto-phrase;
+  text-wrap: pretty;
 }
 
 ul, ol {
@@ -97,6 +102,16 @@ a:hover {
    位置だけを `nobr` で区切り、その中では改行させない。 */
 .nobr {
   white-space: nowrap;
+}
+
+/* 본문 속 「…」·（…）·전화번호처럼 한 덩어리로 읽혀야 하는 부분.
+   `nobr` 와 달리 한 줄보다 길면 안에서 꺾이므로, 글자를 「特大」로 키운
+   좁은 화면에서도 가로로 넘치지 않는다. */
+.keep {
+  display: inline-block;
+  /* 「プライバシーポリシー」처럼 문절 하나가 한 줄보다 길면 어디서도 꺾을 수
+     없어 넘친다. 그때만 글자 사이에서 꺾는다. */
+  overflow-wrap: anywhere;
 }
 
 /* --------------------------------------------------------------------------

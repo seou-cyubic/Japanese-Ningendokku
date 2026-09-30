@@ -428,7 +428,7 @@
       btn.querySelector('.hitem__region').textContent = h.area || h.region;
       btn.querySelector('.hitem__name').textContent = h.name;
       btn.querySelector('.hitem__when').textContent = when ? '受診日 ' + when : '';
-      btn.querySelector('.hitem__access').textContent = h.access_info;
+      KeepText.set(btn.querySelector('.hitem__access'), h.access_info);
 
       btn.addEventListener('click', function () { selectHospital(h); });
 
@@ -449,7 +449,15 @@
     var meta = [hospital.region, hospital.address];
     if (hospital.has_parking) meta.push('駐車場あり');
     if (hospital.tel) meta.push('TEL ' + hospital.tel);
-    elPickedMeta.textContent = meta.join(' · ');
+    // 항목 하나(「TEL 03-1234-5678」 등)가 두 줄에 걸치지 않게 항목마다 묶는다
+    elPickedMeta.textContent = '';
+    meta.filter(Boolean).forEach(function (item, i) {
+      if (i) elPickedMeta.appendChild(document.createTextNode(' · '));
+      var part = document.createElement('span');
+      part.className = 'keep';
+      part.textContent = item;
+      elPickedMeta.appendChild(part);
+    });
 
     renderVenueMap(hospital);
 
@@ -752,8 +760,15 @@
 
   function renderSlots(iso, slots) {
     var info = dateMap[iso];
-    elTimeDate.textContent = formatDateLong(iso) +
-      (info ? '　・　空き' + info.remaining + '名' : '');
+    elTimeDate.textContent = formatDateLong(iso);
+    if (info) {
+      // 「・」만 윗줄에 남고 「空き○名」이 아랫줄로 떨어지지 않게 묶는다
+      var seats = document.createElement('span');
+      seats.className = 'keep';
+      seats.textContent = '・　空き' + info.remaining + '名';
+      elTimeDate.appendChild(document.createTextNode('　'));
+      elTimeDate.appendChild(seats);
+    }
 
     elTimeList.textContent = '';
 

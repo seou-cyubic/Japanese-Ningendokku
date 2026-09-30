@@ -98,3 +98,14 @@ def read_admin_session(token: str | None) -> int | None:
 
     admin_user_id = payload.get("uid")
     return admin_user_id if isinstance(admin_user_id, int) else None
+
+
+# ==========================================================================
+# 이용자 화면 입장 세션
+#
+# 관리자 세션과 달리 서명 쿠키가 아니다. 쿠키에는 무작위 토큰만 담고 세션은
+# DB(`site_sessions`)에 둔다 — 서버를 다시 켜면 끊겨야 하기 때문이다.
+# 발급 · 확인은 `services/site_auth_service.py` 가 한다.
+# ==========================================================================
+
+SITE_SESSION_COOKIE = "kenshin_site"

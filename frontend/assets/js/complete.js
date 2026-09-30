@@ -82,7 +82,7 @@
     v.className = 'datalist__val';
 
     if (value) {
-      v.textContent = value;
+      KeepText.set(v, value);
     } else {
       v.className += ' datalist__val--empty';
       v.textContent = emptyText || '入力なし';
@@ -229,15 +229,18 @@
     // 옵션 구획까지 다시 올라가 읽게 만들지 않는다.
     var li = document.createElement('li');
     li.className = 'bring__item bring__item--note';
-    li.textContent =
-      'オプション検査' + options.length + '件をお申し込みいただきました。' +
+    // 「お申し込みいただきました。」는 한 문절이라, 좁은 화면 +「特大」에서
+    // 한 줄에 안 들어가면 「…いただきまし / た。」로 끝 글자만 떨어진다.
+    // 「お申し込み」 뒤에 꺾을 자리(<wbr>)를 준다. 숫자 외에는 고정 문구다.
+    li.innerHTML =
+      'オプション検査' + Number(options.length) + '件をお申し込み<wbr>いただきました。' +
       '検査によっては前日の絶食などのご準備が必要です。ご案内をご確認ください。';
     elBringList.appendChild(li);
   }
 
   function setText(id, value) {
     var el = document.getElementById(id);
-    if (el) el.textContent = value || '—';
+    if (el) KeepText.set(el, value || '—');
   }
 
   function escapeHtml(s) {

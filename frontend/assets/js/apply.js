@@ -465,8 +465,8 @@
       elMailWarn.classList.remove('is-ok');
       elMailWarnTxt.innerHTML =
         'メールアドレスのご入力がない場合、<strong>予約確認メール</strong>と' +
-        '<strong>受診前日のリマインドメール</strong>をお受け取りいただけません。' +
-        '予約番号は次の画面にのみ表示されますので、必ずお控えください。';
+        '<strong>受診前日のリマインドメール</strong>を<span class="keep">お受け取り</span>いただけません。' +
+        '予約番号は次の<span class="keep">画面にのみ</span>表示されますので、必ずお控えください。';
     }
   }
 

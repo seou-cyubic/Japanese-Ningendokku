@@ -112,6 +112,7 @@ def main(argv: list[str] | None = None) -> int:
         init_db.seed()
     init_db.seed_exam_options()
     init_db.seed_admins()
+    init_db.seed_site_users()
     init_db.seed_mail_templates()
 
     # 4 · 5 --------------------------------------------------------------
@@ -147,8 +148,8 @@ def main(argv: list[str] | None = None) -> int:
 
     _line()
     print(" セットアップ完了。サーバーを起動してください。")
-    print("   python -m uvicorn app.main:app --reload")
-    print("   利用者画面 : /        管理画面 : /admin/  (admin / admin1234)")
+    print("   python -m uvicorn app.main:app --reload --port 8001")
+    print("   利用者画面 : /  (test / test1234)   管理画面 : /admin/  (admin / admin1234)")
     _line()
     return 0
 

@@ -3,18 +3,21 @@
 프런트엔드(Vanilla HTML/CSS/JS)를 같은 오리진에서 함께 서빙한다.
 동일 오리진이므로 CORS 설정이 필요 없고, 이용자는 주소 하나만 알면 된다.
 
-    실행:  python -m uvicorn app.main:app --reload
-    화면:  http://127.0.0.1:8000/
-    관리:  http://127.0.0.1:8000/admin/
-    문서:  http://127.0.0.1:8000/docs
+    실행:  python -m uvicorn app.main:app --reload --port 8001
+    화면:  http://127.0.0.1:8001/
+    관리:  http://127.0.0.1:8001/admin/
+    문서:  http://127.0.0.1:8001/docs
 """
 
 import asyncio
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import APIRouter, FastAPI
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from urllib.parse import quote
+
+from fastapi import APIRouter, FastAPI, Request
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
+from starlette.concurrency import run_in_threadpool
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import Response
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -26,6 +29,7 @@ from app.api.public import hospitals as hospitals_api
 from app.api.public import lookup as lookup_api
 from app.api.public import postal as postal_api
 from app.api.public import reservations as reservations_api
+from app.api.public import site_auth as site_auth_api
 from app.api.public import verify as verify_api
 from app.core.config import (
     DEFAULT_ADMIN_PASSWORDS,
@@ -33,6 +37,7 @@ from app.core.config import (
     FRONTEND_DIR,
     settings,
 )
+from app.core.security import SITE_SESSION_COOKIE
 
 logger = logging.getLogger("kenshin")
 
@@ -205,12 +210,38 @@ def _prepare_database() -> None:
     seeded = summary["seeded"]
     if summary["from_revision"] != summary["to_revision"] or any(seeded.values()):
         logger.info(
-            "データベース準備完了 — スキーマ %s → %s / 管理者 %d件・メール文面 %d件を投入",
+            "データベース準備完了 — スキーマ %s → %s / 管理者 %d件・"
+            "利用者画面アカウント %d件・メール文面 %d件を投入",
             summary["from_revision"] or "(空)",
             summary["to_revision"],
             seeded["admins"],
+            seeded["site_users"],
             seeded["mail_templates"],
         )
+
+
+def _clear_site_sessions() -> None:
+    """이용자 화면 로그인 세션을 모두 끊는다 — 서버를 다시 켜면 다시 로그인한다.
+
+    세션은 DB 에 있으므로 프로세스가 죽어도 남는다. 뜰 때 비워야 「재기동 =
+    전원 로그아웃」이 된다. 실패해도 기동은 막지 않는다(남은 세션은 기한이 지나면
+    어차피 막힌다).
+    """
+    from app.core.database import SessionLocal
+    from app.services import site_auth_service
+
+    try:
+        db = SessionLocal()
+        try:
+            deleted = site_auth_service.clear_all_sessions(db)
+        finally:
+            db.close()
+    except Exception:  # noqa: BLE001
+        logger.exception("利用者画面のログインセッションを削除できませんでした。")
+        return
+
+    if deleted:
+        logger.info("利用者画面のログインセッション %d件を破棄しました（再起動）。", deleted)
 
 
 @asynccontextmanager
@@ -223,6 +254,8 @@ async def lifespan(_app: FastAPI):
         # 우편번호 확인·자동 정리보다 **먼저** 끝나야 한다. 테이블이 없는 채로
         # 그 둘이 돌면 첫 기동 로그가 오류로 덮인다.
         await asyncio.to_thread(_prepare_database)
+    # 표가 준비된 뒤에 비운다
+    await asyncio.to_thread(_clear_site_sessions)
     if settings.is_production:
         await asyncio.to_thread(_warn_default_admin_passwords)
 
@@ -265,6 +298,7 @@ api_router.include_router(exam_options_api.router)
 api_router.include_router(postal_api.router)
 api_router.include_router(lookup_api.router)
 api_router.include_router(reservations_api.router)
+api_router.include_router(site_auth_api.router)
 api_router.include_router(admin_api.router)
 
 
@@ -286,6 +320,90 @@ def contact() -> dict:
 
 
 app.include_router(api_router)
+
+
+# --------------------------------------------------------------------------
+# 이용자 화면 입장 로그인 (SITE_AUTH_ENABLED)
+#
+# 이용자 화면(첫 화면 · 예약 · 조회 · FAQ)과 그 공개 API 는 로그인한 사람만
+# 쓸 수 있다. 화면 스크립트에서 막으면 주소를 직접 치거나 API 를 바로 부르는
+# 길이 남으므로 **서버에서 모든 요청을 먼저 거른다.**
+#
+#   화면 요청  → /login.html?next=<원래 주소> 로 보낸다
+#   API 요청   → 401 + `X-Site-Auth: required` (화면의 site-auth.js 가 이 표시를
+#                보고 로그인 화면으로 보낸다. 다른 401 과 헷갈리지 않게 표시를 단다)
+#
+# 거르지 않는 것
+#   · 로그인 화면과 그 API, 화면이 쓰는 CSS/JS/그림(`/assets/`)
+#   · 관리 화면과 관리 API — 자체 로그인이 따로 있다
+#   · 헬스체크 · API 문서
+# --------------------------------------------------------------------------
+SITE_LOGIN_PAGE = "/login.html"
+
+_SITE_AUTH_OPEN_PATHS = frozenset({
+    SITE_LOGIN_PAGE,
+    "/favicon.ico",
+    "/admin",
+    "/api/v1/health",
+    "/docs",
+    "/docs/oauth2-redirect",
+    "/redoc",
+    "/openapi.json",
+})
+_SITE_AUTH_OPEN_PREFIXES = (
+    "/assets/",
+    "/admin/",
+    "/api/v1/admin/",
+    "/api/v1/site/",
+)
+
+
+def _site_session_alive(token: str) -> bool:
+    from app.core.database import SessionLocal
+    from app.services import site_auth_service
+
+    db = SessionLocal()
+    try:
+        return site_auth_service.current_user(db, token) is not None
+    finally:
+        db.close()
+
+
+@app.middleware("http")
+async def site_auth_gate(request: Request, call_next) -> Response:
+    path = request.url.path
+    if (
+        not settings.SITE_AUTH_ENABLED
+        or path in _SITE_AUTH_OPEN_PATHS
+        or path.startswith(_SITE_AUTH_OPEN_PREFIXES)
+    ):
+        return await call_next(request)
+
+    token = request.cookies.get(SITE_SESSION_COOKIE)
+    if token:
+        try:
+            if await run_in_threadpool(_site_session_alive, token):
+                return await call_next(request)
+        except Exception:  # noqa: BLE001 — DB 장애 등. 문을 열어 두지 않고 로그인으로 돌린다
+            logger.exception("利用者画面のログイン状態を確認できませんでした。")
+
+    if path.startswith("/api/"):
+        return JSONResponse(
+            status_code=401,
+            content={
+                "success": False,
+                "error": {
+                    "code": "SITE_LOGIN_REQUIRED",
+                    "message": "ログインが必要です。もう一度ログインしてください。",
+                },
+            },
+            headers={"X-Site-Auth": "required"},
+        )
+
+    target = path + (f"?{request.url.query}" if request.url.query else "")
+    return RedirectResponse(
+        f"{SITE_LOGIN_PAGE}?next={quote(target, safe='')}", status_code=302
+    )
 
 
 # --------------------------------------------------------------------------
