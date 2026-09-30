@@ -304,13 +304,17 @@
 
         upcoming.forEach(function (h, index) {
           gridContainer.appendChild(el('a', {
-            href: '#/capacity?hospital_id=' + h.id
-              + '&month=' + h.event_date.slice(0, 7)
-              + '&date=' + h.event_date,
+            // 定員カレンダーは L2 以上専用の画面 (`app.js` の `level: 2`)。
+            // このダッシュボードは L1 も見られるため、L1 が押しても403にならない
+            // 予約検索（`reservations`, level: 1）へ寄せる。「本日の健診状況」と
+            // 同じ考え方 — その開催日の受診者一覧を見せる。
+            href: '#/reservations?hospital_id=' + h.id
+              + '&from=' + h.event_date
+              + '&to=' + h.event_date,
             style: 'display:flex;align-items:baseline;gap:12px;text-decoration:none;'
               + 'color:inherit;font-size:13.5px;padding:3px 0;'
               + (index ? 'border-top:1px solid var(--a-line-2);' : ''),
-            title: h.name + ' ' + h.event_date + ' 開催回 — 定員カレンダーへ移動'
+            title: h.name + ' ' + h.event_date + ' 開催回 — 受診者一覧へ移動'
           }, [
             el('span', {
               style: 'flex:0 0 auto;width:78px;color:var(--a-ink-sub);'
