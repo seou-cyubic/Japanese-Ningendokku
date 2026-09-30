@@ -682,6 +682,52 @@ CSV_PARTS: dict[str, str] = {
 }
 
 
+def _safe_file_part(text: str) -> str:
+    """파일 이름에 쓸 수 없는 글자(Windows 기준)를 전각으로 바꾸고, 앞뒤 공백·점을 없앤다."""
+    table = str.maketrans({
+        "\\": "＼", "/": "／", ":": "：", "*": "＊", "?": "？",
+        '"': "＂", "<": "＜", ">": "＞", "|": "｜",
+    })
+    cleaned = (text or "").translate(table).strip().strip(".")
+    return cleaned or "会場"
+
+
+def _stats_file_label(
+    *,
+    year: int | None,
+    month: int | None,
+    date_str: str | None,
+    week_start: str | None,
+    week_end: str | None,
+    start: date | None,
+    end: date | None,
+    now: datetime,
+    hosp_name: str,
+) -> str:
+    """통계 파일 이름의 앞부분 「{날짜}_{회장}」.
+
+    ZIP·ZIP 안 폴더·ZIP 안 파일·한 장짜리 CSV 가 모두 이 이름으로 시작한다.
+    받은 파일을 한곳에 모아도 **언제·어느 회장**의 표인지 이름만 보고 알 수 있게 한다.
+      月別  2026年09月_西区民センター
+      年만  2026年_全会場
+      日別  20260903_全会場
+      週別  20260901-20260907_全会場
+    """
+    if year and month:
+        when = f"{int(year):04d}年{int(month):02d}月"
+    elif year:
+        when = f"{int(year):04d}年"
+    elif date_str:
+        when = date_str.replace("-", "")
+    elif week_start and week_end:
+        when = f"{week_start.replace('-', '')}-{week_end.replace('-', '')}"
+    elif start and end:
+        when = f"{start:%Y%m%d}" if start == end else f"{start:%Y%m%d}-{end:%Y%m%d}"
+    else:
+        when = now.strftime("%Y%m%d")
+    return f"{when}_{_safe_file_part(hosp_name)}"
+
+
 def export_parts_zip(
     db: Session,
     hospital_id: int | None = None,
@@ -707,37 +753,40 @@ def export_parts_zip(
     )
 
     buffer = io.BytesIO()
-    base = ""
+    label = ""
     with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
-        for index, part in enumerate(parts, start=1):
+        for part in parts:
             name, content, _ = export_file(
-                db, hospital_id=hospital_id, fmt="csv", part=part, **period
+                db, hospital_id=hospital_id, part=part, **period
             )
-            base = name.rsplit("_", 1)[0]
+            # export_file 이 돌려주는 이름은 {날짜}_{회장}_{항목}.csv 이다.
+            # 뒤의 _{항목}.csv 를 떼면 ZIP·폴더 이름에 쓸 {날짜}_{회장} 이 남는다.
+            label = name[: -len(f"_{CSV_PARTS[part]}.csv")]
             # ZIP 안에 폴더를 하나 두어, 풀면 파일이 흩어지지 않고 한곳에 모인다.
-            archive.writestr(f"{base}/{index:02d}_{CSV_PARTS[part]}.csv", content)
+            #   2026年09月_西区民センター_健診統計/2026年09月_西区民センター_集計.csv
+            archive.writestr(f"{label}_健診統計/{name}", content)
 
-    return f"{base}.zip", buffer.getvalue(), "application/zip"
+    return f"{label}_健診統計.zip", buffer.getvalue(), "application/zip"
 
 
 def export_file(
     db: Session,
     hospital_id: int | None = None,
-    fmt: str = "xlsx",
     *,
-    part: str = "all",
+    part: str,
     year: int | None = None,
     month: int | None = None,
     date_str: str | None = None,
     week_start: str | None = None,
     week_end: str | None = None,
 ) -> tuple[str, bytes, str]:
-    """健診統計の書き出し。画面で選んだ会場・期間をそのまま使う。
+    """健診統計の書き出し。画面で選んだ会場・期間で、表 하나를 CSV 한 장으로 낸다.
 
-    예전 CSV 는 표 네 개를 한 파일에 위아래로 이어 붙여 길고, 기간을 무시했으며,
-    예약자 명세(이름·연락처)까지 들어 있었다. 표마다 탭(시트)으로 나누고
-    명세는 뺀다. CSV 는 탭을 가질 수 없으므로 fmt="csv" 는 표를 두 단으로
-    나란히 둔 보고서형 한 장을 낸다.
+    고객사 답변(「각 항목별로 별도의 CSV 파일을 생성하여, 필요한 파일만 골라서」)에
+    맞춰 표마다 파일을 나눈다. 여러 표를 고르면 `export_parts_zip` 이 ZIP 으로 묶는다.
+
+    예전에는 표를 두 단으로 나란히 둔 보고서형 CSV 한 장과, 시트를 나눈 Excel 도
+    만들었다. 항목별로 바꾼 뒤 화면에서 부르는 곳이 없어 지웠다.
     """
     period = dict(
         year=year,
@@ -784,13 +833,11 @@ def export_file(
         ["状態", STATUS_LABELS.get("CONFIRMED", "CONFIRMED"), st.confirmed, _pct(st.confirmed, total)],
         ["状態", STATUS_LABELS.get("PENDING", "PENDING"), st.pending, _pct(st.pending, total)],
         *[["状態", label, count, _pct(count, total)] for label, count in cancel_rows],
-        # 受付経路 는 화면의 「受付の内訳」과 같게 서로 겹치지 않게 나눈다.
-        # Web·郵送 은 취소를 뺀 수, 취소는 따로 — 셋을 더하면 합계.
-        ["受付経路", CHANNEL_LABELS.get("WEB", "WEB"), ch.web - ch.web_cancelled,
-         _pct(ch.web - ch.web_cancelled, total)],
-        ["受付経路", CHANNEL_LABELS.get("POSTAL", "POSTAL"), ch.postal - ch.postal_cancelled,
-         _pct(ch.postal - ch.postal_cancelled, total)],
-        *[["受付経路", label, count, _pct(count, total)] for label, count in cancel_rows],
+        # 受付経路 는 **どこから申し込まれたか**만 센다. 취소는 경로가 아니므로
+        # 여기 섞지 않는다 — 취소 건수는 위의 「状態」 에 이미 나뉘어 있다.
+        # Web·郵送 은 취소를 포함한 전체이고, 둘을 더하면 합계가 된다.
+        ["受付経路", CHANNEL_LABELS.get("WEB", "WEB"), ch.web, _pct(ch.web, total)],
+        ["受付経路", CHANNEL_LABELS.get("POSTAL", "POSTAL"), ch.postal, _pct(ch.postal, total)],
         ["性別", "男性", g.male, _pct(g.male, total)],
         ["性別", "女性", g.female, _pct(g.female, total)],
     ]
@@ -889,8 +936,11 @@ def export_file(
         time_header_head = ["日付", "曜日"]
         time_rows = day_rows
 
-    stamp = f"{start:%Y%m%d}-{end:%Y%m%d}" if start else now.strftime("%Y%m%d")
-    base_name = f"health_stats_{stamp}_{'all' if not hospital_id else hospital_id}"
+    file_label = _stats_file_label(
+        year=year, month=month, date_str=date_str,
+        week_start=week_start, week_end=week_end,
+        start=start, end=end, now=now, hosp_name=hosp_name,
+    )
 
     # 통계에서는 「キャンセル」 한 덩어리를 쓰지 않는다. 事前·当日 로 나눠 센다.
     status_head = [
@@ -907,155 +957,42 @@ def export_file(
     # ---- 항목별 CSV 한 장 -------------------------------------------------
     # 「필요한 표만 골라 받고 싶다」는 요청에 맞춘다. 한 파일에 표 하나만 담아
     # 다른 곳(보고서·집계표)에 그대로 붙여 쓸 수 있게 한다.
-    if part != "all":
-        if part not in CSV_PARTS:
-            raise ValueError(f"unknown part: {part}")
+    if part not in CSV_PARTS:
+        raise ValueError(f"unknown part: {part}")
 
-        if part == "summary":
-            title = "集計"
-            header = ["区分", "項目", "件数", "割合(%)"]
-            body_rows = [[k, item, n, p] for k, item, n, p in summary_rows]
-        elif part == "age":
-            title = "年代別"
-            header = ["年代", "男性", "女性", "合計", "割合(%)"]
-            body_rows = age_rows
-        elif part == "option":
-            title = "オプション"
-            header = ["コード", "検査名", "件数", "割合(%)"]
-            body_rows = option_rows
-        elif part == "time":
-            title = time_title
-            header = time_header_head + ["件数"] + status_head
-            body_rows = time_rows
-        else:
-            title = "会場別"
-            header = ["会場コード", "会場名", "件数"] + status_head
-            body_rows = venue_rows
-
-        output = io.StringIO()
-        writer = csv.writer(output, lineterminator="\r\n")
-        writer.writerow(["【期間】", period_text, "【会場】", hosp_name,
-                         "【基準】", "申込日（キャンセル含む）",
-                         "【対象件数】", total, "【出力】", now.strftime("%Y-%m-%d %H:%M")])
-        writer.writerow([])
-        writer.writerow(["【" + title + "】"])
-        writer.writerow([f"【{h}】" if h else "" for h in header])
-        writer.writerows(body_rows)
-        return (
-            f"{base_name}_{part}.csv",
-            output.getvalue().encode("utf-8-sig"),
-            "text/csv; charset=utf-8-sig",
-        )
-
-    if fmt == "xlsx":
-        try:
-            from openpyxl import Workbook
-            from openpyxl.styles import Font, PatternFill
-            from openpyxl.utils import get_column_letter
-        except ImportError:
-            fmt = "csv"
-        else:
-            wb = Workbook()
-            head_font = Font(bold=True, color="FFFFFFFF")
-            head_fill = PatternFill("solid", fgColor="FF0B6E5B")
-
-            def sheet(title, header, rows, widths, first=False):
-                ws = wb.active if first else wb.create_sheet()
-                ws.title = title
-                ws.append(header)
-                for i in range(1, len(header) + 1):
-                    cell = ws.cell(row=1, column=i)
-                    cell.font = head_font
-                    cell.fill = head_fill
-                for row in rows:
-                    ws.append(row)
-                ws.freeze_panes = "A2"
-                if rows:
-                    ws.auto_filter.ref = f"A1:{get_column_letter(len(header))}{len(rows) + 1}"
-                for i, w in enumerate(widths, start=1):
-                    ws.column_dimensions[get_column_letter(i)].width = w
-                return ws
-
-            sheet("条件", ["項目", "内容"], [
-                ["出力日時", now.strftime("%Y-%m-%d %H:%M:%S")],
-                ["会場", hosp_name],
-                ["集計の基準", "申込日（受付日）"],
-                ["期間", period_text],
-                ["対象件数", total],
-            ], [18, 40], first=True)
-            sheet("集計", ["区分", "項目", "件数", "割合(%)"], summary_rows, [12, 30, 10, 10])
-            sheet("日別", ["日付", "曜日", "件数"] + status_head, day_rows,
-                  [12, 6, 8, 10, 12, 10, 16, 10, 8, 8])
-            sheet("会場別", ["会場コード", "会場名", "件数"] + status_head, venue_rows,
-                  [12, 36, 8, 10, 12, 10, 16, 10, 8, 8])
-            sheet("年代別", ["年代", "男性", "女性", "合計", "割合(%)"], age_rows, [12, 8, 8, 8, 10])
-            sheet("オプション", ["コード", "検査名", "件数", "割合(%)"], option_rows, [10, 34, 8, 10])
-            sheet("本日の運営状況", ["項目", "数値", "単位", "備考"],
-                  [[c.label, c.value, c.unit, c.hint] for c in data.counters],
-                  [22, 10, 8, 30])
-
-            stream = io.BytesIO()
-            wb.save(stream)
-            return (
-                base_name + ".xlsx",
-                stream.getvalue(),
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
-
-    # ---- CSV: 보고서형 (표를 옆으로 나란히) ----------------------------------
-    # CSV 는 탭도 열 너비도 없다. 표를 위아래로 이으면 100 줄이 넘어가므로
-    # 두 단으로 나란히 둔다. 긴 글자(항목명·검사명·회장명)는 블록 맨 오른쪽에
-    # 두고 그 오른쪽을 비워, 엑셀에서 열었을 때 글자가 넘쳐서라도 다 보이게 한다.
-    # 기간이 31일을 넘으면 날짜별은 월별로 묶어 세로 길이를 억누른다.
-    # 会場別は「件数＋状態8列＋会場コード・会場名」で11列を使う。
-    # 取り消しを 事前／当日 に分けた分だけ横に伸びたので、幅もそれに合わせる。
-    width = 24  # A..X（最後の1列は会場名がはみ出して見えるように空ける）
-    grid: list[list] = []
-
-    def put(r: int, col: int, value) -> None:
-        while len(grid) <= r:
-            grid.append([""] * width)
-        grid[r][col] = "" if value is None else value
-
-    def place(top: int, col: int, title: str, header: list, rows: list) -> int:
-        put(top, col, "【" + title + "】")
-        for i, h in enumerate(header):
-            put(top + 1, col + i, h)
-        for r_i, row in enumerate(rows):
-            for c_i, v in enumerate(row):
-                put(top + 2 + r_i, col + c_i, v)
-        return top + 2 + len(rows)
-
-    # 1행의 값도 오른쪽 칸을 비워 두어 잘리지 않게 한다.
-    put(0, 0, "【期間】")
-    put(0, 1, period_text)        # B (C·D 비움)
-    put(0, 4, "【会場】")
-    put(0, 5, hosp_name)          # F (G 비움)
-    put(0, 7, "【基準】")
-    put(0, 8, "申込日（キャンセル含む）")  # I (J·K 비움)
-    put(0, 11, "【対象件数】")
-    put(0, 12, total)
-    put(0, 14, "【出力】")
-    put(0, 15, now.strftime("%Y-%m-%d %H:%M"))  # P
-
-    short_label = {"予約件数（キャンセル含む）": "予約件数"}
-    csv_summary = [[k, n, p, short_label.get(item, item)] for k, item, n, p in summary_rows]
-    csv_options = [[code, n, p, name] for code, name, n, p in option_rows]
-
-    time_header = time_header_head + ["件数"] + status_head
-
-    csv_venues = [row[2:] + [row[0], row[1]] for row in venue_rows]
-
-    end1 = max(
-        place(2, 0, "集計", ["区分", "件数", "割合(%)", "項目"], csv_summary),
-        place(2, 5, "年代別", ["年代", "男性", "女性", "合計", "割合(%)"], age_rows),
-        place(2, 11, "オプション", ["コード", "件数", "割合(%)", "検査名"], csv_options),
-    )
-    top2 = end1 + 1
-    place(top2, 0, time_title, time_header, time_rows)
-    place(top2, 12, "会場別", ["件数"] + status_head + ["会場コード", "会場名"], csv_venues)
+    if part == "summary":
+        title = "集計"
+        header = ["区分", "項目", "件数", "割合(%)"]
+        body_rows = [[k, item, n, p] for k, item, n, p in summary_rows]
+    elif part == "age":
+        title = "年代別"
+        header = ["年代", "男性", "女性", "合計", "割合(%)"]
+        body_rows = age_rows
+    elif part == "option":
+        title = "オプション"
+        header = ["コード", "検査名", "件数", "割合(%)"]
+        body_rows = option_rows
+    elif part == "time":
+        title = time_title
+        header = time_header_head + ["件数"] + status_head
+        body_rows = time_rows
+    else:
+        title = "会場別"
+        header = ["会場コード", "会場名", "件数"] + status_head
+        body_rows = venue_rows
 
     output = io.StringIO()
-    # BOM 은 여기서 붙이지 않는다 — 아래 encode("utf-8-sig") 가 붙인다.
-    csv.writer(output, lineterminator="\r\n").writerows(grid)
-    return base_name + ".csv", output.getvalue().encode("utf-8-sig"), "text/csv; charset=utf-8-sig"
+    writer = csv.writer(output, lineterminator="\r\n")
+    writer.writerow(["【期間】", period_text, "【会場】", hosp_name,
+                     "【基準】", "申込日（キャンセル含む）",
+                     "【対象件数】", total, "【出力】", now.strftime("%Y-%m-%d %H:%M")])
+    writer.writerow([])
+    writer.writerow(["【" + title + "】"])
+    writer.writerow([f"【{h}】" if h else "" for h in header])
+    writer.writerows(body_rows)
+    return (
+        # 한 장만 받을 때도 ZIP 안 파일과 같은 이름 (예: 2026年09月_西区民センター_集計.csv)
+        f"{file_label}_{CSV_PARTS[part]}.csv",
+        output.getvalue().encode("utf-8-sig"),
+        "text/csv; charset=utf-8-sig",
+    )

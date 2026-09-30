@@ -398,8 +398,17 @@
   // 打っている間に、ありえない日付にならないよう直す。
   // 途中の文字を書き換えている最中（カーソルが末尾にない）は触らない。
   // せっかく直した位置にカーソルが飛んでしまうためである。
-  document.addEventListener('input', function (e) {
+  //
+  // **日本語入力（IME）で変換中は触らない。**
+  // 変換中の文字を差し替えると、確定した文字がもう一度入り「1905」が
+  // 「1199…」のように重なる。変換が終わってから（compositionend）直す。
+  var composing = false;
+  document.addEventListener('compositionstart', function (e) {
     var t = e.target;
+    if (t && t.tagName === 'INPUT' && t.getAttribute('data-date') === '1') composing = true;
+  });
+
+  function fixDateInput(t) {
     if (!(t && t.tagName === 'INPUT' && t.getAttribute('data-date') === '1')) return;
     if (t.selectionStart !== null && t.selectionStart !== t.value.length) return;
 
@@ -408,6 +417,20 @@
       t.value = masked;
       try { t.setSelectionRange(masked.length, masked.length); } catch (err) { /* 無視 */ }
     }
+  }
+
+  document.addEventListener('compositionend', function (e) {
+    var t = e.target;
+    composing = false;
+    // 変換が確定したこの時点で、はじめて形を整える。
+    if (t && t.tagName === 'INPUT' && t.getAttribute('data-date') === '1') {
+      window.setTimeout(function () { fixDateInput(t); }, 0);
+    }
+  });
+
+  document.addEventListener('input', function (e) {
+    if (composing || e.isComposing) return;
+    fixDateInput(e.target);
   });
 
   // 欄を離れたとき、手で打った日付を 'YYYY-MM-DD' にそろえる。

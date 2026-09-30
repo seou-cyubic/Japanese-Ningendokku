@@ -570,6 +570,70 @@ def search(
     )
 
 
+# 예약검색 결과 파일 이름 --------------------------------------------------
+# 통계 화면과 같은 규칙으로 「{기간}_{회장}_{상태}_予約一覧」 으로 짓는다.
+# 받은 파일을 한 폴더에 모아도 **언제·어디·어떤 상태**의 목록인지 이름만 보고 알 수 있다.
+# 경로·옵션·검색어는 넣지 않는다 — 이름이 길어지고, 검색어에는 개인 이름이 들어간다.
+EXPORT_STATUS_LABELS = {
+    "CONFIRMED": "予約確定",
+    "PENDING": "仮受付",
+    "CANCELLED": "キャンセル",
+    "CANCELLED_PRIOR": "事前キャンセル",
+    "CANCELLED_NOSHOW": "当日キャンセル",
+    "HOLIDAY": "日程変更要",
+}
+
+
+def _safe_file_part(text: str) -> str:
+    """파일 이름에 쓸 수 없는 글자(Windows 기준)를 전각으로 바꾸고, 앞뒤 공백·점을 없앤다."""
+    table = str.maketrans({
+        "\\": "＼", "/": "／", ":": "：", "*": "＊", "?": "？",
+        '"': "＂", "<": "＜", ">": "＞", "|": "｜",
+    })
+    cleaned = (text or "").translate(table).strip().strip(".")
+    return cleaned
+
+
+def _export_file_label(
+    db: Session,
+    *,
+    hospital_id: int | None,
+    date_from: date | None,
+    date_to: date | None,
+    status: str,
+    defect_only: bool,
+    now: datetime,
+) -> str:
+    def ymd(d: date) -> str:
+        return d.strftime("%Y%m%d")
+
+    if date_from and date_to:
+        when = ymd(date_from) if date_from == date_to else f"{ymd(date_from)}-{ymd(date_to)}"
+    elif date_from:
+        when = f"{ymd(date_from)}以降"
+    elif date_to:
+        when = f"{ymd(date_to)}まで"
+    else:
+        # 기간을 좁히지 않았으면 **받은 날**을 적는다. 같은 조건으로 여러 번 받아도
+        # 언제 뽑은 것인지 남는다.
+        when = ymd(now.date())
+
+    hosp = "全会場"
+    if hospital_id:
+        row = db.get(Hospital, hospital_id)
+        if row and row.name:
+            hosp = _safe_file_part(row.name) or "会場"
+
+    parts = [when, hosp]
+    label = EXPORT_STATUS_LABELS.get(status)
+    if label:
+        parts.append(label)
+    elif defect_only:
+        parts.append("要確認")
+    parts.append("予約一覧")
+    return "_".join(parts)
+
+
 def export_file(
     db: Session,
     *,
@@ -641,7 +705,15 @@ def export_file(
             r.created_at.strftime("%Y-%m-%d %H:%M:%S") if r.created_at else "",
         ])
 
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    base = _export_file_label(
+        db,
+        hospital_id=hospital_id,
+        date_from=date_from,
+        date_to=date_to,
+        status=status,
+        defect_only=defect_only,
+        now=datetime.now(),
+    )
 
     if fmt == "xlsx":
         try:
@@ -682,7 +754,7 @@ def export_file(
 
             stream = io.BytesIO()
             wb.save(stream)
-            filename = f"reservations_export_{ts}.xlsx"
+            filename = f"{base}.xlsx"
             media_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             return filename, stream.getvalue(), media_type
         except ImportError:
@@ -699,7 +771,7 @@ def export_file(
     for row in rows:
         writer.writerow(row)
 
-    filename = f"reservations_export_{ts}.csv"
+    filename = f"{base}.csv"
     media_type = "text/csv; charset=utf-8-sig"
     # 부르는 쪽은 (이름, 바이트, 미디어 타입) 셋을 받는다. 예전에는 여기에
     # 두 개짜리 return 이 한 줄 먼저 있어서 `format=csv` 가 늘 500 이었다.

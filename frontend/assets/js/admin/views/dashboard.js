@@ -204,34 +204,47 @@
           + totalReserved + '名'
       }));
 
-      todayRows.forEach(function (r, index) {
+      /* 회장 이름 · 막대 · 숫자를 세 열의 격자로 둔다.
+         이름 열은 **가장 긴 회장 이름**에 맞춰 폭이 정해지므로, 모든 줄의 막대가
+         같은 자리에서 시작해 길이를 바로 비교할 수 있다. 다만 이름이 아주 길면
+         막대가 밀려 사라지므로, 이름 열은 카드 폭의 45%까지만 쓰고 넘치면 줄바꿈한다.
+         각 줄(<a>)은 subgrid 로 이 세 열을 그대로 물려받는다 — 줄 전체가 링크로 남는다. */
+      var barList = el('div', {
+        style: 'display:grid;grid-template-columns:fit-content(45%) minmax(48px,1fr) 64px;'
+          + 'column-gap:10px;row-gap:9px;align-items:center;'
+      });
+      gridContainer.appendChild(barList);
+
+      todayRows.forEach(function (r) {
         var hId = r.hospital_id || r.id;
         var name = r.hospital_name || r.name || '';
         var reserved = r.reserved || 0;
         var cap = r.capacity || 0;
         var pct = cap ? Math.min(100, Math.round((reserved / cap) * 100)) : 0;
+        if (reserved > 0 && pct < 3) pct = 3;
         var nearlyFull = pct >= 90;
 
-        gridContainer.appendChild(el('a', {
-          href: '#/capacity?hospital_id=' + hId,
-          style: 'display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;'
-            + (index ? 'margin-top:9px;' : ''),
-          title: name + ' — 定員カレンダーへ移動'
+        var todayIsoLink = A.fmt.today();
+        barList.appendChild(el('a', {
+          href: '#/reservations?hospital_id=' + hId + '&from=' + todayIsoLink + '&to=' + todayIsoLink,
+          style: 'grid-column:1 / -1;display:grid;grid-template-columns:subgrid;align-items:center;'
+            + 'text-decoration:none;color:inherit;',
+          title: name + ' — 本日の受診者一覧へ移動'
         }, [
           el('span', {
-            style: 'flex:0 0 auto;width:150px;font-size:12.5px;color:var(--a-ink-sub);'
-              + 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;',
+            style: 'font-size:12.5px;line-height:1.35;color:var(--a-ink-sub);'
+              + 'overflow-wrap:anywhere;',
             text: name
           }),
           el('span', {
-            style: 'flex:1;height:10px;background:var(--a-line-2);border-radius:999px;'
+            style: 'height:8px;background:var(--a-line-2);border-radius:999px;'
               + 'overflow:hidden;display:block;'
           }, el('span', {
             style: 'display:block;height:100%;width:' + pct + '%;'
               + 'background:' + (nearlyFull ? '#0A3A31' : '#0B6E5B') + ';'
           })),
           el('span', {
-            style: 'flex:0 0 auto;width:64px;text-align:right;font-size:12px;'
+            style: 'text-align:right;font-size:12px;white-space:nowrap;'
               + 'font-variant-numeric:tabular-nums;'
               + (nearlyFull
                 ? 'color:var(--a-ink);font-weight:700;'
@@ -319,9 +332,9 @@
     }
 
     var hospitalStatusCard = A.card('本日の健診状況', {
-      desc: '会場をクリックすると定員カレンダーへ移動します。',
+      desc: '会場をクリックすると本日の受診者一覧を表示します。',
       flush: true,
-      tools: [el('a.btn.btn--sm', { href: '#/capacity', text: 'すべて表示' })],
+      tools: [el('a.btn.btn--sm', { href: '#/reservations?from=' + A.fmt.today() + '&to=' + A.fmt.today(), text: 'すべて表示' })],
       body: gridContainer
     });
 
@@ -998,8 +1011,8 @@
         var cancelAdvance = sStats.cancelled_advance || 0;
         var cancelSameDay = sStats.cancelled_same_day || 0;
         var cancelUnknown = cancelled - cancelAdvance - cancelSameDay;
-        // 행마다 **새 노드**를 만든다. 같은 DOM 노드를 두 행에 append 하면
-        // 뒤의 행으로 옮겨 가 버려, 「受付経路」 행에서 취소가 사라졌다.
+        // 부르는 쪽마다 **새 노드**를 만든다. 같은 DOM 노드를 두 곳에 append 하면
+        // 나중에 append 한 쪽으로 옮겨 가 버려, 앞쪽에서 사라진다.
         function cancelItems() {
           var items = [
             kvItem('#7A8785', '事前キャンセル', cancelAdvance),
@@ -1028,10 +1041,13 @@
             curveSvg
           ]),
           el('div.stats-overview__right', null, [
+            // 経路는 「どこから申し込まれたか」만 센다. 취소는 경로가 아니므로
+            // 여기 섞지 않는다 — 아래 予約ステータス 행에 이미 나뉘어 있다.
+            // Web·郵送 은 취소를 포함한 전체이고, 둘을 더하면 합계가 된다.
             kvRow('受付経路', [
-              kvItem('#0E7490', 'Web', (cStats.web || 0) - (cStats.web_cancelled || 0)),
-              kvItem('#B54708', '郵送', (cStats.postal || 0) - (cStats.postal_cancelled || 0))
-            ].concat(cancelItems())),
+              kvItem('#0E7490', 'Web', cStats.web || 0),
+              kvItem('#B54708', '郵送', cStats.postal || 0)
+            ]),
             kvRow('予約ステータス', [
               kvItem('#0B6E5B', '予約確定', sStats.confirmed || 0),
               kvItem('#D97706', '仮受付（要確認）', sStats.pending || 0)
@@ -1166,7 +1182,7 @@
     {
       key: 'summary',
       label: '集計（状態・受付経路・男女）',
-      desc: '予約状態（確定・仮受付・キャンセル等）、受付経路（WEB・郵送）、男女別の内訳データ'
+      desc: '予約状態（予約確定・仮受付（要確認）・事前キャンセル・当日キャンセル）、受付経路（WEB・郵送）、男女別の件数'
     },
     {
       key: 'age',
@@ -1181,12 +1197,12 @@
     {
       key: 'time',
       label: '日別（期間が31日を超える場合は月別）',
-      desc: '選択された集計期間における日別または月別の予約推移データ'
+      desc: '選んだ期間の日ごと（31日を超える場合は月ごと）の申込件数と内訳'
     },
     {
       key: 'venue',
       label: '会場別',
-      desc: '会場ごとの予約確定件数および定員枠の消化状況データ'
+      desc: '会場ごとの申込件数と、予約状態・受付経路・男女の内訳'
     }
   ];
 
